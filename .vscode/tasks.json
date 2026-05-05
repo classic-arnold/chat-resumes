@@ -1,0 +1,15 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "ChatResumes: web dev",
+			"type": "shell",
+			"command": "yarn",
+			"args": [
+				"dev:web"
+			],
+			"isBackground": true,
+			"group": "build"
+		}
+	]
+}

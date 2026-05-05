@@ -1,0 +1,23 @@
+{
+  "name": "chat-resumes",
+  "private": true,
+  "packageManager": "yarn@1.22.19",
+  "workspaces": [
+    "web",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"yarn workspace chat-resumes-web dev\" \"yarn workspace chat-resumes-backend dev\"",
+    "dev:web": "yarn workspace chat-resumes-web dev",
+    "dev:backend": "yarn workspace chat-resumes-backend dev",
+    "build": "yarn build:web && yarn build:backend",
+    "build:web": "yarn workspace chat-resumes-web build",
+    "build:backend": "yarn workspace chat-resumes-backend build",
+    "lint": "yarn lint:web && yarn lint:backend",
+    "lint:web": "yarn workspace chat-resumes-web lint",
+    "lint:backend": "yarn workspace chat-resumes-backend lint"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
