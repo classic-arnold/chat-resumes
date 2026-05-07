@@ -5,6 +5,7 @@ Vite + React + TypeScript frontend for ChatResumes.
 ## Current routes
 
 - `/`: fully implemented marketing landing page
+- `/chat`: fully implemented recruiter chat demo page
 - `/signup`: close-match route shell
 - `/login`: close-match route shell
 - `/dashboard`: close-match route shell

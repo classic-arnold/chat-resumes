@@ -10,6 +10,7 @@ Validate-stage monorepo scaffold for ChatResumes.
 ## Current scope
 
 - Exact-feel marketing landing page
+- Designed recruiter chat demo page
 - Placeholder route shells for signup, login, and dashboard
 - Minimal backend health endpoint
 
@@ -38,6 +39,7 @@ Validate-stage monorepo scaffold for ChatResumes.
 ## Route intent
 
 - `/`: fully implemented landing page
+- `/chat`: fully implemented recruiter chat demo page
 - `/signup`: close-match shell only
 - `/login`: close-match shell only
 - `/dashboard`: close-match shell only

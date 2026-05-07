@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Route, Routes, useLocation } from 'react-router-dom'
 
+import { ChatPage } from './pages/ChatPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { LandingPage } from './pages/LandingPage'
 import { LoginPage } from './pages/LoginPage'
@@ -21,6 +22,7 @@ const App = () => (
     <ScrollToTop />
     <Routes>
       <Route path="/" element={<LandingPage />} />
+      <Route path="/chat" element={<ChatPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/dashboard" element={<DashboardPage />} />

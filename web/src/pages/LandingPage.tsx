@@ -138,7 +138,7 @@ export const LandingPage = () => (
         <Link className="btn-nav-ghost" to="/login">
           Log In
         </Link>
-        <Link className="btn-nav-solid" to="/signup">
+        <Link className="btn-nav-solid" to="/chat">
           Get My Link →
         </Link>
       </div>
@@ -170,7 +170,7 @@ export const LandingPage = () => (
             24/7 — as if you were sitting right across the table.
           </p>
           <div className="hero-ctas">
-            <Link className="btn-primary-blue" to="/signup">
+            <Link className="btn-primary-blue" to="/chat">
               Build My AI Resume ↗
             </Link>
             <a className="btn-outline-blue" href="#how-it-works">
@@ -322,7 +322,7 @@ export const LandingPage = () => (
             starts. Every day without one is a day recruiters choose someone
             else who has it.
           </p>
-          <Link className="btn-primary-blue inline-cta" to="/signup">
+          <Link className="btn-primary-blue inline-cta" to="/chat">
             Claim My Link — It&apos;s Free to Start →
           </Link>
         </div>
