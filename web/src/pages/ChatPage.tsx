@@ -1,7 +1,7 @@
 import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-type MessageSide = 'recruiter' | 'ai'
+type MessageSide = 'candidate' | 'ai'
 
 type ChatMessage = {
   id: number
@@ -17,73 +17,84 @@ type QuickPrompt = {
 
 const starterMessages: Omit<ChatMessage, 'id'>[] = [
   {
-    author: 'Recruiter · Sarah M.',
-    body: 'Hi Jordan. I saw your background in product design systems. What kind of team do you do your best work with?',
-    side: 'recruiter',
-  },
-  {
-    author: 'Jordan\'s AI',
-    body: 'Jordan thrives on high-context, low-ego teams where design, product, and engineering are in the same conversation early. Their best work usually comes from ambiguous problems with clear ownership.',
+    author: 'ChatResumes AI Coach',
+    body: 'Let’s build a recruiter-ready story bank. Start with the strongest leadership example you want your AI resume to use in interviews.',
     side: 'ai',
   },
   {
-    author: 'Recruiter · Sarah M.',
-    body: 'That tracks. What is the strongest example of leadership they would want me to know about?',
-    side: 'recruiter',
+    author: 'Candidate · You',
+    body: 'The strongest one is the 14-person Vercel rebrand. I led the rollout across design, product, engineering, and brand, and we shipped three weeks early.',
+    side: 'candidate',
   },
   {
-    author: 'Jordan\'s AI',
-    body: 'Jordan led a 14-person cross-functional rebrand at Vercel and shipped it three weeks early. The notable part was not just delivery speed, but how they aligned conflicting priorities without creating drag across the team.',
+    author: 'ChatResumes AI Coach',
+    body: 'Good anchor. I already have the situation and rough result. What was breaking before you stepped in, what decision did you personally own, and how did you keep the teams aligned?',
     side: 'ai',
+  },
+  {
+    author: 'Candidate · You',
+    body: 'The launch dates were conflicting, the design system was drifting, and leadership wanted one narrative. I owned the rollout plan, stakeholder alignment, and the decision framework that got everyone to commit.',
+    side: 'candidate',
   },
 ]
 
 const quickPrompts: QuickPrompt[] = [
   {
-    label: 'Ask about leadership',
-    question: 'What is the strongest example of leadership Jordan would want a recruiter to know about?',
+    label: 'Turn this into STAR',
+    question: 'Help me turn the Vercel rebrand into a sharper STAR story.',
   },
   {
-    label: 'Ask about product sense',
-    question: 'How does Jordan balance product thinking, design craft, and business impact?',
+    label: 'Push on the result',
+    question: 'Help me tighten the measurable result and before-versus-after impact.',
   },
   {
-    label: 'Ask about ideal next role',
-    question: 'What does Jordan want in an ideal next role?',
+    label: 'Ask a better follow-up',
+    question: 'Ask me the hardest follow-up question a recruiter would care about here.',
   },
   {
-    label: 'Ask about team culture',
-    question: 'What kind of team culture helps Jordan do their best work?',
+    label: 'Position my next role',
+    question: 'Help me explain what kind of staff-level role I want next and why I am credible for it.',
   },
 ]
 
-const profileFacts = [
+const knowledgeFacts = [
   '14-person cross-functional team leadership',
   'Shipped a major rebrand 3 weeks early',
-  'Design systems, product strategy, and storytelling',
-  'Open to staff-level design and product design leadership roles',
+  'Strong in design systems, product strategy, and stakeholder alignment',
+  'Targeting staff-level design leadership roles with real ownership',
+]
+
+const storyDrafts = [
+  'Vercel rebrand: situation and task captured, needs harder business impact.',
+  'Design systems leadership: need one story with a clearer metric and team scope.',
+  'Next-role positioning: needs a tighter explanation of desired scope and leverage.',
 ]
 
 const replyLibrary = [
   {
-    keywords: ['leadership', 'lead', 'manage'],
+    keywords: ['star', 'story', 'rebrand', 'brand'],
     reply:
-      'Jordan leads by lowering ambiguity for the team. A strong example is the 14-person rebrand they ran at Vercel, where they aligned product, engineering, and brand stakeholders early enough to ship three weeks ahead of schedule without burning trust.',
+      'Good. Let’s force the STAR shape. Situation: what was broken or at risk? Task: what outcome were you accountable for? Action: what did you personally decide or drive? Result: what changed, preferably with a number?',
   },
   {
-    keywords: ['product', 'business', 'impact', 'craft', 'design'],
+    keywords: ['result', 'impact', 'metric', 'measure', 'before', 'after'],
     reply:
-      'Jordan tends to connect design craft to business outcomes quickly. Their pattern is to frame the product decision, prototype the riskiest path first, and then use the design system to scale the winning direction without adding delivery drag.',
+      'The result is still too soft. Give me the before state, the change you created, and one proof point such as time saved, launch acceleration, adoption, revenue impact, or leadership confidence gained.',
   },
   {
-    keywords: ['role', 'next', 'ideal'],
+    keywords: ['stakeholder', 'alignment', 'conflict', 'pushback'],
     reply:
-      'Jordan is strongest in staff-level product design or design leadership roles where the scope is ambiguous, the stakes are real, and they can shape both the system and the story. They want ownership, cross-functional access, and a team that values judgment over theater.',
+      'That is usually the part recruiters remember. Name the conflicting stakeholders, what each side wanted, the tradeoff you made, and why your decision was the right one under pressure.',
+  },
+  {
+    keywords: ['role', 'next', 'staff', 'scope'],
+    reply:
+      'Phrase it as positioning, not preference. Describe the scope you want next, the kinds of problems you want to own, and the strongest evidence from your past that makes that move credible now.',
   },
   {
     keywords: ['culture', 'team', 'collaboration'],
     reply:
-      'The best fit is a high-context, low-ego team. Jordan does their best work where design, product, and engineering are in the same room early, feedback is direct, and strong opinions are used to sharpen decisions instead of slowing them down.',
+      'Great. Give me one concrete example of the team environment that brings out your best work and one environment that slows you down. Your AI should answer culture-fit questions with specifics, not slogans.',
   },
 ]
 
@@ -95,7 +106,7 @@ const getAiReply = (question: string) => {
 
   return (
     matchedReply?.reply ??
-    'Jordan would answer that with a concrete story, the team context, and the business result. The short version is that they are strongest when translating ambiguity into clear product and design decisions that move teams forward.'
+    'That is a usable start, but it still reads like a resume bullet. Add the tension, your exact action, and the outcome so your AI can answer like someone who actually lived the story.'
   )
 }
 
@@ -144,9 +155,9 @@ export const ChatPage = () => {
     }
 
     appendMessage({
-      author: 'Recruiter · You',
+      author: 'Candidate · You',
       body: trimmedQuestion,
-      side: 'recruiter',
+      side: 'candidate',
     })
     setComposerValue('')
     setIsReplying(true)
@@ -157,7 +168,7 @@ export const ChatPage = () => {
 
     replyTimerRef.current = window.setTimeout(() => {
       appendMessage({
-        author: 'Jordan\'s AI',
+        author: 'ChatResumes AI Coach',
         body: getAiReply(trimmedQuestion),
         side: 'ai',
       })
@@ -183,11 +194,11 @@ export const ChatPage = () => {
           Chat<span>Resumes</span>
         </Link>
         <div className="chat-nav-actions">
-          <Link className="btn-nav-ghost" to="/">
-            Back To Landing
+          <Link className="btn-nav-ghost" to="/dashboard">
+            Back To Dashboard
           </Link>
-          <Link className="btn-nav-solid" to="/dashboard">
-            View Dashboard
+          <Link className="btn-nav-solid" to="/pricing">
+            View Plan
           </Link>
         </div>
       </nav>
@@ -195,32 +206,41 @@ export const ChatPage = () => {
       <main className="chat-layout">
         <section className="chat-sidebar-card">
           <div className="chat-sidebar-panel chat-sidebar-panel-primary">
-            <div className="chat-profile-badge">Live Recruiter View</div>
+            <div className="chat-profile-badge">Private Candidate Chat</div>
             <div className="chat-profile-header">
-              <div className="chat-profile-avatar">JH</div>
+              <div className="chat-profile-avatar">AI</div>
               <div>
-                <h1 className="chat-profile-name">Jordan Hayes</h1>
-                <p className="chat-profile-role">AI Resume · Product Design Leader</p>
+                <h1 className="chat-profile-name">Author Your AI Resume</h1>
+                <p className="chat-profile-role">Private coaching session · nothing here is public until you approve it</p>
               </div>
             </div>
             <p className="chat-profile-summary">
-              A recruiter-ready AI profile that answers questions with Jordan&apos;s
-              voice, priorities, and strongest career stories.
+              Use this workspace to turn raw experience into recruiter-ready STAR
+              stories, stronger positioning, and approved facts for your public AI link.
             </p>
-            <div className="chat-profile-url">chatresumes.io/jordan-hayes</div>
+            <div className="chat-profile-url">Private workspace · visible only to you</div>
           </div>
 
           <div className="chat-sidebar-panel chat-sidebar-panel-soft">
-            <div className="chat-section-title">What recruiters learn fast</div>
+            <div className="chat-section-title">What your AI knows so far</div>
             <ul className="chat-fact-list">
-              {profileFacts.map((fact) => (
+              {knowledgeFacts.map((fact) => (
                 <li key={fact}>{fact}</li>
               ))}
             </ul>
           </div>
 
           <div className="chat-sidebar-panel chat-sidebar-panel-soft">
-            <div className="chat-section-title">Suggested questions</div>
+            <div className="chat-section-title">Stories in progress</div>
+            <ul className="chat-fact-list">
+              {storyDrafts.map((story) => (
+                <li key={story}>{story}</li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="chat-sidebar-panel chat-sidebar-panel-soft">
+            <div className="chat-section-title">Suggested prompts</div>
             <div className="chat-prompt-list">
               {quickPrompts.map((prompt) => (
                 <button
@@ -240,13 +260,13 @@ export const ChatPage = () => {
         <section className="chat-conversation-card">
           <div className="chat-conversation-header">
             <div>
-              <div className="chat-conversation-title">Recruiter Conversation</div>
+              <div className="chat-conversation-title">Candidate Authoring Session</div>
               <div className="chat-conversation-status">
                 <div className="status-dot" />
-                Live demo of Jordan&apos;s AI resume
+                Private coaching mode for STAR stories and positioning
               </div>
             </div>
-            <div className="chat-conversation-pill">4 min avg session</div>
+            <div className="chat-conversation-pill">1 draft story active</div>
           </div>
 
           <div className="chat-thread">
@@ -268,11 +288,11 @@ export const ChatPage = () => {
 
           <form className="chat-composer" onSubmit={handleSubmit}>
             <input
-              aria-label="Ask Jordan a question"
+              aria-label="Tell your AI about your work"
               className="chat-composer-input"
               disabled={isReplying}
               onChange={(event) => setComposerValue(event.target.value)}
-              placeholder="Ask Jordan about impact, leadership, culture fit, or next-role goals..."
+              placeholder="Tell the AI what happened, what you owned, the hard part, or the result..."
               type="text"
               value={composerValue}
             />
@@ -281,7 +301,7 @@ export const ChatPage = () => {
               disabled={isReplying || !composerValue.trim()}
               type="submit"
             >
-              {isReplying ? 'Replying...' : 'Send ↗'}
+              {isReplying ? 'Thinking...' : 'Send →'}
             </button>
           </form>
         </section>

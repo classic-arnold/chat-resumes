@@ -54,10 +54,280 @@ button {
 }
 
 .landing-page,
+.pricing-page,
 .auth-page,
 .dashboard-page,
 .chat-page {
   min-height: 100vh;
+}
+
+.pricing-page {
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 26%),
+    radial-gradient(circle at bottom right, rgba(10, 36, 99, 0.1), transparent 24%),
+    linear-gradient(180deg, #f9fbff 0%, #eef4ff 100%);
+}
+
+.pricing-main {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 8rem 3rem 4rem;
+}
+
+.pricing-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(21rem, 26rem);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.pricing-copy,
+.pricing-card-shell,
+.pricing-proof-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  box-shadow: 0 24px 60px rgba(10, 36, 99, 0.1);
+}
+
+.pricing-copy,
+.pricing-proof-card {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(14px);
+}
+
+.pricing-copy {
+  padding: 2.5rem;
+}
+
+.pricing-headline,
+.pricing-proof-title,
+.pricing-card-name {
+  font-family: 'Syne', sans-serif;
+  color: var(--navy-text);
+  letter-spacing: -0.04em;
+}
+
+.pricing-headline {
+  max-width: 12ch;
+  margin-bottom: 1rem;
+  font-size: clamp(2.6rem, 5vw, 4.5rem);
+  font-weight: 800;
+  line-height: 0.98;
+}
+
+.pricing-subtitle,
+.pricing-card-copy,
+.pricing-proof-body,
+.pricing-card-note {
+  color: var(--muted);
+}
+
+.pricing-subtitle {
+  max-width: 58ch;
+  font-size: 0.86rem;
+  line-height: 1.9;
+}
+
+.pricing-chip-row,
+.pricing-cta-row,
+.pricing-sequence,
+.pricing-proof-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+}
+
+.pricing-chip-row {
+  margin-top: 1.4rem;
+}
+
+.pricing-chip {
+  padding: 0.7rem 0.9rem;
+  background: rgba(219, 234, 254, 0.7);
+  border: 1px solid var(--blue-light);
+  border-radius: 999px;
+  color: var(--blue-mid);
+  font-size: 0.72rem;
+}
+
+.pricing-cta-row {
+  margin-top: 1.5rem;
+}
+
+.pricing-cta-row > * {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pricing-inline-error {
+  margin-top: 1rem;
+  padding: 0.9rem 1rem;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.16);
+  border-radius: 12px;
+  color: #991b1b;
+  font-size: 0.74rem;
+  line-height: 1.7;
+}
+
+.pricing-sequence {
+  margin-top: 2rem;
+}
+
+.pricing-sequence-step {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--navy-text);
+  font-size: 0.74rem;
+}
+
+.pricing-sequence-number,
+.pricing-proof-eyebrow,
+.pricing-card-highlight {
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.pricing-sequence-number {
+  color: var(--blue-mid);
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+}
+
+.pricing-card-shell {
+  padding: 2rem;
+  background: linear-gradient(180deg, var(--blue-deep) 0%, #163990 100%);
+  color: var(--white);
+}
+
+.pricing-card-highlight {
+  width: fit-content;
+  margin-bottom: 1rem;
+  padding: 0.35rem 0.65rem;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.pricing-card-name {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--white);
+}
+
+.pricing-card-price {
+  margin-top: 0.7rem;
+  color: var(--white);
+  font-family: 'Syne', sans-serif;
+  font-size: 3rem;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+}
+
+.pricing-card-price span {
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.pricing-card-copy {
+  margin-top: 0.95rem;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.8rem;
+  line-height: 1.85;
+}
+
+.pricing-feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin-top: 1.35rem;
+}
+
+.pricing-feature {
+  display: flex;
+  gap: 0.6rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.78rem;
+  line-height: 1.65;
+}
+
+.pricing-feature::before {
+  content: '◆';
+  color: rgba(245, 158, 11, 0.92);
+  font-size: 0.62rem;
+  margin-top: 0.18rem;
+}
+
+.pricing-card-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1.5rem;
+  padding: 0.95rem 1.2rem;
+  background: var(--white);
+  border-radius: 10px;
+  color: var(--blue-deep);
+  font-family: 'Syne', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.pricing-card-cta:disabled {
+  background: rgba(255, 255, 255, 0.8);
+  color: rgba(10, 36, 99, 0.55);
+  cursor: not-allowed;
+}
+
+.pricing-card-cta:hover {
+  background: var(--blue-pale);
+}
+
+.pricing-card-note {
+  margin-top: 0.9rem;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.68rem;
+  line-height: 1.75;
+}
+
+.pricing-proof-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 1.5rem;
+}
+
+.pricing-proof-card {
+  padding: 1.6rem;
+}
+
+.pricing-proof-eyebrow {
+  margin-bottom: 0.85rem;
+  color: var(--blue-mid);
+}
+
+.pricing-proof-title {
+  margin-bottom: 0.75rem;
+  font-size: 1.15rem;
+  font-weight: 750;
+  line-height: 1.15;
+}
+
+.pricing-proof-body {
+  font-size: 0.78rem;
+  line-height: 1.8;
 }
 
 .site-nav,
@@ -436,7 +706,7 @@ button {
   max-width: min(42rem, 84%);
 }
 
-.chat-message.recruiter {
+.chat-message.candidate {
   align-self: flex-start;
 }
 
@@ -459,7 +729,7 @@ button {
   line-height: 1.8;
 }
 
-.chat-message.recruiter .chat-message-bubble {
+.chat-message.candidate .chat-message-bubble {
   background: var(--white);
   border: 1px solid var(--border);
   color: var(--navy-text);
@@ -1179,14 +1449,12 @@ button {
 .dash-url-label,
 .stat-mini-label,
 .form-label,
-.divider-text,
-.route-shell-note {
+.divider-text {
   text-transform: uppercase;
 }
 
 .q-num-badge,
-.dash-badge,
-.route-shell-note {
+.dash-badge {
   display: inline-block;
   padding: 0.25rem 0.65rem;
   border-radius: 4px;
@@ -1449,20 +1717,6 @@ button {
   overflow-y: auto;
 }
 
-.route-shell-note {
-  width: fit-content;
-  padding: 0.45rem 0.75rem;
-  background: rgba(245, 158, 11, 0.12);
-  border: 1px solid rgba(245, 158, 11, 0.28);
-  color: var(--navy-text);
-  font-size: 0.66rem;
-  font-weight: 600;
-}
-
-.route-shell-note-dashboard {
-  margin-bottom: 1.25rem;
-}
-
 .auth-right-top {
   margin-bottom: 0.5rem;
 }
@@ -1487,6 +1741,70 @@ button {
   display: flex;
   flex-direction: column;
   gap: 1.2rem;
+}
+
+.auth-live-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.clerk-footer-hidden {
+  display: none !important;
+}
+
+.auth-config-body {
+  color: var(--muted);
+  font-size: 0.74rem;
+  line-height: 1.7;
+}
+
+.auth-live-card,
+.auth-config-card,
+.auth-required-card {
+  padding: 1rem 1.1rem;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.auth-config-card,
+.auth-required-card {
+  background: linear-gradient(180deg, rgba(239, 246, 255, 0.75) 0%, var(--white) 100%);
+}
+
+.auth-config-title,
+.auth-required-title {
+  margin-bottom: 0.5rem;
+  color: var(--navy-text);
+  font-family: 'Syne', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.auth-required-page {
+  min-height: 100vh;
+  padding: 8rem 1.5rem 2rem;
+  background: linear-gradient(180deg, #f8fbff 0%, #eef4ff 100%);
+}
+
+.auth-required-card {
+  max-width: 34rem;
+  margin: 0 auto;
+  box-shadow: 0 20px 55px rgba(10, 36, 99, 0.08);
+}
+
+.auth-required-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+.auth-required-actions > * {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .auth-row,
@@ -1653,6 +1971,12 @@ button {
   border-color: var(--blue-mid);
 }
 
+.plan-card-single {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
 .plan-card-name {
   margin-bottom: 0.2rem;
   font-size: 0.9rem;
@@ -1738,6 +2062,12 @@ button {
   gap: 0.8rem;
 }
 
+.dash-user-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
 .dash-avatar,
 .activity-icon {
   display: flex;
@@ -1779,6 +2109,120 @@ button {
 .dash-welcome h2 {
   margin-bottom: 0.4rem;
   font-size: 1.8rem;
+}
+
+.dash-billing-card {
+  margin-bottom: 1.5rem;
+}
+
+.dash-billing-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.dash-billing-copy {
+  color: var(--navy-text);
+  font-family: 'Syne', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.dash-billing-meta,
+.dash-billing-note,
+.billing-feedback-body {
+  color: var(--muted);
+}
+
+.dash-billing-meta {
+  margin-top: 0.35rem;
+  font-size: 0.76rem;
+}
+
+.dash-billing-error {
+  margin-top: 0.7rem;
+  color: #b91c1c;
+  font-size: 0.72rem;
+  line-height: 1.7;
+}
+
+.dash-billing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+.dash-billing-pill {
+  padding: 0.35rem 0.65rem;
+  background: #fff7ed;
+  border-radius: 999px;
+  color: #c2410c;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.dash-billing-pill.active {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.dash-billing-note {
+  margin-top: 0.85rem;
+  font-size: 0.7rem;
+  line-height: 1.65;
+}
+
+.billing-feedback-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f8fbff 0%, #eef4ff 100%);
+}
+
+.billing-feedback-main {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 8rem 1.5rem 3rem;
+}
+
+.billing-feedback-card {
+  padding: 2rem;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  box-shadow: 0 24px 60px rgba(10, 36, 99, 0.09);
+}
+
+.billing-feedback-card-soft {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, #f8fbff 100%);
+}
+
+.billing-feedback-title {
+  margin-bottom: 0.9rem;
+  color: var(--navy-text);
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.billing-feedback-body {
+  max-width: 48ch;
+  font-size: 0.84rem;
+  line-height: 1.9;
+}
+
+.billing-feedback-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-top: 1.5rem;
+}
+
+.billing-feedback-actions > * {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .dash-url-card,
@@ -2053,6 +2497,7 @@ button {
   }
 
   .hero,
+  .pricing-hero,
   .fomo-section,
   .auth-page,
   .dash-grid,
@@ -2060,8 +2505,31 @@ button {
   .q-grid,
   .stats-row,
   .auth-row,
-  .plan-cards {
+  .plan-cards,
+  .pricing-proof-grid {
     grid-template-columns: 1fr;
+  }
+
+  .pricing-main {
+    padding: 7rem 1.5rem 2rem;
+  }
+
+  .pricing-copy,
+  .pricing-card-shell,
+  .pricing-proof-card {
+    padding: 1.5rem;
+  }
+
+  .pricing-headline {
+    max-width: none;
+  }
+
+  .pricing-cta-row > * {
+    width: 100%;
+  }
+
+  .pricing-sequence-step {
+    width: 100%;
   }
 
   .hero {
@@ -2194,6 +2662,10 @@ button {
     padding: 8.75rem 1rem 3rem;
   }
 
+  .pricing-main {
+    padding: 8.25rem 1rem 2rem;
+  }
+
   .chat-layout {
     padding: 8.25rem 1rem 2rem;
   }
@@ -2206,8 +2678,7 @@ button {
     padding-right: 1rem;
   }
 
-  .hero-eyebrow,
-  .route-shell-note {
+  .hero-eyebrow {
     width: 100%;
   }
 
@@ -2223,6 +2694,12 @@ button {
     max-width: none;
     font-size: 0.84rem;
     line-height: 1.75;
+  }
+
+  .pricing-subtitle {
+    max-width: none;
+    font-size: 0.82rem;
+    line-height: 1.8;
   }
 
   .hero-ctas {
@@ -2357,6 +2834,19 @@ button {
     padding: 1.25rem;
   }
 
+  .dash-billing-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dash-billing-actions {
+    width: 100%;
+  }
+
+  .dash-billing-actions > * {
+    flex: 1 1 calc(50% - 0.35rem);
+  }
+
   .dash-url-value {
     font-size: 1.05rem;
     word-break: break-word;
@@ -2386,6 +2876,10 @@ button {
 @media (max-width: 460px) {
   .hero-headline {
     font-size: clamp(2rem, 12vw, 2.8rem);
+  }
+
+  .pricing-headline {
+    font-size: clamp(2.05rem, 12vw, 2.85rem);
   }
 
   .chat-layout {
@@ -2437,8 +2931,7 @@ button {
     flex-basis: 100%;
   }
 
-  .route-shell-note {
-    font-size: 0.62rem;
-    line-height: 1.5;
+  .dash-billing-actions > * {
+    flex-basis: 100%;
   }
 }

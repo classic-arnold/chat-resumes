@@ -1,15 +1,14 @@
-import { Link } from 'react-router-dom'
+import { SignUp, useAuth } from '@clerk/react'
+import { Navigate, Link } from 'react-router-dom'
 
+import { isClerkConfigured } from '../auth/clerk'
 import { AuthShell } from '../components/AuthShell'
 
-export const SignupPage = () => (
+const SignupShell = ({ rightContent }: { rightContent: React.ReactNode }) => (
   <AuthShell
-    actionLabel="Create My Account & Get My Link →"
     footnote={
       <>
-        The final signup flow, billing, and onboarding sequence are not wired
-        in this setup yet. The landing page is the only fully implemented
-        experience.
+        Create your account to launch your profile and start training your AI.
       </>
     }
     heroBody="Every candidate on ChatResumes gets a permanent, shareable AI link. Put it on your resume. Recruiters who click it spend an average of 4 minutes learning about you — vs. 7 seconds skimming a PDF."
@@ -22,8 +21,10 @@ export const SignupPage = () => (
     subtitle={
       <>
         Already have an account? <Link to="/login">Log in here</Link>
+        {' '}or <Link to="/pricing">review pricing</Link>
       </>
     }
+    rightContent={rightContent}
     testimonials={[
       {
         name: '— Marcus T., Software Engineer at Stripe',
@@ -36,83 +37,60 @@ export const SignupPage = () => (
     ]}
     title="Create your account"
   >
-    <div className="auth-row">
-      <div className="form-group">
-        <label className="form-label">First Name</label>
-        <input className="form-input" disabled placeholder="Jordan" type="text" />
-      </div>
-      <div className="form-group">
-        <label className="form-label">Last Name</label>
-        <input className="form-input" disabled placeholder="Hayes" type="text" />
-      </div>
-    </div>
-
-    <div className="form-group">
-      <label className="form-label">Email Address</label>
-      <input
-        className="form-input"
-        disabled
-        placeholder="jordan@email.com"
-        type="email"
-      />
-    </div>
-
-    <div className="form-group">
-      <label className="form-label">Your ChatResumes Handle</label>
-      <div className="handle-wrap">
-        <span className="handle-prefix">chatresumes.io/</span>
-        <input
-          className="form-input"
-          disabled
-          placeholder="jordan-hayes"
-          type="text"
-        />
-      </div>
-      <div className="handle-preview">
-        🔗 Your link: <span className="preview-url">chatresumes.io/jordan-hayes</span>
-      </div>
-      <div className="form-hint">
-        Lowercase letters, numbers, hyphens only. Permanent — choose wisely.
-      </div>
-    </div>
-
-    <div className="form-group">
-      <label className="form-label">Password</label>
-      <input
-        className="form-input"
-        disabled
-        placeholder="Min. 8 characters"
-        type="password"
-      />
-    </div>
-
-    <div className="form-group">
-      <label className="form-label">Choose Your Plan</label>
-      <div className="plan-cards">
-        <div className="plan-card selected">
-          <div className="plan-card-name">Starter</div>
-          <div className="plan-card-price">
-            Free <span>forever</span>
-          </div>
-          <div className="plan-features">
-            <div className="plan-feature">1 AI resume link</div>
-            <div className="plan-feature">50 chats/month</div>
-            <div className="plan-feature">Basic analytics</div>
-          </div>
-        </div>
-        <div className="plan-card">
-          <div className="plan-badge">Popular</div>
-          <div className="plan-card-name">Pro</div>
-          <div className="plan-card-price">
-            $9 <span>/month</span>
-          </div>
-          <div className="plan-features">
-            <div className="plan-feature">Unlimited chats</div>
-            <div className="plan-feature">Full analytics</div>
-            <div className="plan-feature">Custom branding</div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <></>
   </AuthShell>
 )
+
+const SignupPageWithClerk = () => {
+  const { isLoaded, isSignedIn } = useAuth()
+
+  if (!isLoaded) {
+    return (
+      <SignupShell
+        rightContent={
+          <div className="auth-live-panel">
+            <div className="auth-live-card">Loading secure signup…</div>
+          </div>
+        }
+      />
+    )
+  }
+
+  if (isSignedIn) {
+    return <Navigate replace to="/dashboard" />
+  }
+
+  return (
+    <SignupShell
+      rightContent={
+        <div className="auth-live-panel">
+          <SignUp
+            fallbackRedirectUrl="/dashboard"
+            path="/signup"
+            routing="path"
+            signInUrl="/login"
+          />
+        </div>
+      }
+    />
+  )
+}
+
+export const SignupPage = () => {
+  if (!isClerkConfigured) {
+    return (
+      <SignupShell
+        rightContent={
+          <div className="auth-live-panel">
+            <div className="auth-config-card">
+              <div className="auth-config-title">Sign-up is temporarily unavailable</div>
+              <div className="auth-config-body">Please try again in a moment.</div>
+            </div>
+          </div>
+        }
+      />
+    )
+  }
+
+  return <SignupPageWithClerk />
+}

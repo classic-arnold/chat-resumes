@@ -5,10 +5,13 @@ Vite + React + TypeScript frontend for ChatResumes.
 ## Current routes
 
 - `/`: fully implemented marketing landing page
-- `/chat`: fully implemented recruiter chat demo page
-- `/signup`: close-match route shell
-- `/login`: close-match route shell
-- `/dashboard`: close-match route shell
+- `/pricing`: implemented launch pricing page
+- `/billing/success`: protected Stripe success callback route
+- `/billing/cancel`: protected Stripe cancel callback route
+- `/chat`: protected route; still using demo content for now
+- `/signup`: implemented Clerk signup route
+- `/login`: implemented Clerk login route
+- `/dashboard`: protected route; still using dashboard shell content
 
 ## Stack in use
 
@@ -22,3 +25,8 @@ Vite + React + TypeScript frontend for ChatResumes.
 - `yarn dev`: start the Vite dev server
 - `yarn build`: type-check and build production assets
 - `yarn lint`: run ESLint
+
+## Local environment
+
+Copy `.env.example` to `.env` and set `VITE_CLERK_PUBLISHABLE_KEY` before using the live auth routes.
+Set `VITE_API_BASE_URL` if the frontend should call a backend origin other than the local default.

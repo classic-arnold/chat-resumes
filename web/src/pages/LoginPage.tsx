@@ -1,14 +1,14 @@
-import { Link } from 'react-router-dom'
+import { SignIn, useAuth } from '@clerk/react'
+import { Navigate, Link } from 'react-router-dom'
 
+import { isClerkConfigured } from '../auth/clerk'
 import { AuthShell } from '../components/AuthShell'
 
-export const LoginPage = () => (
+const LoginShell = ({ rightContent }: { rightContent: React.ReactNode }) => (
   <AuthShell
-    actionLabel="Log In to My Account →"
     footnote={
       <>
-        This shell preserves the login surface and brand direction, but the
-        actual session flow is not implemented yet.
+        Sign in to manage your candidate dashboard, billing, and AI profile.
       </>
     }
     heroBody="While you were gone, your ChatResumes link was out there — answering questions, making impressions, and keeping you in the running for roles you do not even know about yet."
@@ -20,9 +20,10 @@ export const LoginPage = () => (
     }
     subtitle={
       <>
-        No account yet? <Link to="/signup">Sign up free →</Link>
+        No account yet? <Link to="/signup">Create your account →</Link>
       </>
     }
+    rightContent={rightContent}
     testimonials={[
       {
         name: '— Alexis R., Product Manager',
@@ -31,27 +32,60 @@ export const LoginPage = () => (
     ]}
     title="Welcome back"
   >
-    <div className="form-group">
-      <label className="form-label">Email Address</label>
-      <input
-        className="form-input"
-        disabled
-        placeholder="jordan@email.com"
-        type="email"
-      />
-    </div>
-
-    <div className="form-group">
-      <label className="form-label">Password</label>
-      <input
-        className="form-input"
-        disabled
-        placeholder="Your password"
-        type="password"
-      />
-      <div className="form-hint form-hint-right">
-        <span>Forgot password?</span>
-      </div>
-    </div>
+    <></>
   </AuthShell>
 )
+
+const LoginPageWithClerk = () => {
+  const { isLoaded, isSignedIn } = useAuth()
+
+  if (!isLoaded) {
+    return (
+      <LoginShell
+        rightContent={
+          <div className="auth-live-panel">
+            <div className="auth-live-card">Loading secure login…</div>
+          </div>
+        }
+      />
+    )
+  }
+
+  if (isSignedIn) {
+    return <Navigate replace to="/dashboard" />
+  }
+
+  return (
+    <LoginShell
+      rightContent={
+        <div className="auth-live-panel">
+          <SignIn
+            fallbackRedirectUrl="/dashboard"
+            path="/login"
+            routing="path"
+            signUpUrl="/signup"
+          />
+        </div>
+      }
+    />
+  )
+}
+
+export const LoginPage = () => {
+  if (!isClerkConfigured) {
+    return (
+      <LoginShell
+        rightContent={
+          <div className="auth-live-panel">
+            <div className="auth-config-card">
+              <div className="auth-config-title">Sign-in is temporarily unavailable</div>
+              <div className="auth-config-body">Please try again in a moment.</div>
+            </div>
+          </div>
+        }
+      />
+    )
+  }
+
+  return <LoginPageWithClerk />
+}

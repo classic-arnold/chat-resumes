@@ -1,0 +1,165 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SubscriptionStatus {
+  trialing
+  active
+  past_due
+  canceled
+  incomplete
+}
+
+enum CandidateChatSessionStatus {
+  active
+  archived
+}
+
+enum RecruiterChatRole {
+  recruiter
+  ai
+}
+
+enum CandidateChatRole {
+  candidate
+  ai
+  system
+}
+
+enum StoryStatus {
+  draft
+  approved
+  archived
+}
+
+model User {
+  id                    String                 @id @default(cuid())
+  clerkUserId           String                 @unique
+  email                 String                 @unique
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  profile               Profile?
+  subscription          Subscription?
+  candidateChatSessions CandidateChatSession[]
+  stories               Story[]
+}
+
+model Profile {
+  id                   String                @id @default(cuid())
+  userId               String                @unique
+  slug                 String                @unique
+  displayName          String?
+  headline             String?
+  summary              String?
+  location             String?
+  targetRoles          String[]              @default([])
+  isPublic             Boolean               @default(false)
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recruiterVisits      RecruiterVisit[]
+  recruiterChatSessions RecruiterChatSession[]
+}
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  userId               String             @unique
+  stripeCustomerId     String             @unique
+  stripeSubscriptionId String?            @unique
+  status               SubscriptionStatus @default(incomplete)
+  currentPeriodEnd     DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CandidateChatSession {
+  id        String                     @id @default(cuid())
+  userId    String
+  status    CandidateChatSessionStatus @default(active)
+  startedAt DateTime                   @default(now())
+  endedAt   DateTime?
+  createdAt DateTime                   @default(now())
+  updatedAt DateTime                   @updatedAt
+  user      User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  CandidateChatMessage[]
+  stories   Story[]
+
+  @@index([userId, createdAt])
+}
+
+model CandidateChatMessage {
+  id        String            @id @default(cuid())
+  sessionId String
+  role      CandidateChatRole
+  content   String
+  createdAt DateTime          @default(now())
+  session   CandidateChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+}
+
+model Story {
+  id              String    @id @default(cuid())
+  userId          String
+  sourceSessionId String?
+  title           String
+  situation       String
+  task            String
+  action          String
+  result          String
+  status          StoryStatus @default(draft)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sourceSession   CandidateChatSession? @relation(fields: [sourceSessionId], references: [id], onDelete: SetNull)
+
+  @@index([userId, status])
+}
+
+model RecruiterVisit {
+  id           String   @id @default(cuid())
+  profileId    String
+  visitorToken String
+  referrer     String?
+  userAgent    String?
+  visitedAt    DateTime @default(now())
+  profile      Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  chatSessions RecruiterChatSession[]
+
+  @@index([profileId, visitedAt])
+  @@index([visitorToken])
+}
+
+model RecruiterChatSession {
+  id          String    @id @default(cuid())
+  profileId   String
+  visitId     String?
+  visitorToken String
+  startedAt   DateTime  @default(now())
+  endedAt     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  profile     Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  visit       RecruiterVisit? @relation(fields: [visitId], references: [id], onDelete: SetNull)
+  messages    RecruiterChatMessage[]
+
+  @@index([profileId, createdAt])
+  @@index([visitorToken])
+}
+
+model RecruiterChatMessage {
+  id        String           @id @default(cuid())
+  sessionId String
+  role      RecruiterChatRole
+  content   String
+  createdAt DateTime         @default(now())
+  session   RecruiterChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+}

@@ -40,44 +40,44 @@ This file is the execution plan for the MVP. The goal is to ship a paid candidat
 
 ### 1. Lock the app contract
 
-- [ ] Freeze access rules for every route.
-- [ ] Freeze the public/private data boundary.
-- [ ] Freeze the core entities: user, profile, public slug, subscription, candidate chat session, candidate chat message, approved story, recruiter visit, recruiter chat session, recruiter chat message.
-- [ ] Write down the API surfaces before wiring UI: auth session check, billing status, checkout session creation, public profile fetch, candidate chat, recruiter chat, dashboard metrics.
+- [x] Freeze access rules for every route. See [docs/mvp-contract.md](docs/mvp-contract.md).
+- [x] Freeze the public/private data boundary. See [docs/mvp-contract.md](docs/mvp-contract.md).
+- [x] Freeze the core entities: user, profile, public slug, subscription, candidate chat session, candidate chat message, approved story, recruiter visit, recruiter chat session, recruiter chat message. See [docs/mvp-contract.md](docs/mvp-contract.md).
+- [x] Write down the API surfaces before wiring UI: auth session check, billing status, checkout session creation, public profile fetch, candidate chat, recruiter chat, dashboard metrics. See [docs/mvp-contract.md](docs/mvp-contract.md).
 
 ### 2. Backend foundation
 
-- [ ] Add Postgres to the architecture.
-- [ ] Add Prisma to the backend workspace.
-- [ ] Create the first Prisma schema and migration set.
-- [ ] Add environment validation for database, auth, Stripe, AI, websocket, and app URLs.
-- [ ] Refactor the Express app so API routes, Stripe webhooks, and Socket.IO can be mounted cleanly.
-- [ ] Add a shared error-handling pattern for API routes.
-- [ ] Add request logging for API and websocket activity.
+- [x] Add Postgres to the architecture.
+- [x] Add Prisma to the backend workspace.
+- [x] Create the first Prisma schema and migration set.
+- [x] Add environment validation for database, auth, Stripe, AI, websocket, and app URLs.
+- [x] Refactor the Express app so API routes, Stripe webhooks, and Socket.IO can be mounted cleanly.
+- [x] Add a shared error-handling pattern for API routes.
+- [x] Add request logging for API and websocket activity.
 
 ### 3. Authentication
 
-- [ ] Integrate the chosen managed auth provider in the web app.
-- [ ] Replace the placeholder signup page with a real signup flow.
-- [ ] Replace the placeholder login page with a real login flow.
-- [ ] Add protected-route handling for `/dashboard` and `/chat`.
-- [ ] Verify auth tokens or sessions in Express.
-- [ ] Create or sync the local user record after first signup.
+- [x] Integrate the chosen managed auth provider in the web app.
+- [x] Replace the placeholder signup page with a real signup flow.
+- [x] Replace the placeholder login page with a real login flow.
+- [x] Add protected-route handling for `/dashboard` and `/chat`.
+- [x] Verify auth tokens or sessions in Express.
+- [x] Create or sync the local user record after first signup.
 
 ### 4. Pricing and Stripe billing
 
-- [ ] Create a real pricing page in the web app.
-- [ ] Show one clear paid plan with a single subscribe CTA.
-- [ ] Add backend endpoint to create a Stripe Checkout session.
-- [ ] Create Stripe customer records tied to local users.
-- [ ] Add Stripe webhook handling with idempotency.
-- [ ] Persist subscription state locally.
-- [ ] Add billing success and cancel routes in the frontend.
-- [ ] Add a billing status card and billing portal link in the dashboard.
+- [x] Create a real pricing page in the web app.
+- [x] Show one clear paid plan with a single subscribe CTA.
+- [x] Add backend endpoint to create a Stripe Checkout session.
+- [x] Create Stripe customer records tied to local users.
+- [x] Add Stripe webhook handling with idempotency.
+- [x] Persist subscription state locally.
+- [x] Add billing success and cancel routes in the frontend.
+- [x] Add a billing status card and billing portal link in the dashboard.
 
 ### 5. Candidate AI authoring chat
 
-- [ ] Rework `/chat` from demo mode into the private candidate chat.
+- [x] Rework `/chat` from demo mode into the private candidate chat.
 - [ ] Add Socket.IO to the Express server.
 - [ ] Add websocket connection handling in the web app.
 - [ ] Persist candidate chat sessions and messages.
@@ -101,7 +101,7 @@ This file is the execution plan for the MVP. The goal is to ship a paid candidat
 ### 7. Minimal candidate dashboard
 
 - [ ] Remove placeholder-only dashboard modules that do not support MVP outcomes.
-- [ ] Show subscription status.
+- [x] Show subscription status.
 - [ ] Show the public recruiter link.
 - [ ] Show public traffic metrics.
 - [ ] Show recruiter chat activity metrics.
@@ -122,10 +122,10 @@ This file is the execution plan for the MVP. The goal is to ship a paid candidat
 
 These are the first implementation tasks to do now, in order.
 
-1. [ ] Add backend config validation plus Prisma and create the initial schema.
-2. [ ] Add the `/pricing` route and page in the frontend.
-3. [ ] Integrate managed auth in the frontend and protect `/dashboard` and `/chat`.
-4. [ ] Add Stripe Checkout session creation, success/cancel routes, and webhook handling.
+1. [x] Add backend config validation plus Prisma and create the initial schema.
+2. [x] Add the `/pricing` route and page in the frontend.
+3. [x] Integrate managed auth in the frontend and protect `/dashboard` and `/chat`.
+4. [x] Add Stripe Checkout session creation, success/cancel routes, and webhook handling.
 5. [ ] Split the current chat concept into private candidate chat and public recruiter chat.
 
 ## Definition Of Done

@@ -2,12 +2,13 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 
 type AuthShellProps = {
-  actionLabel: string
   children: ReactNode
+  actionLabel?: string
   footnote: ReactNode
   heroBody: string
   heroHeadline: string
   heroUrl: ReactNode
+  rightContent?: ReactNode
   subtitle: ReactNode
   testimonials: Array<{
     name: string
@@ -24,6 +25,7 @@ export const AuthShell = ({
   heroBody,
   heroHeadline,
   heroUrl,
+  rightContent,
   subtitle,
   testimonials,
   title,
@@ -56,28 +58,29 @@ export const AuthShell = ({
     </div>
 
     <div className="auth-right">
-      <div className="route-shell-note">
-        Setup shell only. The real auth workflow is intentionally not wired yet.
-      </div>
       <div className="auth-right-top">
         <div className="auth-title">{title}</div>
         <div className="auth-subtitle">{subtitle}</div>
       </div>
-      <div className="auth-form">
-        <button className="btn-google" disabled type="button">
-          <span className="google-g">G</span>
-          Continue with Google
-        </button>
-        <div className="divider-row">
-          <div className="divider-line" />
-          <div className="divider-text">route shell</div>
-          <div className="divider-line" />
+      {rightContent ? (
+        rightContent
+      ) : (
+        <div className="auth-form">
+          <button className="btn-google" disabled type="button">
+            <span className="google-g">G</span>
+            Continue with Google
+          </button>
+          <div className="divider-row">
+            <div className="divider-line" />
+            <div className="divider-text">route shell</div>
+            <div className="divider-line" />
+          </div>
+          {children}
+          <button className="btn-submit-auth" disabled type="button">
+            {actionLabel}
+          </button>
         </div>
-        {children}
-        <button className="btn-submit-auth" disabled type="button">
-          {actionLabel}
-        </button>
-      </div>
+      )}
       <div className="terms-note auth-footnote">{footnote}</div>
     </div>
   </div>
