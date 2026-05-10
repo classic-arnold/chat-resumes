@@ -1,9 +1,21 @@
-import { UserButton, useAuth, useUser } from '@clerk/react'
-import { useEffect, useState } from 'react'
+import { useAuth } from '@clerk/react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import { AppShell } from '../components/ui/AppShell'
+import { Button, ButtonLink } from '../components/ui/Button'
+import { Card } from '../components/ui/Card'
+import { EmptyState } from '../components/ui/EmptyState'
+import { SectionHeader } from '../components/ui/SectionHeader'
+import { Stat } from '../components/ui/Stat'
 import { createPortalSession } from '../lib/billing'
 import { fetchDashboard, type DashboardSummary } from '../lib/dashboard'
+import {
+  deleteDocument,
+  listDocuments,
+  uploadDocument,
+  type DocumentSummary,
+} from '../lib/documents'
 
 const formatRelativeTime = (isoString: string) => {
   const deltaMs = Date.now() - new Date(isoString).getTime()
@@ -14,22 +26,226 @@ const formatRelativeTime = (isoString: string) => {
   if (deltaMs < hour) {
     return `${Math.max(1, Math.round(deltaMs / minute))}m ago`
   }
-
   if (deltaMs < day) {
     return `${Math.max(1, Math.round(deltaMs / hour))}h ago`
   }
-
   return `${Math.max(1, Math.round(deltaMs / day))}d ago`
+}
+
+const formatBytes = (bytes: number) => {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+const documentStatusPill = (status: DocumentSummary['status']) => {
+  if (status === 'ready') return <span className="ui-pill ui-pill-active">Ready</span>
+  if (status === 'failed') return <span className="ui-pill ui-pill-danger">Failed</span>
+  return <span className="ui-pill ui-pill-neutral">Processing</span>
+}
+
+const DocumentsCard = () => {
+  const { getToken } = useAuth()
+  const [documents, setDocuments] = useState<DocumentSummary[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isUploading, setIsUploading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [reloadKey, setReloadKey] = useState(0)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      try {
+        const { documents: list } = await listDocuments(getToken)
+        if (cancelled) return
+        setDocuments(list)
+        setError(null)
+      } catch (caught) {
+        if (cancelled) return
+        setError(caught instanceof Error ? caught.message : 'Unable to load documents.')
+      } finally {
+        if (!cancelled) setIsLoading(false)
+      }
+    }
+    void load()
+    return () => {
+      cancelled = true
+    }
+  }, [getToken, reloadKey])
+
+  const refresh = () => setReloadKey((current) => current + 1)
+
+  const handleFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return
+    setIsUploading(true)
+    setError(null)
+    try {
+      for (const file of Array.from(files)) {
+        await uploadDocument(file, getToken)
+      }
+      refresh()
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Upload failed.')
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const handleDelete = async (documentId: string) => {
+    setError(null)
+    try {
+      await deleteDocument(documentId, getToken)
+      refresh()
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Delete failed.')
+    }
+  }
+
+  return (
+    <Card>
+      <SectionHeader
+        eyebrow="Train your AI"
+        title="Documents"
+        description="Drop a PDF resume, DOCX, or text file. We extract the text and feed it to your AI."
+      />
+      <div
+        aria-label="Upload documents"
+        className={`dropzone${isDragging ? ' dragover' : ''}`}
+        onClick={() => inputRef.current?.click()}
+        onDragLeave={(event) => {
+          event.preventDefault()
+          setIsDragging(false)
+        }}
+        onDragOver={(event) => {
+          event.preventDefault()
+          setIsDragging(true)
+        }}
+        onDrop={(event) => {
+          event.preventDefault()
+          setIsDragging(false)
+          void handleFiles(event.dataTransfer.files)
+        }}
+        role="button"
+        tabIndex={0}
+      >
+        <div className="dropzone-title">
+          {isUploading ? 'Uploading…' : 'Drop files here or click to browse'}
+        </div>
+        <div className="dropzone-hint">PDF · DOCX · TXT · MD · up to 10 MB</div>
+        <input
+          accept=".pdf,.docx,.txt,.md,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown"
+          multiple
+          onChange={(event) => {
+            void handleFiles(event.target.files)
+            event.target.value = ''
+          }}
+          ref={inputRef}
+          type="file"
+        />
+      </div>
+      {error ? <div className="ui-error-text" style={{ marginTop: '0.6rem' }}>{error}</div> : null}
+      <div className="doc-list">
+        {isLoading ? (
+          <div className="ui-status-text">Loading documents…</div>
+        ) : documents.length === 0 ? (
+          <EmptyState icon="📄" text="No documents yet." subtext="Your first upload trains your AI." />
+        ) : (
+          documents.map((document) => (
+            <div className="doc-item" key={document.id}>
+              <div className="doc-item-info">
+                <div className="doc-item-name" title={document.originalName}>
+                  {document.originalName}
+                </div>
+                <div className="doc-item-meta">
+                  {formatBytes(document.sizeBytes)}
+                  {document.error ? ` · ${document.error}` : ''}
+                </div>
+              </div>
+              <div className="ui-row">
+                {documentStatusPill(document.status)}
+                <Button
+                  onClick={() => void handleDelete(document.id)}
+                  size="sm"
+                  variant="danger"
+                >
+                  Delete
+                </Button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </Card>
+  )
+}
+
+const ShareLinkCard = ({
+  data,
+  onCopy,
+  copyState,
+}: {
+  copyState: 'copied' | 'failed' | 'idle'
+  data: DashboardSummary | null
+  onCopy: () => void
+}) => {
+  const publicUrl = data?.profile.publicUrl ?? ''
+  const isActive = Boolean(data?.publicLinkActive)
+  const statusPill = isActive ? (
+    <span className="ui-pill ui-pill-active">Active</span>
+  ) : (
+    <span className="ui-pill ui-pill-inactive">Inactive</span>
+  )
+
+  return (
+    <Card padding="lg">
+      <SectionHeader
+        action={statusPill}
+        eyebrow="Recruiter share link"
+        title="Your public AI link"
+        description={
+          isActive
+            ? 'Send this to recruiters. Works while you sleep.'
+            : 'Subscribe to activate. Your link stays the same once active.'
+        }
+      />
+      <div className="ui-row" style={{ gap: '0.5rem', marginTop: '0.5rem' }}>
+        <input
+          aria-label="Public link"
+          className="ui-input ui-input-readonly"
+          readOnly
+          value={publicUrl || 'Loading…'}
+        />
+      </div>
+      <div className="ui-row" style={{ gap: '0.5rem', marginTop: '0.6rem', flexWrap: 'wrap' }}>
+        {isActive ? (
+          <>
+            <Button onClick={onCopy} variant="primary">
+              {copyState === 'copied'
+                ? 'Copied'
+                : copyState === 'failed'
+                  ? 'Copy failed'
+                  : 'Copy link'}
+            </Button>
+            {publicUrl ? (
+              <ButtonLink href={publicUrl} rel="noreferrer" target="_blank" variant="secondary">
+                Open
+              </ButtonLink>
+            ) : null}
+          </>
+        ) : (
+          <ButtonLink href="/pricing" variant="primary">
+            Activate link — Subscribe
+          </ButtonLink>
+        )}
+      </div>
+    </Card>
+  )
 }
 
 export const DashboardPage = () => {
   const { getToken, isLoaded, isSignedIn } = useAuth()
-  const { user } = useUser()
-  const displayName = user?.fullName ?? user?.firstName ?? 'Candidate'
-  const emailAddress = user?.primaryEmailAddress?.emailAddress ?? 'Signed in'
-  const firstName = user?.firstName ?? displayName
-  const initials =
-    user?.firstName?.[0]?.toUpperCase() ?? user?.lastName?.[0]?.toUpperCase() ?? 'C'
   const [dashboard, setDashboard] = useState<{
     copyState: 'copied' | 'failed' | 'idle'
     data: DashboardSummary | null
@@ -45,262 +261,150 @@ export const DashboardPage = () => {
   })
 
   useEffect(() => {
-    if (!isLoaded || !isSignedIn) {
-      return
-    }
-
+    if (!isLoaded || !isSignedIn) return
     let isCancelled = false
 
-    const loadDashboard = async () => {
-      setDashboard((current) => ({ ...current, error: null, isLoading: true }))
-
+    const load = async () => {
       try {
         const data = await fetchDashboard(getToken)
-
-        if (isCancelled) {
-          return
-        }
-
-        setDashboard({
-          copyState: 'idle',
+        if (isCancelled) return
+        setDashboard((current) => ({
+          ...current,
           data,
           error: null,
           isLoading: false,
-          isOpeningPortal: false,
-        })
+        }))
       } catch (error) {
-        if (isCancelled) {
-          return
-        }
-
-        setDashboard({
-          copyState: 'idle',
+        if (isCancelled) return
+        setDashboard((current) => ({
+          ...current,
           data: null,
-          error: error instanceof Error ? error.message : 'Unable to load the candidate dashboard.',
+          error: error instanceof Error ? error.message : 'Unable to load dashboard.',
           isLoading: false,
-          isOpeningPortal: false,
-        })
+        }))
       }
     }
 
-    void loadDashboard()
-
+    void load()
     return () => {
       isCancelled = true
     }
   }, [getToken, isLoaded, isSignedIn])
 
-  const handleManageBilling = async () => {
-    setDashboard((current) => ({ ...current, error: null, isOpeningPortal: true }))
-
+  const handleCopy = async () => {
+    const url = dashboard.data?.profile.publicUrl
+    if (!url) return
     try {
-      const { portalUrl } = await createPortalSession(getToken, `${window.location.origin}/dashboard`)
-
-      window.location.assign(portalUrl)
-    } catch (error) {
-      setDashboard((current) => ({
-        ...current,
-        error: error instanceof Error ? error.message : 'Unable to open the billing portal.',
-        isOpeningPortal: false,
-      }))
-    }
-  }
-
-  const handleCopyLink = async () => {
-    const publicUrl = dashboard.data?.profile.publicUrl
-
-    if (!publicUrl) {
-      return
-    }
-
-    try {
-      await navigator.clipboard.writeText(publicUrl)
+      await navigator.clipboard.writeText(url)
       setDashboard((current) => ({ ...current, copyState: 'copied' }))
     } catch {
       setDashboard((current) => ({ ...current, copyState: 'failed' }))
     }
   }
 
-  const billingStatusLabel = dashboard.data?.billing.status?.replace('_', ' ') ?? 'not started'
-  const billingPeriodCopy = dashboard.data?.billing.currentPeriodEnd
-    ? `Renews through ${new Date(dashboard.data.billing.currentPeriodEnd).toLocaleDateString()}`
-    : 'No active billing period yet.'
-  const shortPublicPath = dashboard.data?.profile.publicUrl
-    ? new URL(dashboard.data.profile.publicUrl).pathname.replace(/^\//, '')
-    : 'loading'
-  const miniStats = [
-    {
-      label: 'Link Views This Week',
-      value: String(dashboard.data?.metrics.viewsThisWeek ?? 0),
-    },
-    {
-      label: 'Recruiter Chat Sessions',
-      value: String(dashboard.data?.metrics.chatSessions ?? 0),
-    },
-    {
-      label: 'Avg. Chat Duration',
-      value: `${dashboard.data?.metrics.averageChatDurationMinutes ?? 0}m`,
-    },
-    {
-      label: 'Approved Stories',
-      value: String(dashboard.data?.metrics.approvedStoriesCount ?? 0),
-    },
-  ]
-  const checklistItems = dashboard.data?.profile.completeness.items ?? []
+  const handleManageBilling = async () => {
+    setDashboard((current) => ({ ...current, isOpeningPortal: true }))
+    try {
+      const { portalUrl } = await createPortalSession(
+        getToken,
+        `${window.location.origin}/dashboard`,
+      )
+      window.location.assign(portalUrl)
+    } catch (error) {
+      setDashboard((current) => ({
+        ...current,
+        error: error instanceof Error ? error.message : 'Unable to open billing portal.',
+        isOpeningPortal: false,
+      }))
+    }
+  }
+
+  const metrics = dashboard.data?.metrics
+  const activity = dashboard.data?.activity ?? []
+  const billing = dashboard.data?.billing
+  const isSubscribed = Boolean(billing?.hasActiveSubscription)
 
   return (
-    <div className="dashboard-page">
-      <nav className="dash-nav">
-        <Link className="logo" to="/">
-          <div className="logo-icon">💬</div>
-          Chat<span>Resumes</span>
-        </Link>
-        <div className="dash-user">
-          <div>
-            <div className="dash-name">{displayName}</div>
-            <div className="dash-email">{emailAddress}</div>
-          </div>
-          <div className="dash-user-actions">
-            <div className="dash-avatar">{initials}</div>
-            <UserButton />
-          </div>
-        </div>
-      </nav>
+    <AppShell
+      action={
+        billing?.canManageBilling ? (
+          <Button
+            disabled={dashboard.isOpeningPortal}
+            onClick={() => void handleManageBilling()}
+            size="sm"
+            variant="ghost"
+          >
+            {dashboard.isOpeningPortal ? 'Opening…' : 'Billing'}
+          </Button>
+        ) : !isSubscribed ? (
+          <Link className="ui-btn ui-btn-primary ui-btn-sm" to="/pricing">
+            Subscribe
+          </Link>
+        ) : null
+      }
+    >
+      <ShareLinkCard
+        copyState={dashboard.copyState}
+        data={dashboard.data}
+        onCopy={() => void handleCopy()}
+      />
 
-      <div className="dash-content">
-        <div className="dash-welcome">
-          <h2>Good morning, {firstName} 👋</h2>
-          <p>
-            {dashboard.data
-              ? `Your public AI link has ${dashboard.data.metrics.viewsThisWeek} views this week and ${dashboard.data.metrics.chatSessions} recruiter chat sessions so far.`
-              : 'Loading your billing, public link, and recruiter activity metrics.'}
-          </p>
-        </div>
+      {dashboard.error ? <div className="ui-error-text">{dashboard.error}</div> : null}
 
-        <div className="dash-card dash-billing-card">
-          <div className="dash-card-title">
-            Billing Status
-            <span className={`dash-billing-pill${dashboard.data?.billing.hasActiveSubscription ? ' active' : ''}`}>
-              {dashboard.isLoading ? 'Loading' : billingStatusLabel}
-            </span>
-          </div>
-          <div className="dash-billing-row">
-            <div>
-              <div className="dash-billing-copy">
-                {dashboard.data?.billing.hasActiveSubscription
-                  ? 'Your launch plan is active.'
-                  : 'Complete checkout to activate your plan and unlock your candidate workspace.'}
-              </div>
-              <div className="dash-billing-meta">{billingPeriodCopy}</div>
-              {dashboard.error ? <div className="dash-billing-error">{dashboard.error}</div> : null}
-            </div>
-            <div className="dash-billing-actions">
-              {dashboard.data?.billing.canManageBilling ? (
-                <button
-                  className="btn-share"
-                  disabled={dashboard.isOpeningPortal}
-                  onClick={handleManageBilling}
-                  type="button"
-                >
-                  {dashboard.isOpeningPortal ? 'Opening…' : 'Manage Billing'}
-                </button>
-              ) : (
-                <Link className="btn-share" to="/pricing">
-                  Complete Checkout
-                </Link>
-              )}
-              <Link className="btn-share btn-share-dark" to="/pricing">
-                View Pricing
-              </Link>
-            </div>
-          </div>
-        </div>
+      <div className="ui-grid-2-wide">
+        <DocumentsCard />
+        <Card>
+          <SectionHeader
+            eyebrow="Or train via chat"
+            title="Talk to your AI"
+            description="Coach your AI through conversation. Each turn refines a STAR story you can approve."
+          />
+          <Link className="ui-btn ui-btn-secondary ui-btn-block" to="/chat">
+            Open chat →
+          </Link>
+        </Card>
+      </div>
 
-        <div className="dash-url-card">
-          <div>
-            <div className="dash-url-label">Your ChatResumes Link</div>
-            <div className="dash-url-value">{shortPublicPath}</div>
-          </div>
-          <div className="dash-url-actions">
-            <button className="btn-copy" onClick={handleCopyLink} type="button">
-              {dashboard.copyState === 'copied'
-                ? 'Copied Link'
-                : dashboard.copyState === 'failed'
-                  ? 'Copy Failed'
-                  : '📋 Copy Link'}
-            </button>
-            {dashboard.data?.profile.publicUrl ? (
-              <a className="btn-share" href={dashboard.data.profile.publicUrl} rel="noreferrer" target="_blank">
-                ↗ Open Public Link
-              </a>
-            ) : (
-              <button className="btn-share" disabled type="button">
-                ↗ Open Public Link
-              </button>
-            )}
-            <Link className="btn-share btn-share-dark" to="/chat">
-              ✏️ Continue Training
-            </Link>
-          </div>
+      <Card>
+        <SectionHeader eyebrow="Insights" title="At a glance" />
+        <div className="ui-stat-grid">
+          <Stat label="Link views (7d)" value={metrics?.viewsThisWeek ?? 0} />
+          <Stat label="Recruiter chats" value={metrics?.chatSessions ?? 0} />
+          <Stat
+            label="Avg chat (min)"
+            value={metrics?.averageChatDurationMinutes ?? 0}
+          />
+          <Stat label="Approved stories" value={metrics?.approvedStoriesCount ?? 0} />
         </div>
+      </Card>
 
-        <div className="dash-grid">
-          <div className="dash-card">
-            <div className="dash-card-title">
-              Recent Recruiter Activity <span className="dash-badge">This Week</span>
-            </div>
-            {dashboard.data?.activity.length ? (
-              dashboard.data.activity.map((item) => (
-                <div className="activity-item" key={item.id}>
-                  <div className={`activity-icon ${item.type}`}>{item.type === 'chat' ? '💬' : '👁'}</div>
-                  <div>
-                    <div className="activity-who">{item.title}</div>
-                    <div className="activity-what">{item.summary}</div>
-                  </div>
-                  <div className="activity-when">{formatRelativeTime(item.occurredAt)}</div>
+      <Card>
+        <SectionHeader eyebrow="Activity" title="Recent recruiter activity" />
+        {activity.length === 0 ? (
+          <EmptyState
+            icon="👁"
+            text="Nothing yet."
+            subtext={
+              isSubscribed
+                ? 'Recruiter visits and chats will appear here.'
+                : 'Activate your link to start collecting recruiter activity.'
+            }
+          />
+        ) : (
+          <div className="activity-list">
+            {activity.map((item) => (
+              <div className="activity-row" key={item.id}>
+                <span className="activity-row-icon">{item.type === 'chat' ? '💬' : '👁'}</span>
+                <div className="activity-row-body">
+                  <div className="activity-row-title">{item.title}</div>
+                  <div className="activity-row-summary">{item.summary}</div>
                 </div>
-              ))
-            ) : (
-              <div className="dash-empty-state">
-                Public traffic and recruiter chats will show up here once someone opens your link.
-              </div>
-            )}
-          </div>
-
-          <div className="dash-card">
-            <div className="dash-card-title">Your Stats</div>
-            {miniStats.map((stat) => (
-              <div className="stat-mini" key={stat.label}>
-                <div className="stat-mini-num">{stat.value}</div>
-                <div className="stat-mini-label">{stat.label}</div>
+                <div className="activity-row-time">{formatRelativeTime(item.occurredAt)}</div>
               </div>
             ))}
           </div>
-        </div>
-
-        <div className="dash-card">
-          <div className="dash-card-title">
-            Profile Completeness{' '}
-            <span className="dash-badge">
-              {dashboard.data?.profile.completeness.completed ?? 0} of{' '}
-              {dashboard.data?.profile.completeness.total ?? 0} done
-            </span>
-          </div>
-          <div className="setup-checklist">
-            {checklistItems.length ? (
-              checklistItems.map((item) => (
-                <div className={`checklist-item${item.done ? ' done' : ''}`} key={item.key}>
-                  <span className="check-icon">{item.done ? '✅' : '📄'}</span>
-                  <span className={`check-label${item.done ? ' done-text' : ''}`}>{item.label}</span>
-                  {item.done ? null : <span className="check-arrow">→</span>}
-                </div>
-              ))
-            ) : (
-              <div className="dash-empty-state">Loading your completeness checklist…</div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
+        )}
+      </Card>
+    </AppShell>
   )
 }

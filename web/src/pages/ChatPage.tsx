@@ -1,13 +1,11 @@
 import { useAuth } from '@clerk/react'
-import { type FormEvent, useEffect, useRef, useState } from 'react'
+import { type FormEvent, type KeyboardEvent, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { Socket } from 'socket.io-client'
 
-type QuickPrompt = {
-  label: string
-  question: string
-}
-
+import { Button } from '../components/ui/Button'
+import { EmptyState } from '../components/ui/EmptyState'
+import { isClerkConfigured } from '../auth/clerk'
 import {
   approveCandidateStory,
   connectCandidateSocket,
@@ -16,53 +14,31 @@ import {
   type ChatMessage,
 } from '../lib/chat'
 
-const quickPrompts: QuickPrompt[] = [
-  {
-    label: 'Turn this into STAR',
-    question: 'Help me turn the Vercel rebrand into a sharper STAR story.',
-  },
-  {
-    label: 'Push on the result',
-    question: 'Help me tighten the measurable result and before-versus-after impact.',
-  },
-  {
-    label: 'Ask a better follow-up',
-    question: 'Ask me the hardest follow-up question a recruiter would care about here.',
-  },
-  {
-    label: 'Position my next role',
-    question: 'Help me explain what kind of staff-level role I want next and why I am credible for it.',
-  },
+const QUICK_PROMPTS = [
+  'Turn my last role into a STAR story',
+  'Push me on the result',
+  'What recruiter follow-up would you ask?',
+  'Help me position my next role',
 ]
 
-const getMessageAuthor = (message: ChatMessage) => {
-  if (message.role === 'candidate') {
-    return 'Candidate · You'
-  }
-
-  if (message.role === 'system') {
-    return 'Session Note'
-  }
-
-  return 'ChatResumes AI Coach'
-}
+const isUserMessage = (message: ChatMessage) => message.role === 'candidate'
 
 export const ChatPage = () => {
   const { getToken, isLoaded, isSignedIn } = useAuth()
   const socketRef = useRef<Socket | null>(null)
   const threadEndRef = useRef<HTMLDivElement | null>(null)
-  const [composerValue, setComposerValue] = useState('')
-  const [chatState, setChatState] = useState<{
+  const [composer, setComposer] = useState('')
+  const [state, setState] = useState<{
+    approvingId: string | null
     data: CandidateChatState | null
     error: string | null
-    isApprovingStoryId: string | null
     isConnected: boolean
     isLoading: boolean
     isReplying: boolean
   }>({
+    approvingId: null,
     data: null,
     error: null,
-    isApprovingStoryId: null,
     isConnected: false,
     isLoading: true,
     isReplying: false,
@@ -70,347 +46,240 @@ export const ChatPage = () => {
 
   useEffect(() => {
     threadEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
-  }, [chatState.data?.messages.length, chatState.isReplying])
+  }, [state.data?.messages.length, state.isReplying])
 
   useEffect(() => {
-    if (!isLoaded || !isSignedIn) {
-      return
-    }
+    if (!isClerkConfigured || !isLoaded || !isSignedIn) return
+    let cancelled = false
 
-    let isDisposed = false
-
-    const teardownSocket = () => {
+    const teardown = () => {
       socketRef.current?.removeAllListeners()
       socketRef.current?.disconnect()
       socketRef.current = null
     }
 
-    const loadChat = async () => {
-      setChatState((current) => ({
-        ...current,
-        error: null,
-        isLoading: true,
-      }))
-
+    const load = async () => {
       try {
-        const initialState = await fetchCandidateChatState(getToken)
-
-        if (isDisposed) {
-          return
-        }
-
-        setChatState((current) => ({
-          ...current,
-          data: initialState,
-          error: null,
-          isLoading: false,
-        }))
+        const initial = await fetchCandidateChatState(getToken)
+        if (cancelled) return
+        setState((current) => ({ ...current, data: initial, error: null, isLoading: false }))
 
         const socket = await connectCandidateSocket({ getToken })
-
-        if (isDisposed) {
+        if (cancelled) {
           socket.disconnect()
           return
         }
-
         socketRef.current = socket
-        socket.on('connect', () => {
-          setChatState((current) => ({
+        socket.on('connect', () =>
+          setState((current) => ({ ...current, error: null, isConnected: true })),
+        )
+        socket.on('disconnect', () =>
+          setState((current) => ({ ...current, isConnected: false })),
+        )
+        socket.on('candidate:session', (next: CandidateChatState) => {
+          setState((current) => ({
             ...current,
+            approvingId: null,
+            data: next,
             error: null,
-            isConnected: true,
-          }))
-        })
-        socket.on('disconnect', () => {
-          setChatState((current) => ({
-            ...current,
-            isConnected: false,
-          }))
-        })
-        socket.on('candidate:session', (state: CandidateChatState) => {
-          setChatState((current) => ({
-            ...current,
-            data: state,
-            error: null,
-            isApprovingStoryId: null,
             isConnected: true,
             isLoading: false,
             isReplying: false,
           }))
         })
         socket.on('candidate:error', (payload: { message: string }) => {
-          setChatState((current) => ({
+          setState((current) => ({
             ...current,
+            approvingId: null,
             error: payload.message,
-            isApprovingStoryId: null,
-            isLoading: false,
             isReplying: false,
           }))
         })
         socket.on('connect_error', (error: Error) => {
-          setChatState((current) => ({
+          setState((current) => ({
             ...current,
-            error: error.message || 'Unable to connect to the private candidate chat.',
+            error: error.message || 'Unable to connect.',
             isConnected: false,
-            isLoading: false,
             isReplying: false,
           }))
         })
       } catch (error) {
-        if (isDisposed) {
-          return
-        }
-
-        setChatState((current) => ({
+        if (cancelled) return
+        setState((current) => ({
           ...current,
-          error:
-            error instanceof Error ? error.message : 'Unable to load your private candidate chat.',
+          error: error instanceof Error ? error.message : 'Unable to load chat.',
           isLoading: false,
         }))
       }
     }
 
-    void loadChat()
-
+    void load()
     return () => {
-      isDisposed = true
-      teardownSocket()
+      cancelled = true
+      teardown()
     }
   }, [getToken, isLoaded, isSignedIn])
 
-  const stories = chatState.data?.stories ?? []
-  const draftStories = stories.filter((story) => story.status === 'draft')
-  const approvedStories = stories.filter((story) => story.status === 'approved')
-
-  const sendQuestion = (question: string) => {
-    const trimmedQuestion = question.trim()
+  const send = (text: string) => {
+    const trimmed = text.trim()
+    if (!trimmed || state.isReplying) return
     const socket = socketRef.current
-
-    if (!trimmedQuestion || chatState.isReplying) {
-      return
-    }
-
     if (!socket || !socket.connected) {
-      setChatState((current) => ({
+      setState((current) => ({
         ...current,
-        error: 'The private chat is disconnected. Refresh the page and try again.',
+        error: 'Disconnected. Refresh and try again.',
       }))
       return
     }
-
-    socket.emit('candidate:message', {
-      content: trimmedQuestion,
-    })
-    setComposerValue('')
-    setChatState((current) => ({
-      ...current,
-      error: null,
-      isReplying: true,
-    }))
+    socket.emit('candidate:message', { content: trimmed })
+    setComposer('')
+    setState((current) => ({ ...current, error: null, isReplying: true }))
   }
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    sendQuestion(composerValue)
+    send(composer)
   }
 
-  const handlePromptClick = (prompt: QuickPrompt) => {
-    sendQuestion(prompt.question)
+  const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault()
+      send(composer)
+    }
   }
 
-  const handleApproveStory = async (storyId: string) => {
-    setChatState((current) => ({
-      ...current,
-      error: null,
-      isApprovingStoryId: storyId,
-    }))
-
+  const handleApprove = async (storyId: string) => {
+    setState((current) => ({ ...current, approvingId: storyId, error: null }))
     try {
-      const nextState = await approveCandidateStory(getToken, storyId)
-      setChatState((current) => ({
-        ...current,
-        data: nextState,
-        isApprovingStoryId: null,
-      }))
+      const next = await approveCandidateStory(getToken, storyId)
+      setState((current) => ({ ...current, approvingId: null, data: next }))
     } catch (error) {
-      setChatState((current) => ({
+      setState((current) => ({
         ...current,
-        error: error instanceof Error ? error.message : 'Unable to approve this story.',
-        isApprovingStoryId: null,
+        approvingId: null,
+        error: error instanceof Error ? error.message : 'Approve failed.',
       }))
     }
   }
 
+  const stories = state.data?.stories ?? []
+  const drafts = stories.filter((story) => story.status === 'draft')
+  const approved = stories.filter((story) => story.status === 'approved')
+
   return (
-    <div className="chat-page">
-      <nav className="chat-nav">
-        <Link className="logo" to="/">
-          <div className="logo-icon">💬</div>
-          Chat<span>Resumes</span>
+    <div className="app-shell">
+      <header className="app-nav">
+        <Link className="app-nav-brand" to="/dashboard">
+          <span className="app-nav-brand-mark" aria-hidden />
+          ChatResumes
         </Link>
-        <div className="chat-nav-actions">
-          <Link className="btn-nav-ghost" to="/dashboard">
-            Back To Dashboard
-          </Link>
-          <Link className="btn-nav-solid" to="/pricing">
-            View Plan
+        <div className="app-nav-actions">
+          <Link className="ui-btn ui-btn-ghost ui-btn-sm" to="/dashboard">
+            ← Dashboard
           </Link>
         </div>
-      </nav>
+      </header>
 
-      <main className="chat-layout">
-        <section className="chat-sidebar-card">
-          <div className="chat-sidebar-panel chat-sidebar-panel-primary">
-            <div className="chat-profile-badge">Private Candidate Chat</div>
-            <div className="chat-profile-header">
-              <div className="chat-profile-avatar">AI</div>
-              <div>
-                <h1 className="chat-profile-name">Author Your AI Resume</h1>
-                <p className="chat-profile-role">
-                  {chatState.data?.profile.publicReady
-                    ? 'Public AI ready · new approved stories update the recruiter route'
-                    : 'Private coaching session · nothing here is public until you approve it'}
-                </p>
-              </div>
-            </div>
-            <p className="chat-profile-summary">
-              {chatState.data?.summary ??
-                'Use this workspace to turn raw experience into recruiter-ready STAR stories, stronger positioning, and approved facts for your public AI link.'}
-            </p>
-            <div className="chat-profile-url">
-              {chatState.data?.profile.publicUrl
-                ? `Public link: ${chatState.data.profile.publicUrl}`
-                : 'Private workspace · visible only to you'}
-            </div>
-          </div>
-
-          <div className="chat-sidebar-panel chat-sidebar-panel-soft">
-            <div className="chat-section-title">What your AI knows so far</div>
-            <ul className="chat-fact-list">
-              {(chatState.data?.knowledgeFacts ?? ['Loading your structured profile…']).map((fact) => (
-                <li key={fact}>{fact}</li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="chat-sidebar-panel chat-sidebar-panel-soft">
-            <div className="chat-section-title">Story approvals</div>
-            <div className="chat-story-list">
-              {stories.length === 0 ? (
-                <div className="chat-empty-state">No structured stories yet. Send one strong example to start a draft.</div>
-              ) : (
-                stories.map((story) => (
-                  <div className="chat-story-card" key={story.id}>
-                    <div className="chat-story-header">
-                      <div>
-                        <div className="chat-story-title">{story.title}</div>
-                        <div className={`chat-story-status ${story.status}`}>{story.status}</div>
-                      </div>
-                      {story.status === 'draft' ? (
-                        <button
-                          className="chat-ghost-button"
-                          disabled={chatState.isApprovingStoryId === story.id}
-                          onClick={() => handleApproveStory(story.id)}
-                          type="button"
-                        >
-                          {chatState.isApprovingStoryId === story.id ? 'Approving…' : 'Approve'}
-                        </button>
-                      ) : null}
-                    </div>
-                    <div className="chat-story-body">
-                      <strong>Situation:</strong> {story.situation || 'Still needs a clearer setup.'}
-                    </div>
-                    <div className="chat-story-body">
-                      <strong>Result:</strong> {story.result || 'Still needs a measurable outcome.'}
-                    </div>
+      <div className="chat-layout">
+        <aside className="chat-side">
+          <div className="chat-side-section">
+            <div className="chat-side-section-title">Drafts ({drafts.length})</div>
+            {drafts.length === 0 ? (
+              <div className="ui-status-text">No drafts yet.</div>
+            ) : (
+              drafts.map((story) => (
+                <div className="chat-side-story" key={story.id}>
+                  <div className="chat-side-story-title">{story.title}</div>
+                  <div className="chat-side-story-meta">
+                    {story.result || 'Needs a measurable result.'}
                   </div>
-                ))
-              )}
-            </div>
+                  <Button
+                    disabled={state.approvingId === story.id}
+                    onClick={() => void handleApprove(story.id)}
+                    size="sm"
+                    variant="primary"
+                  >
+                    {state.approvingId === story.id ? 'Approving…' : 'Approve'}
+                  </Button>
+                </div>
+              ))
+            )}
           </div>
 
-          <div className="chat-sidebar-panel chat-sidebar-panel-soft">
-            <div className="chat-section-title">Suggested prompts</div>
-            <div className="chat-prompt-list">
-              {quickPrompts.map((prompt) => (
-                <button
-                  className="chat-prompt-chip"
-                  disabled={chatState.isReplying}
-                  key={prompt.label}
-                  onClick={() => handlePromptClick(prompt)}
-                  type="button"
-                >
-                  {prompt.label}
-                </button>
-              ))}
-            </div>
+          <div className="chat-side-section">
+            <div className="chat-side-section-title">Approved ({approved.length})</div>
+            {approved.length === 0 ? (
+              <div className="ui-status-text">None approved yet.</div>
+            ) : (
+              approved.map((story) => (
+                <div className="chat-side-story" key={story.id}>
+                  <div className="chat-side-story-title">{story.title}</div>
+                  <div className="chat-side-story-meta">{story.result}</div>
+                </div>
+              ))
+            )}
           </div>
-        </section>
+        </aside>
 
-        <section className="chat-conversation-card">
-          <div className="chat-conversation-header">
-            <div>
-              <div className="chat-conversation-title">Candidate Authoring Session</div>
-              <div className="chat-conversation-status">
-                <div className="status-dot" />
-                {chatState.isConnected
-                  ? 'Realtime coaching active for STAR stories and positioning'
-                  : 'Loading or reconnecting private coaching mode'}
-              </div>
-            </div>
-            <div className="chat-conversation-pill">
-              {draftStories.length} draft · {approvedStories.length} approved
-            </div>
-          </div>
-
+        <section className="chat-main">
           <div className="chat-thread">
-            {chatState.error ? (
-              <div className="chat-inline-error">
-                <div>{chatState.error}</div>
-                <Link className="chat-link-button" to="/pricing">
-                  Review Plan
-                </Link>
-              </div>
-            ) : null}
-            {chatState.data?.messages.map((message) => (
-              <div className={`chat-message ${message.role === 'ai' ? 'ai' : 'candidate'}`} key={message.id}>
-                <div className="chat-message-author">{getMessageAuthor(message)}</div>
-                <div className="chat-message-bubble">{message.content}</div>
-              </div>
-            ))}
-            {chatState.isLoading && !chatState.data ? (
-              <div className="chat-empty-state">Loading your private candidate session…</div>
-            ) : null}
-            {chatState.isReplying ? (
-              <div className="typing-row chat-typing-row">
-                <div className="tdot" />
-                <div className="tdot" />
-                <div className="tdot" />
-              </div>
-            ) : null}
+            {state.error ? <div className="ui-error-text">{state.error}</div> : null}
+            {state.isLoading && !state.data ? (
+              <div className="ui-status-text">Loading…</div>
+            ) : state.data && state.data.messages.length === 0 ? (
+              <EmptyState
+                icon="💬"
+                text="Start with one strong example."
+                subtext="Describe a real win — what was at risk, what you did, what changed."
+              />
+            ) : (
+              state.data?.messages.map((message) => (
+                <div
+                  className={`chat-bubble ${isUserMessage(message) ? 'chat-bubble-user' : 'chat-bubble-ai'}`}
+                  key={message.id}
+                >
+                  {message.content}
+                </div>
+              ))
+            )}
+            {state.isReplying ? <div className="ui-status-text">AI is thinking…</div> : null}
             <div ref={threadEndRef} />
           </div>
 
+          <div className="chat-prompts">
+            {QUICK_PROMPTS.map((prompt) => (
+              <button
+                className="chat-prompt-chip"
+                disabled={state.isReplying}
+                key={prompt}
+                onClick={() => send(prompt)}
+                type="button"
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
+
           <form className="chat-composer" onSubmit={handleSubmit}>
-            <input
-              aria-label="Tell your AI about your work"
-              className="chat-composer-input"
-              disabled={chatState.isLoading || chatState.isReplying}
-              onChange={(event) => setComposerValue(event.target.value)}
-              placeholder="Tell the AI what happened, what you owned, the hard part, or the result..."
-              type="text"
-              value={composerValue}
+            <textarea
+              aria-label="Message"
+              disabled={state.isLoading || state.isReplying}
+              onChange={(event) => setComposer(event.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Tell the AI what happened…"
+              rows={1}
+              value={composer}
             />
-            <button
-              className="chat-send-btn chat-composer-send"
-              disabled={chatState.isLoading || chatState.isReplying || !composerValue.trim()}
+            <Button
+              disabled={state.isLoading || state.isReplying || !composer.trim()}
               type="submit"
+              variant="primary"
             >
-              {chatState.isReplying ? 'Thinking...' : 'Send →'}
-            </button>
+              {state.isReplying ? 'Sending…' : 'Send'}
+            </Button>
           </form>
         </section>
-      </main>
+      </div>
     </div>
   )
 }

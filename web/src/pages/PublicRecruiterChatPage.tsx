@@ -1,7 +1,8 @@
-import { type FormEvent, useEffect, useRef, useState } from 'react'
+import { type FormEvent, type KeyboardEvent, useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import type { Socket } from 'socket.io-client'
 
+import { Button } from '../components/ui/Button'
 import {
   connectRecruiterSocket,
   fetchPublicProfile,
@@ -10,52 +11,27 @@ import {
   type RecruiterChatState,
 } from '../lib/chat'
 
-type QuickPrompt = {
-  label: string
-  question: string
-}
-
-const recruiterPrompts: QuickPrompt[] = [
-  {
-    label: 'Leadership example',
-    question: 'What is the strongest approved leadership example?',
-  },
-  {
-    label: 'Target role',
-    question: 'What kinds of roles is this candidate targeting next?',
-  },
-  {
-    label: 'Business impact',
-    question: 'Tell me about the most measurable business impact in the approved stories.',
-  },
-  {
-    label: 'Summary',
-    question: 'Give me the short recruiter summary for this candidate.',
-  },
+const RECRUITER_PROMPTS = [
+  'Strongest leadership example?',
+  'What roles are you targeting?',
+  'Most measurable business impact?',
+  'Give me a 30-second summary.',
 ]
 
-const getAuthor = (message: ChatMessage) => {
-  if (message.role === 'recruiter') {
-    return 'Recruiter'
-  }
+const isRecruiterMessage = (message: ChatMessage) => message.role === 'recruiter'
 
-  return 'Public AI Profile'
-}
-
-const toInitialRecruiterState = (profile: PublicProfileResponse): RecruiterChatState => {
-  return {
-    ...profile,
-    messages: [],
-    sessionId: null,
-  }
-}
+const toInitialState = (profile: PublicProfileResponse): RecruiterChatState => ({
+  ...profile,
+  messages: [],
+  sessionId: null,
+})
 
 export const PublicRecruiterChatPage = () => {
   const { slug } = useParams()
   const socketRef = useRef<Socket | null>(null)
   const threadEndRef = useRef<HTMLDivElement | null>(null)
-  const [composerValue, setComposerValue] = useState('')
-  const [chatState, setChatState] = useState<{
+  const [composer, setComposer] = useState('')
+  const [state, setState] = useState<{
     data: RecruiterChatState | null
     error: string | null
     isConnected: boolean
@@ -71,13 +47,13 @@ export const PublicRecruiterChatPage = () => {
 
   useEffect(() => {
     threadEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
-  }, [chatState.data?.messages.length, chatState.isReplying])
+  }, [state.data?.messages.length, state.isReplying])
 
   useEffect(() => {
     if (!slug) {
-      setChatState({
+      setState({
         data: null,
-        error: 'This public AI profile is missing a slug.',
+        error: 'Missing profile slug.',
         isConnected: false,
         isLoading: false,
         isReplying: false,
@@ -85,71 +61,48 @@ export const PublicRecruiterChatPage = () => {
       return
     }
 
-    let isDisposed = false
-    const visitorStorageKey = `chat-resumes:visitor:${slug}`
+    let cancelled = false
+    const visitorKey = `chat-resumes:visitor:${slug}`
 
-    const teardownSocket = () => {
+    const teardown = () => {
       socketRef.current?.removeAllListeners()
       socketRef.current?.disconnect()
       socketRef.current = null
     }
 
-    const loadPublicChat = async () => {
-      setChatState((current) => ({
-        ...current,
-        error: null,
-        isLoading: true,
-      }))
-
+    const load = async () => {
       try {
-        const storedVisitorToken = window.localStorage.getItem(visitorStorageKey)
-        const profile = await fetchPublicProfile(slug, storedVisitorToken)
+        const stored = window.localStorage.getItem(visitorKey)
+        const profile = await fetchPublicProfile(slug, stored)
+        if (cancelled) return
 
-        if (isDisposed) {
-          return
-        }
-
-        window.localStorage.setItem(visitorStorageKey, profile.visitorToken)
-        setChatState((current) => ({
+        window.localStorage.setItem(visitorKey, profile.visitorToken)
+        setState((current) => ({
           ...current,
-          data: toInitialRecruiterState(profile),
+          data: toInitialState(profile),
           error: null,
           isLoading: false,
         }))
 
-        if (profile.availability !== 'ready') {
-          return
-        }
+        if (profile.availability !== 'ready') return
 
-        const socket = connectRecruiterSocket({
-          slug,
-          visitorToken: profile.visitorToken,
-        })
-
-        if (isDisposed) {
+        const socket = connectRecruiterSocket({ slug, visitorToken: profile.visitorToken })
+        if (cancelled) {
           socket.disconnect()
           return
         }
-
         socketRef.current = socket
-        socket.on('connect', () => {
-          setChatState((current) => ({
+        socket.on('connect', () =>
+          setState((current) => ({ ...current, error: null, isConnected: true })),
+        )
+        socket.on('disconnect', () =>
+          setState((current) => ({ ...current, isConnected: false })),
+        )
+        socket.on('recruiter:session', (next: RecruiterChatState) => {
+          window.localStorage.setItem(visitorKey, next.visitorToken)
+          setState((current) => ({
             ...current,
-            error: null,
-            isConnected: true,
-          }))
-        })
-        socket.on('disconnect', () => {
-          setChatState((current) => ({
-            ...current,
-            isConnected: false,
-          }))
-        })
-        socket.on('recruiter:session', (state: RecruiterChatState) => {
-          window.localStorage.setItem(visitorStorageKey, state.visitorToken)
-          setChatState((current) => ({
-            ...current,
-            data: state,
+            data: next,
             error: null,
             isConnected: true,
             isLoading: false,
@@ -157,233 +110,198 @@ export const PublicRecruiterChatPage = () => {
           }))
         })
         socket.on('recruiter:error', (payload: { message: string }) => {
-          setChatState((current) => ({
+          setState((current) => ({
             ...current,
             error: payload.message,
-            isLoading: false,
             isReplying: false,
           }))
         })
         socket.on('connect_error', (error: Error) => {
-          setChatState((current) => ({
+          setState((current) => ({
             ...current,
-            error: error.message || 'Unable to connect to the public recruiter chat.',
+            error: error.message || 'Unable to connect.',
             isConnected: false,
-            isLoading: false,
             isReplying: false,
           }))
         })
       } catch (error) {
-        if (isDisposed) {
-          return
-        }
-
-        setChatState((current) => ({
+        if (cancelled) return
+        setState((current) => ({
           ...current,
-          error: error instanceof Error ? error.message : 'Unable to load the public recruiter chat.',
+          error: error instanceof Error ? error.message : 'Unable to load.',
           isLoading: false,
         }))
       }
     }
 
-    void loadPublicChat()
-
+    void load()
     return () => {
-      isDisposed = true
-      teardownSocket()
+      cancelled = true
+      teardown()
     }
   }, [slug])
 
-  const sendQuestion = (question: string) => {
-    const trimmedQuestion = question.trim()
+  const send = (text: string) => {
+    const trimmed = text.trim()
+    if (!trimmed || state.isReplying) return
     const socket = socketRef.current
-
-    if (!trimmedQuestion || chatState.isReplying) {
-      return
-    }
-
     if (!socket || !socket.connected) {
-      setChatState((current) => ({
+      setState((current) => ({
         ...current,
-        error: 'The recruiter chat is not connected yet. Refresh the page and try again.',
+        error: 'Disconnected. Refresh and try again.',
       }))
       return
     }
-
-    socket.emit('recruiter:message', {
-      content: trimmedQuestion,
-    })
-    setComposerValue('')
-    setChatState((current) => ({
-      ...current,
-      error: null,
-      isReplying: true,
-    }))
+    socket.emit('recruiter:message', { content: trimmed })
+    setComposer('')
+    setState((current) => ({ ...current, error: null, isReplying: true }))
   }
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    sendQuestion(composerValue)
+    send(composer)
   }
 
-  const handlePromptClick = (prompt: QuickPrompt) => {
-    sendQuestion(prompt.question)
+  const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault()
+      send(composer)
+    }
   }
 
-  const profile = chatState.data?.profile
+  const profile = state.data?.profile
+  const availability = state.data?.availability
 
-  return (
-    <div className="chat-page">
-      <nav className="chat-nav">
-        <Link className="logo" to="/">
-          <div className="logo-icon">💬</div>
-          Chat<span>Resumes</span>
-        </Link>
-        <div className="chat-nav-actions">
-          <Link className="btn-nav-ghost" to="/pricing">
-            Candidate Plan
-          </Link>
-          <Link className="btn-nav-solid" to="/signup">
-            Create Yours
+  if (!state.isLoading && state.data && availability !== 'ready') {
+    return (
+      <div className="center-page">
+        <main className="center-page-main">
+        <div className="center-page-card">
+          <div className="ui-pill ui-pill-inactive" style={{ marginBottom: '1rem' }}>
+            Profile unavailable
+          </div>
+          <h1 className="center-page-title">
+            {profile?.displayName ?? 'This profile'} isn't available right now.
+          </h1>
+          <p className="center-page-body">
+            {state.data?.fallbackMessage ?? 'Please check back later.'}
+          </p>
+          <Link className="center-page-link" to="/">
+            ChatResumes home
           </Link>
         </div>
-      </nav>
+        </main>
+      </div>
+    )
+  }
 
-      <main className="chat-layout">
-        <section className="chat-sidebar-card">
-          <div className="chat-sidebar-panel chat-sidebar-panel-primary">
-            <div className="chat-profile-badge">Public Recruiter Chat</div>
-            <div className="chat-profile-header">
-              <div className="chat-profile-avatar">AI</div>
-              <div>
-                <h1 className="chat-profile-name">
-                  {profile?.displayName ?? 'Candidate AI Profile'}
-                </h1>
-                <p className="chat-profile-role">
-                  {profile?.headline ?? 'Recruiter-safe answers from approved public content only'}
-                </p>
-              </div>
-            </div>
-            <p className="chat-profile-summary">
-              {profile?.summary ??
-                chatState.data?.fallbackMessage ??
-                'This public route answers only from approved profile fields and approved STAR stories.'}
-            </p>
-            <div className="chat-profile-url">
-              {profile?.publicUrl ?? 'Public AI link currently unavailable'}
+  return (
+    <div className="app-shell">
+      <header className="app-nav public-chat-header">
+        <Link className="app-nav-brand" to="/">
+          <span className="app-nav-brand-mark" aria-hidden />
+          ChatResumes
+        </Link>
+        <div className="public-chat-profile">
+          <div className="public-chat-profile-name">
+            {profile?.displayName ?? 'Candidate AI'}
+          </div>
+          {profile?.headline ? (
+            <div className="public-chat-profile-meta">{profile.headline}</div>
+          ) : null}
+        </div>
+        <Link className="ui-btn ui-btn-ghost ui-btn-sm" to="/signup">
+          Create yours
+        </Link>
+      </header>
+
+      <div className="chat-layout">
+        <aside className="chat-side">
+          <div className="chat-side-section">
+            <div className="chat-side-section-title">About</div>
+            <div className="ui-status-text">
+              {profile?.summary ?? 'Approved answers only.'}
             </div>
           </div>
-
-          <div className="chat-sidebar-panel chat-sidebar-panel-soft">
-            <div className="chat-section-title">Approved story bank</div>
-            <div className="chat-story-list">
-              {chatState.data?.approvedStories.length ? (
-                chatState.data.approvedStories.map((story) => (
-                  <div className="chat-story-card" key={story.id}>
-                    <div className="chat-story-header">
-                      <div>
-                        <div className="chat-story-title">{story.title}</div>
-                        <div className="chat-story-status approved">Approved</div>
-                      </div>
-                    </div>
-                    <div className="chat-story-body">
-                      <strong>Action:</strong> {story.action}
-                    </div>
-                    <div className="chat-story-body">
-                      <strong>Result:</strong> {story.result}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="chat-empty-state">
-                  {chatState.data?.fallbackMessage ?? 'Approved public stories will show here once the candidate publishes them.'}
+          <div className="chat-side-section">
+            <div className="chat-side-section-title">
+              Approved stories ({state.data?.approvedStories.length ?? 0})
+            </div>
+            {(state.data?.approvedStories ?? []).length === 0 ? (
+              <div className="ui-status-text">None yet.</div>
+            ) : (
+              state.data?.approvedStories.map((story) => (
+                <div className="chat-side-story" key={story.id}>
+                  <div className="chat-side-story-title">{story.title}</div>
+                  <div className="chat-side-story-meta">{story.result}</div>
                 </div>
-              )}
-            </div>
+              ))
+            )}
           </div>
+        </aside>
 
-          <div className="chat-sidebar-panel chat-sidebar-panel-soft">
-            <div className="chat-section-title">Suggested recruiter prompts</div>
-            <div className="chat-prompt-list">
-              {recruiterPrompts.map((prompt) => (
-                <button
-                  className="chat-prompt-chip"
-                  disabled={chatState.data?.availability !== 'ready' || chatState.isReplying}
-                  key={prompt.label}
-                  onClick={() => handlePromptClick(prompt)}
-                  type="button"
-                >
-                  {prompt.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="chat-conversation-card">
-          <div className="chat-conversation-header">
-            <div>
-              <div className="chat-conversation-title">Recruiter Q&A</div>
-              <div className="chat-conversation-status">
-                <div className="status-dot" />
-                {chatState.data?.availability === 'ready'
-                  ? chatState.isConnected
-                    ? 'Live public recruiter chat'
-                    : 'Connecting to the public recruiter chat'
-                  : chatState.data?.fallbackMessage ?? 'This public profile is still training'}
-              </div>
-            </div>
-            <div className="chat-conversation-pill">
-              {chatState.data?.availability === 'ready' ? 'Approved-only answers' : 'Profile unavailable'}
-            </div>
-          </div>
-
+        <section className="chat-main">
           <div className="chat-thread">
-            {chatState.error ? <div className="chat-inline-error">{chatState.error}</div> : null}
-            {chatState.data?.messages.map((message) => (
-              <div className={`chat-message ${message.role === 'ai' ? 'ai' : 'candidate'}`} key={message.id}>
-                <div className="chat-message-author">{getAuthor(message)}</div>
-                <div className="chat-message-bubble">{message.content}</div>
+            {state.error ? <div className="ui-error-text">{state.error}</div> : null}
+            {state.isLoading ? (
+              <div className="ui-status-text">Loading…</div>
+            ) : state.data && state.data.messages.length === 0 ? (
+              <div className="ui-status-text">
+                Ask anything. Answers come only from approved profile content.
               </div>
-            ))}
-            {chatState.isLoading ? (
-              <div className="chat-empty-state">Loading the public recruiter chat…</div>
-            ) : null}
-            {chatState.isReplying ? (
-              <div className="typing-row chat-typing-row">
-                <div className="tdot" />
-                <div className="tdot" />
-                <div className="tdot" />
-              </div>
-            ) : null}
+            ) : (
+              state.data?.messages.map((message) => (
+                <div
+                  className={`chat-bubble ${isRecruiterMessage(message) ? 'chat-bubble-user' : 'chat-bubble-ai'}`}
+                  key={message.id}
+                >
+                  {message.content}
+                </div>
+              ))
+            )}
+            {state.isReplying ? <div className="ui-status-text">Thinking…</div> : null}
             <div ref={threadEndRef} />
           </div>
 
+          <div className="chat-prompts">
+            {RECRUITER_PROMPTS.map((prompt) => (
+              <button
+                className="chat-prompt-chip"
+                disabled={state.isReplying || availability !== 'ready'}
+                key={prompt}
+                onClick={() => send(prompt)}
+                type="button"
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
+
           <form className="chat-composer" onSubmit={handleSubmit}>
-            <input
-              aria-label="Ask the candidate AI a question"
-              className="chat-composer-input"
-              disabled={chatState.data?.availability !== 'ready' || chatState.isLoading || chatState.isReplying}
-              onChange={(event) => setComposerValue(event.target.value)}
-              placeholder="Ask about experience, leadership, business impact, or target roles..."
-              type="text"
-              value={composerValue}
+            <textarea
+              aria-label="Ask the candidate AI"
+              disabled={availability !== 'ready' || state.isLoading || state.isReplying}
+              onChange={(event) => setComposer(event.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Ask about experience, impact, target roles…"
+              rows={1}
+              value={composer}
             />
-            <button
-              className="chat-send-btn chat-composer-send"
+            <Button
               disabled={
-                chatState.data?.availability !== 'ready' ||
-                chatState.isLoading ||
-                chatState.isReplying ||
-                !composerValue.trim()
+                availability !== 'ready' ||
+                state.isLoading ||
+                state.isReplying ||
+                !composer.trim()
               }
               type="submit"
+              variant="primary"
             >
-              {chatState.isReplying ? 'Thinking...' : 'Send →'}
-            </button>
+              {state.isReplying ? 'Sending…' : 'Send'}
+            </Button>
           </form>
         </section>
-      </main>
+      </div>
     </div>
   )
 }

@@ -5,6 +5,7 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import { AppAuthProvider } from './auth/AppAuthProvider'
 import './styles/globals.css'
+import './styles/app.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
