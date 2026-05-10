@@ -108,8 +108,8 @@ const authenticateCandidateSocket = async (token: string) => {
     secretKey: env.clerkSecretKey,
   });
   const clerkUserId =
-    verification.data && typeof verification.data === 'object' && 'sub' in verification.data
-      ? String(verification.data.sub)
+    verification && typeof verification === 'object' && 'sub' in verification
+      ? String(verification.sub)
       : null;
 
   if (!clerkUserId) {
