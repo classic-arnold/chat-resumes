@@ -28,7 +28,7 @@ services:
     environment:
       NODE_ENV: development
       PORT: 43807
-      CLIENT_ORIGIN: http://localhost:43173
+      CLIENT_ORIGIN: http://localhost:43173,https://chatresumes.com
       APP_BASE_URL: http://localhost:43807
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/chat_resumes?schema=public
       SOCKET_PATH: /socket.io

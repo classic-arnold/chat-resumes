@@ -26,7 +26,7 @@ const resolveClientUrl = (path: string, providedUrl?: string) => {
     });
   }
 
-  if (parsedUrl.origin !== env.clientOrigin) {
+  if (!env.clientOrigins.includes(parsedUrl.origin)) {
     throw new ApiError({
       code: 'invalid_redirect_origin',
       message: 'The billing redirect URL origin is not allowed.',

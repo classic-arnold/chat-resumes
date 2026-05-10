@@ -48,6 +48,8 @@ Docker host ports are intentionally off the usual defaults:
 
 If you want Clerk, Stripe, or OpenAI keys inside Docker, expose them from your shell or add them to a root `.env` file before running `make start` or `make dev`.
 
+`CLIENT_ORIGIN` accepts a comma-separated allowlist when the API needs to serve both a local preview and a deployed frontend, for example `http://localhost:43173,https://chatresumes.com`.
+
 ## Getting started
 
 1. Run `yarn install` if you want to use the native local workflow

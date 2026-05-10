@@ -22,11 +22,41 @@ const postgresUrlSchema = z
     'DATABASE_URL must start with postgresql:// or postgres://',
   );
 
+const clientOriginsSchema = z
+  .string()
+  .default('http://localhost:5173')
+  .transform((value, context) => {
+    const origins = value
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter((origin) => origin.length > 0);
+
+    if (origins.length === 0) {
+      context.addIssue({
+        code: 'custom',
+        message: 'CLIENT_ORIGIN must contain at least one URL',
+      });
+      return z.NEVER;
+    }
+
+    for (const origin of origins) {
+      if (!z.string().url().safeParse(origin).success) {
+        context.addIssue({
+          code: 'custom',
+          message: `CLIENT_ORIGIN contains an invalid URL: ${origin}`,
+        });
+        return z.NEVER;
+      }
+    }
+
+    return origins;
+  });
+
 const rawEnvSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
     PORT: z.coerce.number().int().positive().default(4000),
-    CLIENT_ORIGIN: z.string().url().default('http://localhost:5173'),
+    CLIENT_ORIGIN: clientOriginsSchema,
     APP_BASE_URL: z.string().url().default('http://localhost:4000'),
     DATABASE_URL: postgresUrlSchema.default(
       'postgresql://postgres:postgres@localhost:5432/chat_resumes?schema=public',
@@ -75,7 +105,8 @@ if (!parsedEnv.success) {
 export const env = Object.freeze({
   nodeEnv: parsedEnv.data.NODE_ENV,
   port: parsedEnv.data.PORT,
-  clientOrigin: parsedEnv.data.CLIENT_ORIGIN,
+  clientOrigin: parsedEnv.data.CLIENT_ORIGIN[0],
+  clientOrigins: parsedEnv.data.CLIENT_ORIGIN,
   appBaseUrl: parsedEnv.data.APP_BASE_URL,
   databaseUrl: parsedEnv.data.DATABASE_URL,
   socketPath: parsedEnv.data.SOCKET_PATH,

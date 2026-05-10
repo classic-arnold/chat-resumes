@@ -50,7 +50,7 @@ export const createRealtimeGateway = (httpServer: HttpServer) => {
   const io = new SocketIOServer(httpServer, {
     cors: {
       credentials: true,
-      origin: env.clientOrigin,
+      origin: env.clientOrigins,
     },
     path: env.socketPath,
   });
