@@ -18,14 +18,14 @@ This file is the execution plan for the MVP. The goal is to ship a paid candidat
 ## Route Map To Ship
 
 - [x] `/` landing page
-- [ ] `/pricing` pricing page with real subscribe CTA
-- [ ] `/signup` managed auth signup flow
-- [ ] `/login` managed auth login flow
-- [ ] `/dashboard` candidate dashboard with live data
-- [ ] `/chat` private candidate AI authoring chat
-- [ ] `/p/:slug` public recruiter AI chat route
-- [ ] `/billing/success` Stripe success callback
-- [ ] `/billing/cancel` Stripe cancel callback
+- [x] `/pricing` pricing page with real subscribe CTA
+- [x] `/signup` managed auth signup flow
+- [x] `/login` managed auth login flow
+- [x] `/dashboard` candidate dashboard with live data
+- [x] `/chat` private candidate AI authoring chat
+- [x] `/p/:slug` public recruiter AI chat route
+- [x] `/billing/success` Stripe success callback
+- [x] `/billing/cancel` Stripe cancel callback
 
 ## Not In MVP
 
@@ -79,34 +79,34 @@ This file is the execution plan for the MVP. The goal is to ship a paid candidat
 
 - [x] Rework `/chat` from demo mode into the private candidate chat.
 - [x] Add Socket.IO to the Express server.
-- [ ] Add websocket connection handling in the web app.
-- [ ] Persist candidate chat sessions and messages.
-- [ ] Add AI orchestration that pushes for strong STAR stories.
-- [ ] Extract and store structured story fields: situation, task, action, result.
-- [ ] Mark stories as draft or approved for public use.
-- [ ] Show a minimal "what your AI knows so far" summary in chat or dashboard.
+- [x] Add websocket connection handling in the web app.
+- [x] Persist candidate chat sessions and messages.
+- [x] Add AI orchestration that pushes for strong STAR stories.
+- [x] Extract and store structured story fields: situation, task, action, result.
+- [x] Mark stories as draft or approved for public use.
+- [x] Show a minimal "what your AI knows so far" summary in chat or dashboard.
 
 ### 6. Public recruiter AI route
 
-- [ ] Create `/p/:slug` as a separate public route.
-- [ ] Load the candidate's approved public profile by slug.
-- [ ] Add recruiter-side websocket chat for the public route.
-- [ ] Ground recruiter answers only on approved public content.
-- [ ] Persist recruiter chat sessions and messages.
-- [ ] Track recruiter visits, sessions started, messages sent, and session length.
-- [ ] Give the candidate a copyable public link in the dashboard.
+- [x] Create `/p/:slug` as a separate public route.
+- [x] Load the candidate's approved public profile by slug.
+- [x] Add recruiter-side websocket chat for the public route.
+- [x] Ground recruiter answers only on approved public content.
+- [x] Persist recruiter chat sessions and messages.
+- [x] Track recruiter visits, sessions started, messages sent, and session length.
+- [x] Give the candidate a copyable public link in the dashboard.
 - [ ] Add slug regeneration support if needed.
-- [ ] Add basic abuse controls: rate limiting, incomplete-profile fallback, and safe error states.
+- [x] Add basic abuse controls: rate limiting, incomplete-profile fallback, and safe error states.
 
 ### 7. Minimal candidate dashboard
 
-- [ ] Remove placeholder-only dashboard modules that do not support MVP outcomes.
+- [x] Remove placeholder-only dashboard modules that do not support MVP outcomes.
 - [x] Show subscription status.
-- [ ] Show the public recruiter link.
-- [ ] Show public traffic metrics.
-- [ ] Show recruiter chat activity metrics.
-- [ ] Show profile completeness.
-- [ ] Add a strong "continue training your AI" action back to `/chat`.
+- [x] Show the public recruiter link.
+- [x] Show public traffic metrics.
+- [x] Show recruiter chat activity metrics.
+- [x] Show profile completeness.
+- [x] Add a strong "continue training your AI" action back to `/chat`.
 
 ### 8. Launch readiness
 
@@ -116,7 +116,7 @@ This file is the execution plan for the MVP. The goal is to ship a paid candidat
 - [ ] Ensure the chosen backend host supports persistent websockets.
 - [ ] Add secure secret management for auth, Stripe, AI, and database settings.
 - [ ] Run the full signup -> subscribe -> train AI -> public recruiter chat -> dashboard metrics smoke test.
-- [ ] Update repo docs once the app scope changes from scaffold to MVP.
+- [x] Update repo docs once the app scope changes from scaffold to MVP.
 
 ## Start Here
 
@@ -126,7 +126,7 @@ These are the first implementation tasks to do now, in order.
 2. [x] Add the `/pricing` route and page in the frontend.
 3. [x] Integrate managed auth in the frontend and protect `/dashboard` and `/chat`.
 4. [x] Add Stripe Checkout session creation, success/cancel routes, and webhook handling.
-5. [ ] Split the current chat concept into private candidate chat and public recruiter chat.
+5. [x] Split the current chat concept into private candidate chat and public recruiter chat.
 
 ## Definition Of Done
 

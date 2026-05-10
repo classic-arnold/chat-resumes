@@ -57,6 +57,18 @@ export const hasActiveSubscription = (
   return isActiveSubscriptionStatus(subscription.status);
 };
 
+export const assertUserHasActiveSubscription = (user: SyncedLocalUser) => {
+  if (!hasActiveSubscription(user.subscription)) {
+    throw new ApiError({
+      code: 'subscription_required',
+      message: 'An active subscription is required for this route.',
+      statusCode: 402,
+    });
+  }
+
+  return user;
+};
+
 const isActiveSubscriptionStatus = (status: SubscriptionStatus) => {
   return status === 'active' || status === 'trialing';
 };

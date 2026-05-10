@@ -9,6 +9,7 @@ import { DashboardPage } from './pages/DashboardPage'
 import { LandingPage } from './pages/LandingPage'
 import { LoginPage } from './pages/LoginPage'
 import { PricingPage } from './pages/PricingPage'
+import { PublicRecruiterChatPage } from './pages/PublicRecruiterChatPage'
 import { SignupPage } from './pages/SignupPage'
 
 const ScrollToTop = () => {
@@ -26,6 +27,7 @@ const App = () => (
     <ScrollToTop />
     <Routes>
       <Route path="/" element={<LandingPage />} />
+      <Route path="/p/:slug" element={<PublicRecruiterChatPage />} />
       <Route path="/pricing" element={<PricingPage />} />
       <Route
         path="/billing/success"

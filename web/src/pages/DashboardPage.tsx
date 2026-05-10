@@ -2,59 +2,25 @@ import { UserButton, useAuth, useUser } from '@clerk/react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import { createPortalSession, fetchBillingStatus, type BillingStatus } from '../lib/billing'
+import { createPortalSession } from '../lib/billing'
+import { fetchDashboard, type DashboardSummary } from '../lib/dashboard'
 
-const activityItems = [
-  {
-    icon: '💬',
-    kind: 'chat',
-    summary: 'Chatted for 6 min · asked about leadership & salary',
-    time: '2h ago',
-    title: 'Sarah M. · TechCorp Recruiting',
-  },
-  {
-    icon: '👁',
-    kind: 'view',
-    summary: 'Viewed your link · 3 min session',
-    time: 'Yesterday',
-    title: 'Anonymous Recruiter',
-  },
-  {
-    icon: '💬',
-    kind: 'chat',
-    summary: 'Chatted for 11 min · very engaged',
-    time: '2 days ago',
-    title: 'David K. · StartupXYZ',
-  },
-  {
-    icon: '👁',
-    kind: 'view',
-    summary: 'Viewed your link · 8 min session',
-    time: '3 days ago',
-    title: 'Priya S. · Google',
-  },
-]
+const formatRelativeTime = (isoString: string) => {
+  const deltaMs = Date.now() - new Date(isoString).getTime()
+  const minute = 60_000
+  const hour = 60 * minute
+  const day = 24 * hour
 
-const miniStats = [
-  { label: 'Link Views This Week', value: '12' },
-  { label: 'Chat Sessions', value: '4' },
-  { label: 'Avg. Chat Duration', value: '6.2m' },
-]
+  if (deltaMs < hour) {
+    return `${Math.max(1, Math.round(deltaMs / minute))}m ago`
+  }
 
-const checklistItems = [
-  { done: true, icon: '✅', label: 'Created your account' },
-  { done: true, icon: '✅', label: 'Claimed your ChatResumes link' },
-  {
-    done: false,
-    icon: '📄',
-    label: 'Upload your resume & answer 5 questions',
-  },
-  {
-    done: false,
-    icon: '🔗',
-    label: 'Add your link to your resume header',
-  },
-]
+  if (deltaMs < day) {
+    return `${Math.max(1, Math.round(deltaMs / hour))}h ago`
+  }
+
+  return `${Math.max(1, Math.round(deltaMs / day))}d ago`
+}
 
 export const DashboardPage = () => {
   const { getToken, isLoaded, isSignedIn } = useAuth()
@@ -64,12 +30,14 @@ export const DashboardPage = () => {
   const firstName = user?.firstName ?? displayName
   const initials =
     user?.firstName?.[0]?.toUpperCase() ?? user?.lastName?.[0]?.toUpperCase() ?? 'C'
-  const [billing, setBilling] = useState<{
-    data: BillingStatus | null
+  const [dashboard, setDashboard] = useState<{
+    copyState: 'copied' | 'failed' | 'idle'
+    data: DashboardSummary | null
     error: string | null
     isLoading: boolean
     isOpeningPortal: boolean
   }>({
+    copyState: 'idle',
     data: null,
     error: null,
     isLoading: true,
@@ -83,17 +51,18 @@ export const DashboardPage = () => {
 
     let isCancelled = false
 
-    const loadBilling = async () => {
-      setBilling((current) => ({ ...current, error: null, isLoading: true }))
+    const loadDashboard = async () => {
+      setDashboard((current) => ({ ...current, error: null, isLoading: true }))
 
       try {
-        const data = await fetchBillingStatus(getToken)
+        const data = await fetchDashboard(getToken)
 
         if (isCancelled) {
           return
         }
 
-        setBilling({
+        setDashboard({
+          copyState: 'idle',
           data,
           error: null,
           isLoading: false,
@@ -104,16 +73,17 @@ export const DashboardPage = () => {
           return
         }
 
-        setBilling({
+        setDashboard({
+          copyState: 'idle',
           data: null,
-          error: error instanceof Error ? error.message : 'Unable to load billing status.',
+          error: error instanceof Error ? error.message : 'Unable to load the candidate dashboard.',
           isLoading: false,
           isOpeningPortal: false,
         })
       }
     }
 
-    void loadBilling()
+    void loadDashboard()
 
     return () => {
       isCancelled = true
@@ -121,14 +91,14 @@ export const DashboardPage = () => {
   }, [getToken, isLoaded, isSignedIn])
 
   const handleManageBilling = async () => {
-    setBilling((current) => ({ ...current, error: null, isOpeningPortal: true }))
+    setDashboard((current) => ({ ...current, error: null, isOpeningPortal: true }))
 
     try {
       const { portalUrl } = await createPortalSession(getToken, `${window.location.origin}/dashboard`)
 
       window.location.assign(portalUrl)
     } catch (error) {
-      setBilling((current) => ({
+      setDashboard((current) => ({
         ...current,
         error: error instanceof Error ? error.message : 'Unable to open the billing portal.',
         isOpeningPortal: false,
@@ -136,10 +106,47 @@ export const DashboardPage = () => {
     }
   }
 
-  const billingStatusLabel = billing.data?.status?.replace('_', ' ') ?? 'not started'
-  const billingPeriodCopy = billing.data?.currentPeriodEnd
-    ? `Renews through ${new Date(billing.data.currentPeriodEnd).toLocaleDateString()}`
+  const handleCopyLink = async () => {
+    const publicUrl = dashboard.data?.profile.publicUrl
+
+    if (!publicUrl) {
+      return
+    }
+
+    try {
+      await navigator.clipboard.writeText(publicUrl)
+      setDashboard((current) => ({ ...current, copyState: 'copied' }))
+    } catch {
+      setDashboard((current) => ({ ...current, copyState: 'failed' }))
+    }
+  }
+
+  const billingStatusLabel = dashboard.data?.billing.status?.replace('_', ' ') ?? 'not started'
+  const billingPeriodCopy = dashboard.data?.billing.currentPeriodEnd
+    ? `Renews through ${new Date(dashboard.data.billing.currentPeriodEnd).toLocaleDateString()}`
     : 'No active billing period yet.'
+  const shortPublicPath = dashboard.data?.profile.publicUrl
+    ? new URL(dashboard.data.profile.publicUrl).pathname.replace(/^\//, '')
+    : 'loading'
+  const miniStats = [
+    {
+      label: 'Link Views This Week',
+      value: String(dashboard.data?.metrics.viewsThisWeek ?? 0),
+    },
+    {
+      label: 'Recruiter Chat Sessions',
+      value: String(dashboard.data?.metrics.chatSessions ?? 0),
+    },
+    {
+      label: 'Avg. Chat Duration',
+      value: `${dashboard.data?.metrics.averageChatDurationMinutes ?? 0}m`,
+    },
+    {
+      label: 'Approved Stories',
+      value: String(dashboard.data?.metrics.approvedStoriesCount ?? 0),
+    },
+  ]
+  const checklistItems = dashboard.data?.profile.completeness.items ?? []
 
   return (
     <div className="dashboard-page">
@@ -163,35 +170,39 @@ export const DashboardPage = () => {
       <div className="dash-content">
         <div className="dash-welcome">
           <h2>Good morning, {firstName} 👋</h2>
-          <p>Your AI resume is live and has been viewed 12 times this week.</p>
+          <p>
+            {dashboard.data
+              ? `Your public AI link has ${dashboard.data.metrics.viewsThisWeek} views this week and ${dashboard.data.metrics.chatSessions} recruiter chat sessions so far.`
+              : 'Loading your billing, public link, and recruiter activity metrics.'}
+          </p>
         </div>
 
         <div className="dash-card dash-billing-card">
           <div className="dash-card-title">
             Billing Status
-            <span className={`dash-billing-pill${billing.data?.hasActiveSubscription ? ' active' : ''}`}>
-              {billing.isLoading ? 'Loading' : billingStatusLabel}
+            <span className={`dash-billing-pill${dashboard.data?.billing.hasActiveSubscription ? ' active' : ''}`}>
+              {dashboard.isLoading ? 'Loading' : billingStatusLabel}
             </span>
           </div>
           <div className="dash-billing-row">
             <div>
               <div className="dash-billing-copy">
-                {billing.data?.hasActiveSubscription
+                {dashboard.data?.billing.hasActiveSubscription
                   ? 'Your launch plan is active.'
                   : 'Complete checkout to activate your plan and unlock your candidate workspace.'}
               </div>
               <div className="dash-billing-meta">{billingPeriodCopy}</div>
-              {billing.error ? <div className="dash-billing-error">{billing.error}</div> : null}
+              {dashboard.error ? <div className="dash-billing-error">{dashboard.error}</div> : null}
             </div>
             <div className="dash-billing-actions">
-              {billing.data?.canManageBilling ? (
+              {dashboard.data?.billing.canManageBilling ? (
                 <button
                   className="btn-share"
-                  disabled={billing.isOpeningPortal}
+                  disabled={dashboard.isOpeningPortal}
                   onClick={handleManageBilling}
                   type="button"
                 >
-                  {billing.isOpeningPortal ? 'Opening…' : 'Manage Billing'}
+                  {dashboard.isOpeningPortal ? 'Opening…' : 'Manage Billing'}
                 </button>
               ) : (
                 <Link className="btn-share" to="/pricing">
@@ -208,18 +219,25 @@ export const DashboardPage = () => {
         <div className="dash-url-card">
           <div>
             <div className="dash-url-label">Your ChatResumes Link</div>
-            <div className="dash-url-value">
-              <span>chatresumes.io/</span>
-              jordan-hayes
-            </div>
+            <div className="dash-url-value">{shortPublicPath}</div>
           </div>
           <div className="dash-url-actions">
-            <button className="btn-copy" disabled type="button">
-              📋 Copy Link
+            <button className="btn-copy" onClick={handleCopyLink} type="button">
+              {dashboard.copyState === 'copied'
+                ? 'Copied Link'
+                : dashboard.copyState === 'failed'
+                  ? 'Copy Failed'
+                  : '📋 Copy Link'}
             </button>
-            <button className="btn-share" disabled type="button">
-              ↗ Share
-            </button>
+            {dashboard.data?.profile.publicUrl ? (
+              <a className="btn-share" href={dashboard.data.profile.publicUrl} rel="noreferrer" target="_blank">
+                ↗ Open Public Link
+              </a>
+            ) : (
+              <button className="btn-share" disabled type="button">
+                ↗ Open Public Link
+              </button>
+            )}
             <Link className="btn-share btn-share-dark" to="/chat">
               ✏️ Continue Training
             </Link>
@@ -231,16 +249,22 @@ export const DashboardPage = () => {
             <div className="dash-card-title">
               Recent Recruiter Activity <span className="dash-badge">This Week</span>
             </div>
-            {activityItems.map((item) => (
-              <div className="activity-item" key={`${item.title}-${item.time}`}>
-                <div className={`activity-icon ${item.kind}`}>{item.icon}</div>
-                <div>
-                  <div className="activity-who">{item.title}</div>
-                  <div className="activity-what">{item.summary}</div>
+            {dashboard.data?.activity.length ? (
+              dashboard.data.activity.map((item) => (
+                <div className="activity-item" key={item.id}>
+                  <div className={`activity-icon ${item.type}`}>{item.type === 'chat' ? '💬' : '👁'}</div>
+                  <div>
+                    <div className="activity-who">{item.title}</div>
+                    <div className="activity-what">{item.summary}</div>
+                  </div>
+                  <div className="activity-when">{formatRelativeTime(item.occurredAt)}</div>
                 </div>
-                <div className="activity-when">{item.time}</div>
+              ))
+            ) : (
+              <div className="dash-empty-state">
+                Public traffic and recruiter chats will show up here once someone opens your link.
               </div>
-            ))}
+            )}
           </div>
 
           <div className="dash-card">
@@ -256,18 +280,24 @@ export const DashboardPage = () => {
 
         <div className="dash-card">
           <div className="dash-card-title">
-            Complete Your Setup <span className="dash-badge">2 of 4 done</span>
+            Profile Completeness{' '}
+            <span className="dash-badge">
+              {dashboard.data?.profile.completeness.completed ?? 0} of{' '}
+              {dashboard.data?.profile.completeness.total ?? 0} done
+            </span>
           </div>
           <div className="setup-checklist">
-            {checklistItems.map((item) => (
-              <div className={`checklist-item${item.done ? ' done' : ''}`} key={item.label}>
-                <span className="check-icon">{item.icon}</span>
-                <span className={`check-label${item.done ? ' done-text' : ''}`}>
-                  {item.label}
-                </span>
-                {item.done ? null : <span className="check-arrow">→</span>}
-              </div>
-            ))}
+            {checklistItems.length ? (
+              checklistItems.map((item) => (
+                <div className={`checklist-item${item.done ? ' done' : ''}`} key={item.key}>
+                  <span className="check-icon">{item.done ? '✅' : '📄'}</span>
+                  <span className={`check-label${item.done ? ' done-text' : ''}`}>{item.label}</span>
+                  {item.done ? null : <span className="check-arrow">→</span>}
+                </div>
+              ))
+            ) : (
+              <div className="dash-empty-state">Loading your completeness checklist…</div>
+            )}
           </div>
         </div>
       </div>

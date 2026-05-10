@@ -8,10 +8,11 @@ Vite + React + TypeScript frontend for ChatResumes.
 - `/pricing`: implemented launch pricing page
 - `/billing/success`: protected Stripe success callback route
 - `/billing/cancel`: protected Stripe cancel callback route
-- `/chat`: protected route; still using demo content for now
+- `/chat`: protected private candidate authoring chat with live Socket.IO updates
+- `/p/:slug`: public recruiter AI route backed by approved public content
 - `/signup`: implemented Clerk signup route
 - `/login`: implemented Clerk login route
-- `/dashboard`: protected route; still using dashboard shell content
+- `/dashboard`: protected live dashboard with billing, public-link, activity, and completeness data
 
 ## Stack in use
 
@@ -30,3 +31,4 @@ Vite + React + TypeScript frontend for ChatResumes.
 
 Copy `.env.example` to `.env` and set `VITE_CLERK_PUBLISHABLE_KEY` before using the live auth routes.
 Set `VITE_API_BASE_URL` if the frontend should call a backend origin other than the local default.
+Set `VITE_SOCKET_PATH` only if the backend Socket.IO path differs from `/socket.io`.

@@ -655,6 +655,125 @@ button {
   cursor: not-allowed;
 }
 
+.chat-story-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.chat-story-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding: 1rem;
+  background: var(--off-white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.chat-story-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.chat-story-title {
+  color: var(--navy-text);
+  font-family: 'Syne', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.chat-story-status {
+  width: fit-content;
+  margin-top: 0.4rem;
+  padding: 0.28rem 0.55rem;
+  border-radius: 999px;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.chat-story-status.approved {
+  background: rgba(16, 185, 129, 0.12);
+  color: #047857;
+}
+
+.chat-story-status.archived {
+  background: rgba(100, 116, 139, 0.12);
+  color: #475569;
+}
+
+.chat-story-status.draft {
+  background: rgba(245, 158, 11, 0.14);
+  color: #b45309;
+}
+
+.chat-story-body,
+.chat-empty-state,
+.chat-inline-error {
+  font-size: 0.76rem;
+  line-height: 1.75;
+}
+
+.chat-story-body {
+  color: var(--muted);
+}
+
+.chat-empty-state {
+  padding: 1rem;
+  background: var(--off-white);
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  color: var(--muted);
+}
+
+.chat-inline-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(254, 226, 226, 0.8);
+  border: 1px solid rgba(239, 68, 68, 0.18);
+  border-radius: 14px;
+  color: #991b1b;
+}
+
+.chat-ghost-button,
+.chat-link-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.chat-ghost-button {
+  padding: 0.7rem 0.85rem;
+  background: var(--white);
+  border: 1px solid var(--blue-light);
+  color: var(--blue-mid);
+}
+
+.chat-ghost-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.chat-link-button {
+  padding: 0.7rem 0.9rem;
+  background: rgba(10, 36, 99, 0.92);
+  color: var(--white);
+}
+
 .chat-conversation-card {
   display: flex;
   flex-direction: column;
@@ -2298,6 +2417,12 @@ button {
 .dash-card {
   padding: 1.8rem;
   border: 1px solid var(--border);
+}
+
+.dash-empty-state {
+  color: var(--muted);
+  font-size: 0.76rem;
+  line-height: 1.8;
 }
 
 .dash-card-title {

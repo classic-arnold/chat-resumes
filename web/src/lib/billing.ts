@@ -1,4 +1,4 @@
-export type TokenProvider = () => Promise<string | null>
+import { requestApi, type TokenProvider } from './api'
 
 export type BillingStatus = {
   canManageBilling: boolean
@@ -7,14 +7,6 @@ export type BillingStatus = {
   hasActiveSubscription: boolean
   isStripeConfigured: boolean
   status: string | null
-}
-
-const resolveApiBaseUrl = () => {
-  return import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.DEV ? 'http://localhost:4000' : window.location.origin)
-}
-
-const createApiUrl = (path: string) => {
-  return new URL(path, resolveApiBaseUrl()).toString()
 }
 
 const requestBilling = async <T>(
@@ -29,27 +21,11 @@ const requestBilling = async <T>(
     method?: 'GET' | 'POST'
   },
 ): Promise<T> => {
-  const token = await getToken()
-  const response = await fetch(createApiUrl(path), {
-    body: body ? JSON.stringify(body) : undefined,
-    headers: {
-      ...(body ? { 'Content-Type': 'application/json' } : {}),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
+  return requestApi<T>(path, {
+    body,
+    getToken,
     method,
   })
-
-  const payload = (await response.json()) as T & {
-    error?: {
-      message?: string
-    }
-  }
-
-  if (!response.ok) {
-    throw new Error(payload.error?.message ?? 'Billing request failed.')
-  }
-
-  return payload
 }
 
 export const fetchBillingStatus = (getToken: TokenProvider) => {

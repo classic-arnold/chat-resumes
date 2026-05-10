@@ -12,11 +12,12 @@ Validate-stage monorepo scaffold for ChatResumes.
 - Exact-feel marketing landing page
 - Dedicated pricing page with a Stripe-backed launch plan CTA
 - Live Clerk-powered signup and login routes in the frontend
-- Protected dashboard and candidate chat routes in the frontend
+- Protected candidate dashboard with live billing, public-link, activity, and completeness data
+- Protected private candidate authoring chat backed by persisted sessions and Socket.IO
+- Public recruiter AI route grounded on approved public profile content and approved STAR stories
 - Billing success/cancel routes and dashboard billing status in the frontend
-- Designed recruiter chat demo page
-- Placeholder dashboard and chat product content behind real auth gating
-- Backend foundation for env validation, Prisma, API composition, Clerk session bootstrap, and Stripe billing routes
+- Backend routes for dashboard metrics, candidate profile, candidate chat bootstrap, and public profile loading
+- Backend realtime namespaces for candidate and recruiter chats with persistence and basic rate limiting
 
 ## Out of scope for this setup
 
@@ -62,10 +63,11 @@ If you want Clerk, Stripe, or OpenAI keys inside Docker, expose them from your s
 - `/pricing`: implemented pricing page that starts Stripe checkout for signed-in users
 - `/billing/success`: protected Stripe success callback route
 - `/billing/cancel`: protected Stripe cancel callback route
-- `/chat`: protected route; still using demo content until candidate chat is rebuilt
+- `/chat`: protected private candidate authoring chat with persisted sessions and approvals
+- `/p/:slug`: public recruiter AI chat route for approved public profile content
 - `/signup`: implemented Clerk signup route
 - `/login`: implemented Clerk login route
-- `/dashboard`: protected route; still using dashboard shell content
+- `/dashboard`: protected live candidate dashboard with billing, public-link, activity, and completeness data
 
 ## API intent
 
@@ -75,4 +77,10 @@ If you want Clerk, Stripe, or OpenAI keys inside Docker, expose them from your s
 - `GET /api/billing/status`: get the candidate billing summary
 - `POST /api/billing/checkout-session`: create a Stripe Checkout session
 - `POST /api/billing/portal-session`: create a Stripe Billing Portal session
+- `GET /api/dashboard`: get the candidate dashboard summary
+- `GET /api/profile`: get the candidate profile and completeness state
+- `PATCH /api/profile`: update non-chat-derived candidate profile fields
+- `GET /api/chat/candidate/session`: get the private candidate chat session bootstrap payload
+- `POST /api/chat/candidate/stories/:storyId/approve`: approve a structured story for public use
+- `GET /api/public/profiles/:slug`: load the recruiter-safe public profile payload
 - `POST /api/stripe/webhooks`: receive and sync Stripe webhook events
