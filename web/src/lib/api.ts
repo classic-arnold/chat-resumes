@@ -39,7 +39,7 @@ export const requestApi = async <T>(
     body?: unknown
     getToken?: TokenProvider
     headers?: Record<string, string>
-    method?: 'GET' | 'PATCH' | 'POST'
+    method?: 'DELETE' | 'GET' | 'PATCH' | 'POST'
   } = {},
 ): Promise<T> => {
   const token = getToken ? await getToken() : null
@@ -53,6 +53,11 @@ export const requestApi = async <T>(
     },
     method,
   })
+
+  if (response.status === 204) {
+    return undefined as T
+  }
+
   const payload = (await response.json().catch(() => null)) as
     | (T & {
         error?: {
@@ -63,6 +68,45 @@ export const requestApi = async <T>(
 
   if (!response.ok) {
     throw new Error(payload?.error?.message ?? 'Request failed.')
+  }
+
+  return payload as T
+}
+
+export const uploadApi = async <T>(
+  path: string,
+  {
+    file,
+    fieldName = 'file',
+    getToken,
+  }: {
+    file: File
+    fieldName?: string
+    getToken?: TokenProvider
+  },
+): Promise<T> => {
+  const token = getToken ? await getToken() : null
+  const formData = new FormData()
+  formData.append(fieldName, file)
+
+  const response = await fetch(createApiUrl(path), {
+    body: formData,
+    headers: {
+      ...createNgrokHeaders(),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    method: 'POST',
+  })
+  const payload = (await response.json().catch(() => null)) as
+    | (T & {
+        error?: {
+          message?: string
+        }
+      })
+    | null
+
+  if (!response.ok) {
+    throw new Error(payload?.error?.message ?? 'Upload failed.')
   }
 
   return payload as T

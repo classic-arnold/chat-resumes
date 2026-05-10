@@ -45,6 +45,7 @@ export type DashboardSummary = {
     viewsThisWeek: number
   }
   profile: CandidateProfile
+  publicLinkActive: boolean
 }
 
 export const fetchDashboard = (getToken: TokenProvider) => {

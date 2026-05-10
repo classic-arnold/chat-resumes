@@ -37,6 +37,12 @@ enum StoryStatus {
   archived
 }
 
+enum DocumentStatus {
+  processing
+  ready
+  failed
+}
+
 model User {
   id                    String                 @id @default(cuid())
   clerkUserId           String                 @unique
@@ -47,6 +53,7 @@ model User {
   subscription          Subscription?
   candidateChatSessions CandidateChatSession[]
   stories               Story[]
+  documents             Document[]
 }
 
 model Profile {
@@ -162,4 +169,21 @@ model RecruiterChatMessage {
   session   RecruiterChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([sessionId, createdAt])
+}
+
+model Document {
+  id             String         @id @default(cuid())
+  userId         String
+  originalName   String
+  mimeType       String
+  sizeBytes      Int
+  storageKey     String
+  extractedText  String         @default("")
+  status         DocumentStatus @default(processing)
+  error          String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
 }

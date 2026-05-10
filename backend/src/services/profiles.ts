@@ -4,7 +4,7 @@ import type { Profile, Story } from '@prisma/client';
 
 import { env } from '../config/env.js';
 import { prisma } from '../lib/prisma.js';
-import type { SyncedLocalUser } from './users.js';
+import { hasActiveSubscription, type SyncedLocalUser } from './users.js';
 
 type ProfileCompletenessItem = {
   done: boolean;
@@ -55,7 +55,7 @@ export type CandidateProfilePayload = {
 
 export type PublicProfileResponse = {
   approvedStories: PublicStoryPayload[];
-  availability: 'missing' | 'ready' | 'training';
+  availability: 'inactive' | 'missing' | 'ready' | 'training';
   fallbackMessage: string | null;
   profile: PublicProfilePayload | null;
   visitorToken: string;
@@ -349,6 +349,23 @@ export const resolvePublicProfileBySlug = async ({
       fallbackMessage: 'This public AI profile does not exist.',
       profile: null,
       profileRecord: null,
+      visitId: null,
+      visitorToken: resolvedVisitorToken,
+    };
+  }
+
+  const ownerSubscription = await prisma.subscription.findUnique({
+    where: { userId: profile.userId },
+  });
+
+  if (!hasActiveSubscription(ownerSubscription)) {
+    return {
+      approvedStories: [],
+      approvedStoryRecords: [],
+      availability: 'inactive',
+      fallbackMessage: 'This public AI profile is not active right now.',
+      profile: null,
+      profileRecord: profile,
       visitId: null,
       visitorToken: resolvedVisitorToken,
     };

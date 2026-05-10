@@ -1,7 +1,7 @@
 import { getBillingStatusForUser } from './billing.js';
 import { prisma } from '../lib/prisma.js';
 import { getCandidateProfile } from './profiles.js';
-import type { SyncedLocalUser } from './users.js';
+import { hasActiveSubscription, type SyncedLocalUser } from './users.js';
 
 const formatMinutes = (milliseconds: number) => {
   const minutes = milliseconds / 60000;
@@ -138,5 +138,6 @@ export const getDashboardSummary = async (user: SyncedLocalUser) => {
       viewsThisWeek,
     },
     profile,
+    publicLinkActive: hasActiveSubscription(user.subscription),
   };
 };

@@ -1,5 +1,6 @@
 import { ApiError } from '../middleware/api-error-handler.js';
 import { prisma } from '../lib/prisma.js';
+import { buildDocumentContextForUser } from './documents.js';
 import { ensureCandidateProfile, getCandidateProfile, resolvePublicProfileBySlug, type CandidateProfilePayload, type PublicProfileResponse } from './profiles.js';
 import type { SyncedLocalUser } from './users.js';
 
@@ -103,9 +104,11 @@ const mapStory = (story: {
 };
 
 const buildKnowledgeFacts = ({
+  documentNames,
   profile,
   stories,
 }: {
+  documentNames: string[];
   profile: CandidateProfilePayload;
   stories: StoryPayload[];
 }) => {
@@ -113,6 +116,9 @@ const buildKnowledgeFacts = ({
     profile.headline ? `Headline: ${profile.headline}` : null,
     profile.location ? `Location: ${profile.location}` : null,
     profile.targetRoles.length > 0 ? `Target roles: ${profile.targetRoles.join(', ')}` : null,
+    documentNames.length > 0
+      ? `${documentNames.length} document${documentNames.length === 1 ? '' : 's'} ingested: ${documentNames.slice(0, 3).join(', ')}${documentNames.length > 3 ? '…' : ''}`
+      : null,
     profile.approvedStoriesCount > 0 ? `${profile.approvedStoriesCount} approved recruiter-safe story${profile.approvedStoriesCount === 1 ? '' : 's'}` : null,
     profile.draftStoriesCount > 0 ? `${profile.draftStoriesCount} draft story${profile.draftStoriesCount === 1 ? '' : 's'} in progress` : null,
     stories[0] ? `Latest story: ${stories[0].title}` : null,
@@ -325,7 +331,7 @@ export const getCandidateChatState = async (user: SyncedLocalUser): Promise<Cand
   const session = await getOrCreateCandidateSession(user.id);
   await seedCandidateSessionIfEmpty(session.id);
 
-  const [hydratedSession, profile, stories] = await Promise.all([
+  const [hydratedSession, profile, stories, documentContext, documentRecords] = await Promise.all([
     prisma.candidateChatSession.findUniqueOrThrow({
       where: {
         id: session.id,
@@ -340,10 +346,20 @@ export const getCandidateChatState = async (user: SyncedLocalUser): Promise<Cand
     }),
     getCandidateProfile(user),
     getCandidateStories(user.id),
+    buildDocumentContextForUser(user.id),
+    prisma.document.findMany({
+      where: { userId: user.id, status: 'ready' },
+      orderBy: { createdAt: 'asc' },
+      select: { originalName: true },
+    }),
   ]);
 
+  // documentContext is reserved for future LLM grounding; surfaced via knowledgeFacts for now.
+  void documentContext;
+  const documentNames = documentRecords.map((document) => document.originalName);
+
   return {
-    knowledgeFacts: buildKnowledgeFacts({ profile, stories }),
+    knowledgeFacts: buildKnowledgeFacts({ documentNames, profile, stories }),
     messages: hydratedSession.messages.map(mapMessage),
     profile,
     sessionId: hydratedSession.id,

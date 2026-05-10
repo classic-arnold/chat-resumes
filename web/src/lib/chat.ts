@@ -58,7 +58,7 @@ export type PublicProfile = {
 
 export type PublicProfileResponse = {
   approvedStories: PublicStory[]
-  availability: 'missing' | 'ready' | 'training'
+  availability: 'inactive' | 'missing' | 'ready' | 'training'
   fallbackMessage: string | null
   profile: PublicProfile | null
   visitorToken: string

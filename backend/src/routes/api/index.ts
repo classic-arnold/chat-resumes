@@ -4,6 +4,7 @@ import { chatRouter } from './chat/index.js';
 import { authRouter } from './auth/index.js';
 import { billingRouter } from './billing/index.js';
 import { dashboardRouter } from './dashboard/index.js';
+import { documentsRouter } from './documents/index.js';
 import { profileRouter } from './profile/index.js';
 import { publicRouter } from './public/index.js';
 
@@ -17,6 +18,7 @@ apiRouter.get('/', (_request, response) => {
       billingStatus: 'GET /api/billing/status',
       candidateChatSession: 'GET /api/chat/candidate/session',
       dashboard: 'GET /api/dashboard',
+      documents: 'GET /api/documents',
       profile: 'GET /api/profile',
       publicProfile: 'GET /api/public/profiles/:slug',
       stripeWebhooks: 'POST /api/stripe/webhooks',
@@ -29,5 +31,6 @@ apiRouter.use('/auth', authRouter);
 apiRouter.use('/billing', billingRouter);
 apiRouter.use('/chat', chatRouter);
 apiRouter.use('/dashboard', dashboardRouter);
+apiRouter.use('/documents', documentsRouter);
 apiRouter.use('/profile', profileRouter);
 apiRouter.use('/public', publicRouter);
