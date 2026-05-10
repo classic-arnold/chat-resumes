@@ -4,6 +4,18 @@ const resolveApiBaseUrl = () => {
   return import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.DEV ? 'http://localhost:4000' : window.location.origin)
 }
 
+const createNgrokHeaders = (): Record<string, string> => {
+  const apiBaseUrl = resolveApiBaseUrl()
+
+  if (!apiBaseUrl.includes('.ngrok-free.app')) {
+    return {}
+  }
+
+  return {
+    'ngrok-skip-browser-warning': 'true',
+  }
+}
+
 export const createApiUrl = (path: string) => {
   return new URL(path, resolveApiBaseUrl()).toString()
 }
@@ -35,6 +47,7 @@ export const requestApi = async <T>(
     body: body ? JSON.stringify(body) : undefined,
     headers: {
       ...(body ? { 'Content-Type': 'application/json' } : {}),
+      ...createNgrokHeaders(),
       ...(headers ?? {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
