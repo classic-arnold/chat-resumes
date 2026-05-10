@@ -115,6 +115,7 @@ This file is the execution plan for the MVP. The goal is to ship a paid candidat
 - [ ] Validate all required environment variables at startup.
 - [ ] Ensure the chosen backend host supports persistent websockets.
 - [ ] Add secure secret management for auth, Stripe, AI, and database settings.
+- [ ] Remove the temporary free-account bypass and restore subscription checks for dashboard, chat, and candidate realtime access.
 - [ ] Run the full signup -> subscribe -> train AI -> public recruiter chat -> dashboard metrics smoke test.
 - [x] Update repo docs once the app scope changes from scaffold to MVP.
 

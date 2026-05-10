@@ -43,6 +43,8 @@ export const syncLocalUserFromClerk = async (clerkUserId: string) => {
 
 export type SyncedLocalUser = Awaited<ReturnType<typeof syncLocalUserFromClerk>>;
 
+const temporaryFreeAccountAccessEnabled = true;
+
 export const hasActiveSubscription = (
   subscription: Prisma.UserGetPayload<{
     include: {
@@ -57,8 +59,12 @@ export const hasActiveSubscription = (
   return isActiveSubscriptionStatus(subscription.status);
 };
 
+export const canAccessSubscriptionFeatures = (user: SyncedLocalUser) => {
+  return temporaryFreeAccountAccessEnabled || hasActiveSubscription(user.subscription);
+};
+
 export const assertUserHasActiveSubscription = (user: SyncedLocalUser) => {
-  if (!hasActiveSubscription(user.subscription)) {
+  if (!canAccessSubscriptionFeatures(user)) {
     throw new ApiError({
       code: 'subscription_required',
       message: 'An active subscription is required for this route.',

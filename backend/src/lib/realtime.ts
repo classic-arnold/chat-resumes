@@ -13,7 +13,11 @@ import {
   processCandidateChatTurn,
   processRecruiterChatTurn,
 } from '../services/chat.js';
-import { hasActiveSubscription, syncLocalUserFromClerk, type SyncedLocalUser } from '../services/users.js';
+import {
+  canAccessSubscriptionFeatures,
+  syncLocalUserFromClerk,
+  type SyncedLocalUser,
+} from '../services/users.js';
 import { logger } from './logger.js';
 
 type SocketActivity = {
@@ -118,7 +122,7 @@ const authenticateCandidateSocket = async (token: string) => {
 
   const user = await syncLocalUserFromClerk(clerkUserId);
 
-  if (!hasActiveSubscription(user.subscription)) {
+  if (!canAccessSubscriptionFeatures(user)) {
     throw new ApiError({
       code: 'candidate_subscription_required',
       message: 'An active subscription is required for the private candidate chat.',
