@@ -6,4 +6,5 @@ coverage
 .env.local
 backend/.env
 web/.env
+web/.env.production.local
 yarn-error.log

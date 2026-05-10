@@ -78,7 +78,7 @@ This file is the execution plan for the MVP. The goal is to ship a paid candidat
 ### 5. Candidate AI authoring chat
 
 - [x] Rework `/chat` from demo mode into the private candidate chat.
-- [ ] Add Socket.IO to the Express server.
+- [x] Add Socket.IO to the Express server.
 - [ ] Add websocket connection handling in the web app.
 - [ ] Persist candidate chat sessions and messages.
 - [ ] Add AI orchestration that pushes for strong STAR stories.
