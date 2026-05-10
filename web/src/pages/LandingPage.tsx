@@ -151,38 +151,33 @@ export const LandingPage = () => (
         <div className="hero-left">
           <div className="hero-eyebrow">
             <div className="eyebrow-dot" />
-            Now Live — Claim Your Link Today
+            Why You Can&apos;t Wait
           </div>
           <h1 className="hero-headline">
             <div className="line">
-              <span>Your resume,</span>
+              <span>The candidates</span>
             </div>
             <div className="line">
-              <span className="italic-serif">now alive.</span>
+              <span className="italic-serif">getting hired</span>
             </div>
             <div className="line">
-              <span className="blue-word">Always on.</span>
+              <span className="blue-word">aren&apos;t sending PDFs anymore.</span>
             </div>
           </h1>
           <p className="hero-sub">
-            Stop being a PDF in a pile of PDFs. ChatResumes turns your
-            experience into an intelligent AI that answers recruiter questions
-            24/7 — as if you were sitting right across the table.
+            The job market has changed. Hiring managers are overwhelmed.
+            Recruiters have seconds, not minutes. A ChatResumes link on your
+            resume signals you&apos;re different before the conversation even
+            starts. Every day without one is a day recruiters choose someone
+            else who has it.
           </p>
           <div className="hero-ctas">
             <Link className="btn-primary-blue" to="/pricing">
-              See Launch Pricing ↗
+              Start My Paid Plan →
             </Link>
             <a className="btn-outline-blue" href="#how-it-works">
               See how it works
             </a>
-          </div>
-          <div className="hero-url-row">
-            <div className="url-chip">
-              🔗 chatresumes.io/<strong>yourname</strong>
-              <span className="blink">_</span>
-            </div>
-            <span className="url-note">Your permanent recruiter-ready link</span>
           </div>
         </div>
 
@@ -307,24 +302,29 @@ export const LandingPage = () => (
 
       <section className="fomo-section" id="fomo">
         <div>
-          <div className="section-tag">Why You Can&apos;t Wait</div>
+          <div className="section-tag">Now Live — Claim Your Link Today</div>
           <h2 className="fomo-headline">
-            The candidates getting hired
+            Your resume,
             <br />
-            aren&apos;t <span className="strike">sending PDFs</span>
+            <span className="italic-serif">now alive.</span>
             <br />
-            anymore.
+            <span className="blue-word">Always on.</span>
           </h2>
           <p className="fomo-body">
-            The job market has changed. Hiring managers are overwhelmed.
-            Recruiters have seconds, not minutes. A ChatResumes link on your
-            resume signals you&apos;re different before the conversation even
-            starts. Every day without one is a day recruiters choose someone
-            else who has it.
+            Stop being a PDF in a pile of PDFs. ChatResumes turns your
+            experience into an intelligent AI that answers recruiter questions
+            24/7 — as if you were sitting right across the table.
           </p>
           <Link className="btn-primary-blue inline-cta" to="/pricing">
-            Start My Paid Plan →
+            See Launch Pricing ↗
           </Link>
+          <div className="hero-url-row">
+            <div className="url-chip">
+              🔗 chatresumes.io/<strong>yourname</strong>
+              <span className="blink">_</span>
+            </div>
+            <span className="url-note">Your permanent recruiter-ready link</span>
+          </div>
         </div>
         <div>
           <ul className="fomo-bullets">
