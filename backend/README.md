@@ -52,4 +52,4 @@ Copy `.env.example` to `.env` and set at least the database connection before ru
 - `DATABASE_URL` points Prisma at the PostgreSQL database for the MVP
 - `CLERK_SECRET_KEY` is required to verify backend auth and bootstrap local users from Clerk
 - `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and `STRIPE_PRICE_ID` are required for the Stripe billing flow
-- `OPENAI_API_KEY` is modeled now and will be required once the AI integrations are wired
+- `OPENAI_API_KEY` enables live OpenAI-backed replies for the private candidate chat and public recruiter chat

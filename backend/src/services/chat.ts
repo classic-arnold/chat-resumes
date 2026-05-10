@@ -1,4 +1,5 @@
 import { ApiError } from '../middleware/api-error-handler.js';
+import { generateAssistantReply } from '../lib/ai.js';
 import { prisma } from '../lib/prisma.js';
 import { buildDocumentContextForUser } from './documents.js';
 import { ensureCandidateProfile, getCandidateProfile, resolvePublicProfileBySlug, type CandidateProfilePayload, type PublicProfileResponse } from './profiles.js';
@@ -230,6 +231,122 @@ const buildCandidateReply = ({
   return 'This is close to recruiter-safe. Tighten the business result, then approve the draft when the wording feels strong enough to publish.';
 };
 
+const formatConversationHistory = (
+  messages: Array<{
+    content: string;
+    role: 'ai' | 'candidate' | 'recruiter' | 'system';
+  }>,
+) => {
+  return messages
+    .map((message) => `${message.role.toUpperCase()}: ${message.content}`)
+    .join('\n');
+};
+
+const formatDraftStory = (storyDraft: ReturnType<typeof buildDraftStory>) => {
+  if (!storyDraft) {
+    return 'No structured draft extracted yet.';
+  }
+
+  return [
+    `Title: ${storyDraft.title}`,
+    `Situation: ${storyDraft.situation || '[missing]'}`,
+    `Task: ${storyDraft.task || '[missing]'}`,
+    `Action: ${storyDraft.action || '[missing]'}`,
+    `Result: ${storyDraft.result || '[missing]'}`,
+  ].join('\n');
+};
+
+const buildCandidatePrompt = ({
+  content,
+  documentContext,
+  profile,
+  recentMessages,
+  storyDraft,
+}: {
+  content: string;
+  documentContext: string;
+  profile: CandidateProfilePayload;
+  recentMessages: Array<{
+    content: string;
+    role: 'ai' | 'candidate' | 'recruiter' | 'system';
+  }>;
+  storyDraft: ReturnType<typeof buildDraftStory>;
+}) => {
+  const profileFacts = [
+    profile.displayName ? `Display name: ${profile.displayName}` : null,
+    profile.headline ? `Headline: ${profile.headline}` : null,
+    profile.location ? `Location: ${profile.location}` : null,
+    profile.targetRoles.length > 0 ? `Target roles: ${profile.targetRoles.join(', ')}` : null,
+    `Approved stories: ${profile.approvedStoriesCount}`,
+    `Draft stories: ${profile.draftStoriesCount}`,
+  ]
+    .filter((fact): fact is string => Boolean(fact))
+    .join('\n');
+
+  const conversationHistory = truncate(formatConversationHistory(recentMessages), 6_000);
+  const groundedDocumentContext = documentContext
+    ? truncate(documentContext, 12_000)
+    : 'No uploaded document context.';
+
+  return {
+    systemPrompt: [
+      'You are ChatResumes, a sharp private AI coach for candidates.',
+      'Your job is to turn raw experience into recruiter-safe STAR stories and stronger candidate positioning.',
+      'Use only the provided conversation, profile facts, and uploaded document context.',
+      'Never invent metrics, company names, timelines, roles, or outcomes.',
+      'If information is missing, ask directly for the missing risk, ownership, action, or measurable result.',
+      'Keep replies concise and practical, usually 2 to 4 sentences.',
+      'If the candidate asks for a STAR rewrite, provide Situation, Task, Action, and Result labels.',
+      'Push for personal ownership and measurable business impact.',
+    ].join(' '),
+    userPrompt: [
+      'Candidate profile facts:',
+      profileFacts || 'No structured profile facts yet.',
+      '',
+      'Current extracted draft:',
+      formatDraftStory(storyDraft),
+      '',
+      'Uploaded document context:',
+      groundedDocumentContext,
+      '',
+      'Recent conversation:',
+      conversationHistory || 'No prior messages.',
+      '',
+      `Latest candidate message: ${content}`,
+      '',
+      'Write the next assistant reply only.',
+    ].join('\n'),
+  };
+};
+
+const generateCandidateReply = async ({
+  content,
+  documentContext,
+  profile,
+  recentMessages,
+  storyDraft,
+}: {
+  content: string;
+  documentContext: string;
+  profile: CandidateProfilePayload;
+  recentMessages: Array<{
+    content: string;
+    role: 'ai' | 'candidate' | 'recruiter' | 'system';
+  }>;
+  storyDraft: ReturnType<typeof buildDraftStory>;
+}) => {
+  const prompt = buildCandidatePrompt({
+    content,
+    documentContext,
+    profile,
+    recentMessages,
+    storyDraft,
+  });
+  const aiReply = await generateAssistantReply(prompt);
+
+  return aiReply ?? buildCandidateReply({ content, storyDraft });
+};
+
 const getOrCreateCandidateSession = async (userId: string) => {
   const activeSession = await prisma.candidateChatSession.findFirst({
     where: {
@@ -413,12 +530,30 @@ export const processCandidateChatTurn = async ({
     });
   }
 
+  const [profile, recentMessages, documentContext] = await Promise.all([
+    getCandidateProfile(user),
+    prisma.candidateChatMessage.findMany({
+      where: {
+        sessionId: session.id,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 12,
+    }),
+    buildDocumentContextForUser(user.id),
+  ]);
+  const aiReply = await generateCandidateReply({
+    content: trimmedContent,
+    documentContext,
+    profile,
+    recentMessages: recentMessages.reverse(),
+    storyDraft: draftStory,
+  });
+
   await prisma.candidateChatMessage.create({
     data: {
-      content: buildCandidateReply({
-        content: trimmedContent,
-        storyDraft: draftStory,
-      }),
+      content: aiReply,
       role: 'ai',
       sessionId: session.id,
     },
@@ -603,6 +738,72 @@ const buildRecruiterReply = ({
   return `I can only answer from approved public content. Right now I have ${profile.displayName}\'s public profile headline and target role information available.`;
 };
 
+const formatApprovedStories = (approvedStories: PublicProfileResponse['approvedStories']) => {
+  if (approvedStories.length === 0) {
+    return 'No approved stories available.';
+  }
+
+  return approvedStories
+    .map(
+      (story, index) =>
+        `${index + 1}. ${story.title}\nSituation: ${story.situation}\nTask: ${story.task}\nAction: ${story.action}\nResult: ${story.result}`,
+    )
+    .join('\n\n');
+};
+
+const generateRecruiterReply = async ({
+  approvedStories,
+  profile,
+  question,
+  recentMessages,
+}: {
+  approvedStories: PublicProfileResponse['approvedStories'];
+  profile: NonNullable<PublicProfileResponse['profile']>;
+  question: string;
+  recentMessages: Array<{
+    content: string;
+    role: 'ai' | 'candidate' | 'recruiter' | 'system';
+  }>;
+}) => {
+  const conversationHistory = truncate(formatConversationHistory(recentMessages), 4_500);
+  const aiReply = await generateAssistantReply({
+    systemPrompt: [
+      'You are the public recruiter-facing AI for a candidate profile on ChatResumes.',
+      'Answer only from the approved public profile facts and approved stories provided to you.',
+      'Do not invent or infer private information, hidden context, or unapproved claims.',
+      'If the answer is not grounded in the approved content, say you do not have enough approved public material to answer that yet.',
+      'Keep answers recruiter-safe, concrete, and concise, usually 2 to 4 sentences.',
+    ].join(' '),
+    userPrompt: [
+      'Public profile:',
+      `Display name: ${profile.displayName}`,
+      `Headline: ${profile.headline ?? 'Not provided'}`,
+      `Location: ${profile.location ?? 'Not provided'}`,
+      `Summary: ${profile.summary ?? 'Not provided'}`,
+      `Target roles: ${profile.targetRoles.join(', ') || 'Not provided'}`,
+      '',
+      'Approved stories:',
+      formatApprovedStories(approvedStories),
+      '',
+      'Recent conversation:',
+      conversationHistory || 'No prior recruiter messages.',
+      '',
+      `Latest recruiter question: ${question}`,
+      '',
+      'Write the next assistant reply only.',
+    ].join('\n'),
+  });
+
+  return (
+    aiReply ??
+    buildRecruiterReply({
+      approvedStories,
+      profile,
+      question,
+    })
+  );
+};
+
 const assertRecruiterRateLimit = (visitorToken: string) => {
   const windowStartedAt = Date.now() - 60_000;
   const currentWindow = recruiterRateLimit.get(visitorToken);
@@ -759,13 +960,26 @@ export const processRecruiterChatTurn = async ({
       sessionId: session.id,
     },
   });
+
+  const recentMessages = await prisma.recruiterChatMessage.findMany({
+    where: {
+      sessionId: session.id,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+    take: 10,
+  });
+  const aiReply = await generateRecruiterReply({
+    approvedStories: publicProfile.approvedStories,
+    profile: publicProfile.profile,
+    question: trimmedContent,
+    recentMessages: recentMessages.reverse(),
+  });
+
   await prisma.recruiterChatMessage.create({
     data: {
-      content: buildRecruiterReply({
-        approvedStories: publicProfile.approvedStories,
-        profile: publicProfile.profile,
-        question: trimmedContent,
-      }),
+      content: aiReply,
       role: 'ai',
       sessionId: session.id,
     },
