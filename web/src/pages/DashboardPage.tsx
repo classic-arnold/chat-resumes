@@ -8,6 +8,7 @@ import { Card } from '../components/ui/Card'
 import { EmptyState } from '../components/ui/EmptyState'
 import { SectionHeader } from '../components/ui/SectionHeader'
 import { Stat } from '../components/ui/Stat'
+import { QuizModal } from '../components/QuizModal'
 import { createPortalSession } from '../lib/billing'
 import { fetchDashboard, type DashboardSummary } from '../lib/dashboard'
 import {
@@ -246,6 +247,8 @@ const ShareLinkCard = ({
 
 export const DashboardPage = () => {
   const { getToken, isLoaded, isSignedIn } = useAuth()
+  const [reloadKey, setReloadKey] = useState(0)
+  const [isQuizOpen, setIsQuizOpen] = useState(false)
   const [dashboard, setDashboard] = useState<{
     copyState: 'copied' | 'failed' | 'idle'
     data: DashboardSummary | null
@@ -289,7 +292,7 @@ export const DashboardPage = () => {
     return () => {
       isCancelled = true
     }
-  }, [getToken, isLoaded, isSignedIn])
+  }, [getToken, isLoaded, isSignedIn, reloadKey])
 
   const handleCopy = async () => {
     const url = dashboard.data?.profile.publicUrl
@@ -355,6 +358,21 @@ export const DashboardPage = () => {
         <DocumentsCard />
         <Card>
           <SectionHeader
+            eyebrow="Train your AI"
+            title="Intake quiz"
+            description="Answer the 5 questions recruiters always want to know. Your AI uses these to ground every reply."
+            action={
+              <span className="ui-pill ui-pill-neutral">
+                {dashboard.data?.profile.quizAnsweredCount ?? 0} / {dashboard.data?.profile.quizTotal ?? 5} answered
+              </span>
+            }
+          />
+          <Button block onClick={() => setIsQuizOpen(true)} variant="primary">
+            {(dashboard.data?.profile.quizAnsweredCount ?? 0) > 0 ? 'Continue quiz' : 'Open quiz'}
+          </Button>
+        </Card>
+        <Card>
+          <SectionHeader
             eyebrow="Or train via chat"
             title="Talk to your AI"
             description="Coach your AI through conversation. Each turn refines a STAR story you can approve."
@@ -405,6 +423,12 @@ export const DashboardPage = () => {
           </div>
         )}
       </Card>
+
+      <QuizModal
+        isOpen={isQuizOpen}
+        onClose={() => setIsQuizOpen(false)}
+        onSaved={() => setReloadKey((current) => current + 1)}
+      />
     </AppShell>
   )
 }

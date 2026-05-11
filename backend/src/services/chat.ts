@@ -2,7 +2,7 @@ import { ApiError } from '../middleware/api-error-handler.js';
 import { generateAssistantReply } from '../lib/ai.js';
 import { prisma } from '../lib/prisma.js';
 import { buildDocumentContextForUser } from './documents.js';
-import { ensureCandidateProfile, getCandidateProfile, resolvePublicProfileBySlug, type CandidateProfilePayload, type PublicProfileResponse } from './profiles.js';
+import { ensureCandidateProfile, getCandidateProfile, resolvePublicProfileBySlug, buildQuizAnswersContext, parseQuizAnswers, type CandidateProfilePayload, type PublicProfileResponse } from './profiles.js';
 import type { SyncedLocalUser } from './users.js';
 
 type ChatMessagePayload = {
@@ -530,7 +530,7 @@ export const processCandidateChatTurn = async ({
     });
   }
 
-  const [profile, recentMessages, documentContext] = await Promise.all([
+  const [profile, recentMessages, documentContext, profileRecord] = await Promise.all([
     getCandidateProfile(user),
     prisma.candidateChatMessage.findMany({
       where: {
@@ -542,10 +542,13 @@ export const processCandidateChatTurn = async ({
       take: 12,
     }),
     buildDocumentContextForUser(user.id),
+    prisma.profile.findUnique({ where: { userId: user.id }, select: { quizAnswers: true } }),
   ]);
+  const quizContext = buildQuizAnswersContext(parseQuizAnswers(profileRecord?.quizAnswers));
+  const groundedContext = [quizContext, documentContext].filter((part) => part && part.length > 0).join('\n\n');
   const aiReply = await generateCandidateReply({
     content: trimmedContent,
-    documentContext,
+    documentContext: groundedContext,
     profile,
     recentMessages: recentMessages.reverse(),
     storyDraft: draftStory,
@@ -755,11 +758,13 @@ const generateRecruiterReply = async ({
   approvedStories,
   profile,
   question,
+  quizContext,
   recentMessages,
 }: {
   approvedStories: PublicProfileResponse['approvedStories'];
   profile: NonNullable<PublicProfileResponse['profile']>;
   question: string;
+  quizContext: string;
   recentMessages: Array<{
     content: string;
     role: 'ai' | 'candidate' | 'recruiter' | 'system';
@@ -769,7 +774,7 @@ const generateRecruiterReply = async ({
   const aiReply = await generateAssistantReply({
     systemPrompt: [
       'You are the public recruiter-facing AI for a candidate profile on ChatResumes.',
-      'Answer only from the approved public profile facts and approved stories provided to you.',
+      'Answer only from the approved public profile facts, intake answers, and approved stories provided to you.',
       'Do not invent or infer private information, hidden context, or unapproved claims.',
       'If the answer is not grounded in the approved content, say you do not have enough approved public material to answer that yet.',
       'Keep answers recruiter-safe, concrete, and concise, usually 2 to 4 sentences.',
@@ -781,6 +786,8 @@ const generateRecruiterReply = async ({
       `Location: ${profile.location ?? 'Not provided'}`,
       `Summary: ${profile.summary ?? 'Not provided'}`,
       `Target roles: ${profile.targetRoles.join(', ') || 'Not provided'}`,
+      '',
+      quizContext || 'Candidate intake answers: none provided.',
       '',
       'Approved stories:',
       formatApprovedStories(approvedStories),
@@ -974,6 +981,7 @@ export const processRecruiterChatTurn = async ({
     approvedStories: publicProfile.approvedStories,
     profile: publicProfile.profile,
     question: trimmedContent,
+    quizContext: buildQuizAnswersContext(parseQuizAnswers(publicProfile.profileRecord.quizAnswers)),
     recentMessages: recentMessages.reverse(),
   });
 

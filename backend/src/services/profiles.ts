@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
 import type { Profile, Story } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
 import { env } from '../config/env.js';
 import { prisma } from '../lib/prisma.js';
@@ -32,6 +33,62 @@ type PublicProfilePayload = {
   targetRoles: string[];
 };
 
+export const QUIZ_QUESTION_IDS = [
+  'identity',
+  'impact',
+  'superpower',
+  'direction',
+  'closer',
+] as const;
+
+export type QuizQuestionId = (typeof QUIZ_QUESTION_IDS)[number];
+
+export type QuizAnswers = Partial<Record<QuizQuestionId, string>>;
+
+export const QUIZ_TOTAL = QUIZ_QUESTION_IDS.length;
+export const MAX_QUIZ_ANSWER_CHARS = 2000;
+
+export const QUIZ_QUESTION_PROMPTS: Record<QuizQuestionId, string> = {
+  identity:
+    "If a recruiter had 60 seconds with you, what would you want them to walk away knowing?",
+  impact:
+    "What's the single most meaningful thing you've achieved in your career, and why did it matter?",
+  superpower:
+    'What do colleagues consistently come to you for that surprises people when they first find out?',
+  direction:
+    'What does your ideal next role look like, and what kind of team culture makes you do your best work?',
+  closer:
+    "What's one question you wish every recruiter would ask you — and what's your answer?",
+};
+
+export const parseQuizAnswers = (raw: unknown): QuizAnswers => {
+  if (!raw || typeof raw !== 'object') {
+    return {};
+  }
+
+  const source = raw as Record<string, unknown>;
+  const result: QuizAnswers = {};
+
+  for (const id of QUIZ_QUESTION_IDS) {
+    const value = source[id];
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (trimmed.length > 0) {
+        result[id] = trimmed;
+      }
+    }
+  }
+
+  return result;
+};
+
+const countQuizAnswered = (answers: QuizAnswers) => {
+  return QUIZ_QUESTION_IDS.reduce((acc, id) => {
+    const value = answers[id];
+    return value && value.trim().length > 0 ? acc + 1 : acc;
+  }, 0);
+};
+
 export type CandidateProfilePayload = {
   approvedStoriesCount: number;
   completeness: {
@@ -48,6 +105,8 @@ export type CandidateProfilePayload = {
   location: string | null;
   publicReady: boolean;
   publicUrl: string;
+  quizAnsweredCount: number;
+  quizTotal: number;
   slug: string;
   summary: string | null;
   targetRoles: string[];
@@ -124,12 +183,21 @@ const mapPublicStory = (story: Story): PublicStoryPayload => {
   };
 };
 
-const buildCompleteness = (profile: Profile, approvedStoriesCount: number) => {
+const buildCompleteness = (
+  profile: Profile,
+  approvedStoriesCount: number,
+  quizAnsweredCount: number,
+) => {
   const items: ProfileCompletenessItem[] = [
     {
       done: Boolean(profile.displayName?.trim()),
       key: 'display-name',
       label: 'Display name added',
+    },
+    {
+      done: quizAnsweredCount >= QUIZ_TOTAL,
+      key: 'intake-quiz',
+      label: 'Intake quiz completed',
     },
     {
       done: Boolean(profile.headline?.trim()),
@@ -179,7 +247,9 @@ const buildCandidateProfilePayload = ({
   draftStoriesCount: number;
   profile: Profile;
 }): CandidateProfilePayload => {
-  const completeness = buildCompleteness(profile, approvedStoriesCount);
+  const quizAnswers = parseQuizAnswers(profile.quizAnswers);
+  const quizAnsweredCount = countQuizAnswered(quizAnswers);
+  const completeness = buildCompleteness(profile, approvedStoriesCount, quizAnsweredCount);
   const publicReady = profile.isPublic && approvedStoriesCount > 0 && completeness.percentage >= 50;
 
   return {
@@ -193,6 +263,8 @@ const buildCandidateProfilePayload = ({
     location: profile.location,
     publicReady,
     publicUrl: buildPublicUrl(profile.slug),
+    quizAnsweredCount,
+    quizTotal: QUIZ_TOTAL,
     slug: profile.slug,
     summary: profile.summary,
     targetRoles: profile.targetRoles,
@@ -302,6 +374,76 @@ export const updateCandidateProfile = async ({
   });
 };
 
+export const getQuizAnswers = async (
+  user: SyncedLocalUser,
+): Promise<{ answers: QuizAnswers }> => {
+  const profile = await ensureCandidateProfile(user);
+  return { answers: parseQuizAnswers(profile.quizAnswers) };
+};
+
+export const buildQuizAnswersContext = (answers: QuizAnswers): string => {
+  const lines: string[] = [];
+  for (const id of QUIZ_QUESTION_IDS) {
+    const answer = answers[id];
+    if (!answer) continue;
+    lines.push(`Q: ${QUIZ_QUESTION_PROMPTS[id]}`);
+    lines.push(`A: ${answer}`);
+    lines.push('');
+  }
+  if (lines.length === 0) return '';
+  return ['Candidate intake answers:', ...lines].join('\n').trim();
+};
+
+export const saveQuizAnswers = async ({
+  input,
+  user,
+}: {
+  input: Partial<Record<QuizQuestionId, string | null>>;
+  user: SyncedLocalUser;
+}): Promise<{ answers: QuizAnswers; profile: CandidateProfilePayload }> => {
+  const profile = await ensureCandidateProfile(user);
+  const existing = parseQuizAnswers(profile.quizAnswers);
+  const merged: QuizAnswers = { ...existing };
+
+  for (const id of QUIZ_QUESTION_IDS) {
+    if (!(id in input)) {
+      continue;
+    }
+    const value = input[id];
+    if (value === null || value === undefined) {
+      delete merged[id];
+      continue;
+    }
+    const trimmed = value.trim();
+    if (trimmed.length === 0) {
+      delete merged[id];
+      continue;
+    }
+    merged[id] = trimmed.slice(0, MAX_QUIZ_ANSWER_CHARS);
+  }
+
+  const updatedProfile = await prisma.profile.update({
+    where: { id: profile.id },
+    data: {
+      quizAnswers: Object.keys(merged).length > 0 ? merged : Prisma.JsonNull,
+    },
+  });
+
+  const [approvedStoriesCount, draftStoriesCount] = await Promise.all([
+    prisma.story.count({ where: { status: 'approved', userId: user.id } }),
+    prisma.story.count({ where: { status: 'draft', userId: user.id } }),
+  ]);
+
+  return {
+    answers: parseQuizAnswers(updatedProfile.quizAnswers),
+    profile: buildCandidateProfilePayload({
+      approvedStoriesCount,
+      draftStoriesCount,
+      profile: updatedProfile,
+    }),
+  };
+};
+
 const buildPublicProfilePayload = (profile: Profile): PublicProfilePayload => {
   return {
     displayName: profile.displayName?.trim() || 'Candidate',
@@ -381,7 +523,8 @@ export const resolvePublicProfileBySlug = async ({
     },
     take: 6,
   });
-  const completeness = buildCompleteness(profile, approvedStoryRecords.length);
+  const quizAnsweredCount = countQuizAnswered(parseQuizAnswers(profile.quizAnswers));
+  const completeness = buildCompleteness(profile, approvedStoryRecords.length, quizAnsweredCount);
   const availability =
     profile.isPublic && approvedStoryRecords.length > 0 && completeness.percentage >= 50
       ? 'ready'

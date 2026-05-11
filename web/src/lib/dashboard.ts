@@ -21,6 +21,8 @@ export type CandidateProfile = {
   location: string | null
   publicReady: boolean
   publicUrl: string
+  quizAnsweredCount: number
+  quizTotal: number
   slug: string
   summary: string | null
   targetRoles: string[]

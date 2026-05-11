@@ -39,7 +39,7 @@ export const requestApi = async <T>(
     body?: unknown
     getToken?: TokenProvider
     headers?: Record<string, string>
-    method?: 'DELETE' | 'GET' | 'PATCH' | 'POST'
+    method?: 'DELETE' | 'GET' | 'PATCH' | 'POST' | 'PUT'
   } = {},
 ): Promise<T> => {
   const token = getToken ? await getToken() : null
