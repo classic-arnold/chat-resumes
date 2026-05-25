@@ -46,6 +46,7 @@ services:
       corepack enable &&
       yarn install --frozen-lockfile &&
       yarn workspace chat-resumes-backend prisma:migrate:deploy &&
+      yarn workspace chat-resumes-backend prisma:generate &&
       yarn build:backend &&
       yarn workspace chat-resumes-backend start
       "
@@ -58,6 +59,7 @@ services:
       - backend
     environment:
       NODE_ENV: development
+      VITE_API_BASE_URL: http://localhost:43807
       VITE_CLERK_PUBLISHABLE_KEY:
     ports:
       - "43173:43173"
@@ -101,6 +103,7 @@ services:
       corepack enable &&
       yarn install --frozen-lockfile &&
       yarn workspace chat-resumes-backend prisma:migrate:deploy &&
+      yarn workspace chat-resumes-backend prisma:generate &&
       yarn workspace chat-resumes-backend dev
       "
 
@@ -114,6 +117,7 @@ services:
     environment:
       NODE_ENV: development
       CHOKIDAR_USEPOLLING: "true"
+      VITE_API_BASE_URL: http://localhost:43808
       VITE_CLERK_PUBLISHABLE_KEY:
     ports:
       - "43174:43174"
