@@ -54,6 +54,12 @@ export const apiErrorHandler: ErrorRequestHandler = (
     return;
   }
 
+  if (!(error instanceof ApiError)) {
+    logger.error('uncaught.error', {
+      error: error instanceof Error ? { message: error.message, stack: error.stack } : error,
+    });
+  }
+
   const apiError =
     error instanceof ApiError
       ? error

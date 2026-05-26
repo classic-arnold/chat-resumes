@@ -7,15 +7,15 @@
     "backend"
   ],
   "scripts": {
-    "dev": "concurrently \"yarn workspace chat-resumes-web dev\" \"yarn workspace chat-resumes-backend dev\"",
-    "dev:web": "yarn workspace chat-resumes-web dev",
-    "dev:backend": "yarn workspace chat-resumes-backend dev",
-    "build": "yarn build:web && yarn build:backend",
-    "build:web": "yarn workspace chat-resumes-web build",
-    "build:backend": "yarn workspace chat-resumes-backend build",
-    "lint": "yarn lint:web && yarn lint:backend",
-    "lint:web": "yarn workspace chat-resumes-web lint",
-    "lint:backend": "yarn workspace chat-resumes-backend lint"
+    "dev": "concurrently \"npm run dev -w chat-resumes-web\" \"npm run dev -w chat-resumes-backend\"",
+    "dev:web": "npm run dev -w chat-resumes-web",
+    "dev:backend": "npm run dev -w chat-resumes-backend",
+    "build": "npm run build -w chat-resumes-web && npm run build -w chat-resumes-backend",
+    "build:web": "npm run build -w chat-resumes-web",
+    "build:backend": "npm run build -w chat-resumes-backend",
+    "lint": "npm run lint -w chat-resumes-web && npm run lint -w chat-resumes-backend",
+    "lint:web": "npm run lint -w chat-resumes-web",
+    "lint:backend": "npm run lint -w chat-resumes-backend"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"
