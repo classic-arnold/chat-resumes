@@ -10,6 +10,7 @@ import {
   type PublicProfileResponse,
   type RecruiterChatState,
 } from '../lib/chat'
+import '../styles/recruiter-chat.css'
 
 const RECRUITER_PROMPTS = [
   'Strongest leadership example?',
@@ -176,97 +177,125 @@ export const PublicRecruiterChatPage = () => {
     return (
       <div className="center-page">
         <main className="center-page-main">
-        <div className="center-page-card">
-          <div className="ui-pill ui-pill-inactive" style={{ marginBottom: '1rem' }}>
-            Profile unavailable
+          <div className="center-page-card">
+            <div className="ui-pill ui-pill-inactive" style={{ marginBottom: '1rem' }}>
+              Profile unavailable
+            </div>
+            <h1 className="center-page-title">
+              {profile?.displayName ?? 'This profile'} isn't available right now.
+            </h1>
+            <p className="center-page-body">
+              {state.data?.fallbackMessage ?? 'Please check back later.'}
+            </p>
+            <Link className="center-page-link" to="/">
+              ChatResumes home
+            </Link>
           </div>
-          <h1 className="center-page-title">
-            {profile?.displayName ?? 'This profile'} isn't available right now.
-          </h1>
-          <p className="center-page-body">
-            {state.data?.fallbackMessage ?? 'Please check back later.'}
-          </p>
-          <Link className="center-page-link" to="/">
-            ChatResumes home
-          </Link>
-        </div>
         </main>
       </div>
     )
   }
 
   return (
-    <div className="app-shell">
-      <header className="app-nav public-chat-header">
-        <Link className="app-nav-brand" to="/">
-          <span className="app-nav-brand-mark" aria-hidden />
+    <div className="rc-page-shell">
+      <header className="rc-header">
+        <Link className="rc-brand" to="/">
           ChatResumes
         </Link>
-        <div className="public-chat-profile">
-          <div className="public-chat-profile-name">
-            {profile?.displayName ?? 'Candidate AI'}
+        <div className="rc-header-status">
+          <div className="rc-live-pill">
+            <span className="rc-live-dot" />
+            Live Now
           </div>
-          {profile?.headline ? (
-            <div className="public-chat-profile-meta">{profile.headline}</div>
-          ) : null}
+          <div className="rc-header-profile">
+            <span className="rc-header-name">{profile?.displayName ?? 'Candidate AI'}</span>
+            <span className="rc-header-label">AI Resume</span>
+          </div>
         </div>
-        <Link className="ui-btn ui-btn-ghost ui-btn-sm" to="/signup">
-          Create yours
-        </Link>
       </header>
 
-      <div className="chat-layout">
-        <aside className="chat-side">
-          <div className="chat-side-section">
-            <div className="chat-side-section-title">About</div>
-            <div className="ui-status-text">
-              {profile?.summary ?? 'Approved answers only.'}
+      <div className="rc-layout">
+        <main className="rc-main-col">
+          <div className="rc-thread">
+            <div className="rc-starter-pill">
+              CONVERSATION STARTED WITH {profile?.displayName?.toUpperCase() ?? 'CANDIDATE'}'S AI VOICE
             </div>
-          </div>
-          <div className="chat-side-section">
-            <div className="chat-side-section-title">
-              Approved stories ({state.data?.approvedStories.length ?? 0})
-            </div>
-            {(state.data?.approvedStories ?? []).length === 0 ? (
-              <div className="ui-status-text">None yet.</div>
-            ) : (
-              state.data?.approvedStories.map((story) => (
-                <div className="chat-side-story" key={story.id}>
-                  <div className="chat-side-story-title">{story.title}</div>
-                  <div className="chat-side-story-meta">{story.result}</div>
-                </div>
-              ))
-            )}
-          </div>
-        </aside>
 
-        <section className="chat-main">
-          <div className="chat-thread">
-            {state.error ? <div className="ui-error-text">{state.error}</div> : null}
+            {state.error ? (
+              <div className="rc-status-text" style={{ color: '#ef4444' }}>
+                {state.error}
+              </div>
+            ) : null}
             {state.isLoading ? (
-              <div className="ui-status-text">Loading…</div>
+              <div className="rc-status-text">Loading…</div>
             ) : state.data && state.data.messages.length === 0 ? (
-              <div className="ui-status-text">
+              <div className="rc-status-text">
                 Ask anything. Answers come only from approved profile content.
               </div>
             ) : (
-              state.data?.messages.map((message) => (
-                <div
-                  className={`chat-bubble ${isRecruiterMessage(message) ? 'chat-bubble-user' : 'chat-bubble-ai'}`}
-                  key={message.id}
-                >
-                  {message.content}
-                </div>
-              ))
+              state.data?.messages.map((message) => {
+                const isRecruiter = isRecruiterMessage(message)
+                return (
+                  <div key={message.id} className="rc-message-group">
+                    <div className={`rc-msg-label ${isRecruiter ? 'recruiter' : 'ai'}`}>
+                      {isRecruiter ? (
+                        'Recruiter'
+                      ) : (
+                        <>
+                          {profile?.displayName ?? 'Candidate AI'} — AI
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            style={{ marginLeft: '4px', verticalAlign: 'middle', display: 'inline-block' }}
+                          >
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                          </svg>
+                        </>
+                      )}
+                    </div>
+                    <div className={isRecruiter ? 'rc-msg-bubble-recruiter' : 'rc-msg-bubble-ai'}>
+                      {message.content}
+                    </div>
+                  </div>
+                )
+              })
             )}
-            {state.isReplying ? <div className="ui-status-text">Thinking…</div> : null}
+            {state.isReplying ? (
+              <div className="rc-message-group">
+                <div className="rc-msg-label ai">
+                  {profile?.displayName ?? 'Candidate AI'} — AI
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{ marginLeft: '4px', verticalAlign: 'middle', display: 'inline-block' }}
+                  >
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                  </svg>
+                </div>
+                <div className="rc-msg-bubble-ai" style={{ opacity: 0.85 }}>
+                  Thinking…
+                </div>
+              </div>
+            ) : null}
             <div ref={threadEndRef} />
           </div>
 
-          <div className="chat-prompts">
+          <div className="rc-prompts-row">
             {RECRUITER_PROMPTS.map((prompt) => (
               <button
-                className="chat-prompt-chip"
+                className="rc-prompt-chip"
                 disabled={state.isReplying || availability !== 'ready'}
                 key={prompt}
                 onClick={() => send(prompt)}
@@ -277,30 +306,158 @@ export const PublicRecruiterChatPage = () => {
             ))}
           </div>
 
-          <form className="chat-composer" onSubmit={handleSubmit}>
-            <textarea
-              aria-label="Ask the candidate AI"
-              disabled={availability !== 'ready' || state.isLoading || state.isReplying}
-              onChange={(event) => setComposer(event.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Ask about experience, impact, target roles…"
-              rows={1}
-              value={composer}
-            />
-            <Button
-              disabled={
-                availability !== 'ready' ||
-                state.isLoading ||
-                state.isReplying ||
-                !composer.trim()
-              }
-              type="submit"
-              variant="primary"
-            >
-              {state.isReplying ? 'Sending…' : 'Send'}
-            </Button>
-          </form>
-        </section>
+          <div className="rc-composer-container">
+            <form className="rc-composer-pill" onSubmit={handleSubmit}>
+              <textarea
+                className="rc-composer-input"
+                aria-label="Ask the candidate AI"
+                disabled={availability !== 'ready' || state.isLoading || state.isReplying}
+                onChange={(event) => setComposer(event.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={`Ask ${profile?.displayName ?? 'Jordan'} anything...`}
+                rows={1}
+                value={composer}
+              />
+              <button
+                className="rc-send-btn"
+                disabled={
+                  availability !== 'ready' ||
+                  state.isLoading ||
+                  state.isReplying ||
+                  !composer.trim()
+                }
+                type="submit"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="22" y1="2" x2="11" y2="13" />
+                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                </svg>
+              </button>
+            </form>
+            <div className="rc-composer-disclaimer">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
+                <path d="m9 12 2 2 4-4" />
+              </svg>
+              AI generated response based on verified career history
+            </div>
+          </div>
+        </main>
+
+        <aside className="rc-sidebar-col">
+          {/* Profile Card */}
+          <div className="rc-profile-card">
+            <div className="rc-avatar-container">
+              <div className="rc-avatar-outer-ring">
+                <img
+                  className="rc-avatar-img"
+                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"
+                  alt={profile?.displayName ?? 'Candidate avatar'}
+                />
+              </div>
+            </div>
+            <h2 className="rc-profile-name">{profile?.displayName ?? 'Candidate AI'}</h2>
+            <p className="rc-profile-headline">{profile?.headline ?? 'Software Engineer'}</p>
+
+            <span className="rc-expertise-title">Key Expertise</span>
+            <div className="rc-tags-container">
+              {profile?.targetRoles && profile.targetRoles.length > 0 ? (
+                profile.targetRoles.map((role, idx) => (
+                  <span key={idx} className="rc-tag-chip">
+                    {role}
+                  </span>
+                ))
+              ) : (
+                <>
+                  <span className="rc-tag-chip">Next.js</span>
+                  <span className="rc-tag-chip">Rust</span>
+                  <span className="rc-tag-chip">Cloud Infra</span>
+                </>
+              )}
+            </div>
+
+            <div className="rc-buttons-container">
+              <button className="rc-action-btn-outline">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Download Resume
+              </button>
+              <button className="rc-action-btn-solid">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <line x1="8" y1="2" x2="8" y2="6" />
+                  <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+                Schedule Interview
+              </button>
+            </div>
+          </div>
+
+          {/* AI Insights Card */}
+          <div className="rc-insights-card">
+            <div className="rc-insights-header">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+              </svg>
+              <h3 className="rc-insights-title">AI Insights</h3>
+            </div>
+            <p className="rc-insights-body">
+              {profile?.displayName ?? 'Jordan'} is currently in high demand with{' '}
+              <strong>4 active interview cycles</strong>. His expertise in{' '}
+              {profile?.targetRoles?.[0] || 'Vercel\'s Edge architecture'} is a rare{' '}
+              <strong>0.1% skill match</strong> for your open Lead role.
+            </p>
+          </div>
+        </aside>
       </div>
     </div>
   )

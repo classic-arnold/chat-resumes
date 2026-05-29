@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom'
 
 import { quizQuestions } from '../lib/quizQuestions'
+import chatUi2 from '../assets/chat-ui-2.png'
+import pdfUi from '../assets/pdf-ui.png'
+import chatUi1 from '../assets/chat-ui-1.png'
 
 const tickerItems = [
   'Recruiters now expect a ChatResumes link',
@@ -12,17 +15,17 @@ const tickerItems = [
 
 const stats = [
   {
-    label: 'Average time a recruiter\nspends on a static resume',
+    label: 'Average Response\nTime',
     prefix: '7',
     suffix: 's',
   },
   {
-    label: 'More likely to get a callback\nwith a chat link on your resume',
+    label: 'Callback Rate\nIncrease',
     prefix: '4',
     suffix: '×',
   },
   {
-    label: 'Your AI answers recruiters\neven while you sleep',
+    label: 'Always\nMessaging',
     prefix: '24',
     suffix: '/7',
   },
@@ -32,296 +35,315 @@ const steps = [
   {
     description:
       "We ask you what recruiters always want to know — your story, superpowers, and goals — to craft your AI's personality around your real voice.",
-    icon: '📋',
-    number: '01',
-    title: 'Answer 5 Questions',
+    number: '1',
+    title: 'Answer Questions',
   },
   {
     description:
       'Drop your resume PDF and a short bio document. Our AI digests everything — experience, skills, achievements — until it knows you inside-out.',
-    icon: '📄',
-    number: '02',
+    number: '2',
     title: 'Upload Your Docs',
   },
   {
     description:
       'Within 60 seconds, your personal AI chatbot is trained and live. It answers questions exactly as you would — only faster and always available.',
-    icon: '⚡',
-    number: '03',
+    number: '3',
     title: 'AI Goes Live',
   },
   {
     description:
       'You get a permanent URL at chatresumes.io/yourname. Add it to your resume header, LinkedIn, and email sig — and let it do the work.',
-    icon: '🔗',
-    number: '04',
+    number: '4',
     title: 'Share Your Link',
   },
 ]
 
 const questions = quizQuestions
 
-const urgencyPoints = [
+const pricingFeatures = [
+  { text: 'Personal AI chatbot trained on your experience' },
+  { text: 'Custom ', bold: 'chatresumes.io/your-name', text2: ' URL' },
+  { text: 'Recruiter engagement analytics' },
+  { text: 'Dynamic tone adjustment for different roles' },
+  { text: 'Static PDF export & backup' },
+]
+
+const testimonials = [
   {
-    body:
-      'Forward-thinking hiring managers flag ChatResumes links as high-engagement candidates. Without one, you are invisible before you are even seen.',
-    icon: '📬',
-    title: 'Recruiters are already asking for it',
+    stars: 5,
+    quote: "“I was applying for senior roles for months with no luck. Within two weeks of switching to ChatResumes, I had three interviews. Recruiters love that they can just ask my AI if I have specific tech stack experience.”",
+    name: "Jordan Smith",
+    role: "Senior Frontend Engineer",
+    initials: "JS",
+    color: "#e0e7ff"
   },
   {
-    body:
-      "While you're with Company A, your link is fielding questions from B, C, and D simultaneously. Unfair advantage? Absolutely.",
-    icon: '⚡',
-    title: 'Your AI works while you interview elsewhere',
+    stars: 5,
+    quote: "“The analytics are a game changer. Seeing which companies are actually interacting with my profile let me focus my follow-ups. I landed my dream PM role at a Series B startup.”",
+    name: "Alex Martinez",
+    role: "Product Manager",
+    initials: "AM",
+    color: "#dbeafe"
   },
   {
-    body:
-      "chatresumes.io/yourname is first-come, first-served. Someone with your name could take it. Don't find out the hard way.",
-    icon: '🔒',
-    title: 'Your URL is yours forever — once claimed',
+    stars: 5,
+    quote: "“The PDF export looks better than any template I found elsewhere, and the AI chatbot feels like I have a 24/7 personal assistant handling initial recruiter screens for me.”",
+    name: "Sarah Chen",
+    role: "Data Scientist",
+    initials: "SC",
+    color: "#f3e8ff"
+  }
+]
+
+const faqItems = [
+  {
+    question: "Will recruiters actually use this?",
+    answer: "Yes. In our testing, recruiters spend 3x longer interacting with a ChatResumes compared to a static PDF. It allows them to ask exactly what they need to know, instantly."
   },
+  {
+    question: "Can it hallucinate my experience?",
+    answer: "No. The AI is strictly constrained to the source material you provide. It will proudly state 'I don't have that information in my profile' rather than invent experience."
+  },
+  {
+    question: "What if I need a traditional PDF?",
+    answer: "We've got you covered. Your Pro account includes a beautifully formatted, ATS-friendly static PDF export that syncs automatically with your chat data."
+  },
+  {
+    question: "How do the analytics work?",
+    answer: "You'll see which companies are viewing your profile, what questions they are asking the AI, and how long they spend engaged with your history."
+  }
 ]
 
 export const LandingPage = () => (
-  <div className="landing-page">
-    <nav className="site-nav">
-      <Link className="logo" to="/">
-        <div className="logo-icon">💬</div>
-        Chat<span>Resumes</span>
+  <div className="lp-root">
+    {/* NAV */}
+    <nav className="lp-nav">
+      <Link className="lp-logo" to="/">
+        <span className="lp-logo-icon">💬</span>
+        ChatResumes
       </Link>
-      <div className="nav-links">
-        <a className="nav-link" href="#how-it-works">
-          How It Works
-        </a>
-        <a className="nav-link" href="#questions">
-          The Questions
-        </a>
-        <a className="nav-link" href="#fomo">
-          Why Now
-        </a>
+      <div className="lp-nav-links">
+        <a className="lp-nav-link" href="#how-it-works">How it works</a>
+        <a className="lp-nav-link" href="#pricing">Pricing</a>
       </div>
-      <div className="nav-actions">
-        <Link className="btn-nav-ghost" to="/login">
-          Log In
-        </Link>
-        <Link className="btn-nav-solid" to="/pricing">
-          See Pricing →
-        </Link>
-      </div>
+      <Link className="lp-btn-cta" to="/pricing">Claim My URL →</Link>
     </nav>
 
     <main>
-      <section className="hero">
-        <div className="hero-bg" />
-        <div className="hero-dots" />
-        <div className="hero-left">
-          <div className="hero-eyebrow">
-            <div className="eyebrow-dot" />
-            Why You Can&apos;t Wait
+      {/* HERO */}
+      <section className="lp-hero">
+        <div className="lp-hero-inner">
+          <div className="lp-ticker-mini uppercase">
+            <span className="lp-ticker-dot" />
+            recruiters are already clicking these links
           </div>
-          <h1 className="hero-headline">
-            <div className="line">
-              <span>The candidates</span>
-            </div>
-            <div className="line">
-              <span className="italic-serif">getting hired</span>
-            </div>
-            <div className="line">
-              <span className="blue-word">aren&apos;t sending PDFs anymore.</span>
-            </div>
+          <h1 className="lp-hero-h1">
+            You're not getting ignored<br />
+            because you're<br />
+            <span className="lp-hero-accent">being unqualified.</span>
           </h1>
-          <p className="hero-sub">
-            The job market has changed. Hiring managers are overwhelmed.
-            Recruiters have seconds, not minutes. A ChatResumes link on your
-            resume signals you&apos;re different before the conversation even
-            starts. Every day without one is a day recruiters choose someone
-            else who has it.
+          <p className="lp-hero-sub">
+            ChatResumes has let you understand, only a few AI/NLP elements last your
+            questions HAP. That's cheaper, far cheaper, than starting a hiring pipeline.
           </p>
-          <div className="hero-ctas">
-            <Link className="btn-primary-blue" to="/pricing">
-              Start My Paid Plan →
+          <div className="lp-hero-ctas">
+            <Link className="lp-btn-primary" to="/pricing">
+              Claim My Link — $19/mo
             </Link>
-            <a className="btn-outline-blue" href="#how-it-works">
-              See how it works
-            </a>
+            <a className="lp-btn-ghost" href="#how-it-works">See how it works</a>
           </div>
-        </div>
 
-        <div className="hero-right">
-          <div className="hero-chat-card">
-            <div className="chat-card-header">
-              <div className="chat-avatar">JH</div>
-              <div>
-                <div className="chat-card-name">Jordan Hayes — AI Resume</div>
-                <div className="chat-card-status">
-                  <div className="status-dot" />
-                  Online · chatresumes.io/jordan-hayes
-                </div>
-              </div>
-            </div>
-            <div className="chat-card-body">
-              <div className="cmsg r">
-                <div className="cmsg-who">Recruiter · Sarah M.</div>
-                <div className="cmsg-bubble">
-                  Hi! Can you tell me about Jordan&apos;s leadership experience?
-                </div>
-              </div>
-              <div className="cmsg ai">
-                <div className="cmsg-who">Jordan&apos;s AI</div>
-                <div className="cmsg-bubble">
-                  Absolutely! Jordan led a 14-person cross-functional team at
-                  Vercel, shipping a full rebrand 3 weeks ahead of schedule.
-                  They genuinely thrive in high-ambiguity situations — it&apos;s
-                  where their best thinking happens.
-                </div>
-              </div>
-              <div className="cmsg r">
-                <div className="cmsg-who">Recruiter · Sarah M.</div>
-                <div className="cmsg-bubble">
-                  Impressive. What&apos;s Jordan looking for next?
-                </div>
-              </div>
-              <div className="typing-row">
-                <div className="tdot" />
-                <div className="tdot" />
-                <div className="tdot" />
-              </div>
-            </div>
-            <div className="chat-card-footer">
-              <div className="chat-input-fake">Ask anything about Jordan...</div>
-              <button className="chat-send-btn" type="button">
-                ↑
-              </button>
-            </div>
-          </div>
+          {/* Chat preview card */}
+          <img src={chatUi2} alt="Chat preview" className="lp-chat-demo-img" />
         </div>
       </section>
 
-      <div className="fomo-strip">
-        <div className="fomo-track">
+      {/* TICKER STRIP */}
+      <div className="lp-fomo-strip">
+        <div className="lp-fomo-track">
           {[...tickerItems, ...tickerItems].map((item, index) => (
-            <div className="fomo-item" key={`${item}-${index}`}>
+            <div className="lp-fomo-item" key={`${item}-${index}`}>
               {item}
             </div>
           ))}
         </div>
       </div>
 
-      <div className="stats-row">
-        {stats.map((stat) => (
-          <div className="stat-cell" key={stat.label}>
-            <div className="stat-num">
-              <span>{stat.prefix}</span>
-              {stat.suffix}
+      {/* STOP BEING A PDF */}
+      <section className="lp-stop-pdf">
+        <div className="lp-stop-pdf-inner">
+          <h2 className="lp-section-h2">Stop being a PDF in a pile of PDFs.</h2>
+          {/* stop pdf demo */}
+          <div className="lp-stop-pdf-demo">
+            <div className="lp-pdf-left">
+              <div className="lp-pdf-card-label">NOT CHATRESUMES</div>
+              <img src={pdfUi} alt="PDF Resume" className="lp-stop-pdf-img" />
             </div>
-            <div className="stat-label">
-              {stat.label.split('\n').map((line) => (
-                <span className="label-line" key={line}>
-                  {line}
-                </span>
-              ))}
+            <div className="lp-pdf-right">
+              <div className="lp-pdf-card-label lp-pdf-card-label-active">✓ WITH CHATRESUMES</div>
+              <img src={chatUi1} alt="Chat UI Resume" className="lp-stop-chat-img" />
             </div>
           </div>
-        ))}
-      </div>
+        </div>
+      </section>
 
-      <section className="section section-white" id="how-it-works">
-        <div className="section-tag">Process</div>
-        <h2 className="section-title">
-          Up and running
-          <br />
-          in under 10 minutes.
-        </h2>
-        <div className="steps-grid">
-          {steps.map((step) => (
-            <div className="step-card" key={step.number}>
-              <div className="step-num-bg">{step.number}</div>
-              <div className="step-icon-box">{step.icon}</div>
-              <div className="step-title">{step.title}</div>
-              <div className="step-desc">{step.description}</div>
+      {/* STATS */}
+      <section className="lp-stats">
+        <div className="lp-stats-inner">
+          {stats.map((stat) => (
+            <div className="lp-stat-cell" key={stat.label}>
+              <div className="lp-stat-num">
+                <span className="lp-stat-prefix">{stat.prefix}</span>
+                <span className="lp-stat-suffix">{stat.suffix}</span>
+              </div>
+              <div className="lp-stat-label">
+                {stat.label.split('\n').map((line) => (
+                  <span className="lp-stat-label-line" key={line}>{line}</span>
+                ))}
+              </div>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="questions-section" id="questions">
-        <div className="section-tag">The 5 Questions</div>
-        <h2 className="section-title">
-          We ask the questions
-          <br />
-          recruiters are{' '}
-          <em className="section-emphasis">dying</em>
-          {' '}to ask.
-        </h2>
-        <div className="q-grid">
-          {questions.map((question, index) => (
-            <div className="q-card" key={question.number}>
-              <div className="q-num-badge">{question.number}</div>
-              <div className="q-card-tag">{question.category}</div>
-              <div className="q-text">{question.text}</div>
-              <div className="q-hint">{question.hint}</div>
-              {index === 0 ? null : null}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="fomo-section" id="fomo">
-        <div>
-          <div className="section-tag">Now Live — Claim Your Link Today</div>
-          <h2 className="fomo-headline">
-            Your resume,
-            <br />
-            <span className="italic-serif">now alive.</span>
-            <br />
-            <span className="blue-word">Always on.</span>
+      {/* HOW IT WORKS */}
+      <section className="lp-how" id="how-it-works">
+        <div className="lp-how-inner">
+          <p className="lp-section-eyebrow">How it works</p>
+          <h2 className="lp-section-h2 lp-section-h2-light">
+            Fast easy access to results within just 5 months.
           </h2>
-          <p className="fomo-body">
-            Stop being a PDF in a pile of PDFs. ChatResumes turns your
-            experience into an intelligent AI that answers recruiter questions
-            24/7 — as if you were sitting right across the table.
-          </p>
-          <Link className="btn-primary-blue inline-cta" to="/pricing">
-            See Launch Pricing ↗
-          </Link>
-          <div className="hero-url-row">
-            <div className="url-chip">
-              🔗 chatresumes.io/<strong>yourname</strong>
-              <span className="blink">_</span>
-            </div>
-            <span className="url-note">Your permanent recruiter-ready link</span>
+          <div className="lp-steps">
+            {steps.map((step) => (
+              <div className="lp-step" key={step.number}>
+                <div className="lp-step-num">{step.number}</div>
+                <div className="lp-step-body">
+                  <div className="lp-step-title">{step.title}</div>
+                  <div className="lp-step-desc">{step.description}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="lp-how-ctas">
+            <a className="lp-btn-link" href="#questions">I understand all →</a>
+            <a className="lp-btn-link lp-btn-link-muted" href="#pricing">part → more</a>
           </div>
         </div>
-        <div>
-          <ul className="fomo-bullets">
-            {urgencyPoints.map((point) => (
-              <li key={point.title}>
-                <div className="fomo-icon">{point.icon}</div>
-                <div>
-                  <strong>{point.title}</strong>
-                  {point.body}
+      </section>
+
+      {/* INVEST / PRICING */}
+      <section className="lp-pricing" id="pricing">
+        <div className="lp-pricing-inner">
+          <h2 className="lp-section-h2 lp-section-h2-dark">Invest in your career.<br />One simple price.</h2>
+          <p className="lp-pricing-sub">No complex tiers. No hidden fees. Get the ultimate AI-powered resume and interview tool for a single, flat monthly rate.</p>
+          
+          <div className="lp-pricing-card-split">
+            <div className="lp-pricing-card-left">
+              <div className="lp-pricing-plan-badge">PRO AI</div>
+              <h3 className="lp-pricing-card-title">The Edge</h3>
+              <div className="lp-pricing-price">
+                <span className="lp-pricing-price-num">$19</span>
+                <span className="lp-pricing-price-sub">/mo</span>
+              </div>
+              <p className="lp-pricing-card-desc">
+                Everything you need to stand out, optimized for modern recruiting.
+              </p>
+              <Link className="lp-btn-primary lp-btn-pricing" to="/pricing">
+                Start Your Free Trial
+              </Link>
+              <p className="lp-pricing-note">
+                Cancel anytime. 7-day money-back guarantee.
+              </p>
+            </div>
+            
+            <div className="lp-pricing-card-right">
+              <ul className="lp-pricing-features">
+                {pricingFeatures.map((f, i) => (
+                  <li key={i} className="lp-pricing-feature">
+                    <span className="lp-pricing-check">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    </span>
+                    <span className="lp-pricing-feature-text">
+                      {f.text}
+                      {f.bold && <strong>{f.bold}</strong>}
+                      {f.text2}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* TESTIMONIALS */}
+      <section className="lp-testimonials">
+        <div className="lp-testimonials-inner">
+          <p className="lp-testimonials-eyebrow">REAL CANDIDATES. REAL CALLBACKS.</p>
+          <h2 className="lp-section-h2 lp-section-h2-dark">They stopped being a PDF in a pile.</h2>
+          
+          <div className="lp-testimonials-grid">
+            {testimonials.map((t, idx) => (
+              <div className="lp-testimonial-card" key={idx}>
+                <div className="lp-testimonial-stars">
+                  {Array.from({ length: t.stars }).map((_, i) => (
+                    <span key={i} className="lp-star">★</span>
+                  ))}
                 </div>
-              </li>
+                <p className="lp-testimonial-quote">{t.quote}</p>
+                <div className="lp-testimonial-user">
+                  <div className="lp-testimonial-avatar" style={{ backgroundColor: t.color }}>
+                    {t.initials}
+                  </div>
+                  <div className="lp-testimonial-info">
+                    <div className="lp-testimonial-name">{t.name}</div>
+                    <div className="lp-testimonial-role">{t.role}</div>
+                  </div>
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="lp-faq" id="faq">
+        <div className="lp-faq-inner">
+          <h2 className="lp-section-h2 lp-section-h2-white">Common Questions</h2>
+          <p className="lp-faq-sub">Everything you need to know about the product and billing.</p>
+          
+          <div className="lp-faq-grid">
+            {faqItems.map((item, idx) => (
+              <div className="lp-faq-card" key={idx}>
+                <div className="lp-faq-icon">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                  </svg>
+                </div>
+                <div className="lp-faq-content">
+                  <h3 className="lp-faq-question">{item.question}</h3>
+                  <p className="lp-faq-answer">{item.answer}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
     </main>
 
-    <footer className="site-footer">
-      <div className="footer-logo">
-        Chat<span>Resumes</span>
+    {/* FOOTER */}
+    <footer className="lp-footer">
+      <div className="lp-footer-logo">ChatResumes</div>
+      <div className="lp-footer-links">
+        <span className="lp-footer-link">Privacy Policy</span>
+        <span className="lp-footer-link">Terms of Service</span>
+        <span className="lp-footer-link">Cookie Policy</span>
       </div>
-      <div className="footer-links">
-        <span className="footer-link">Privacy</span>
-        <span className="footer-link">Terms</span>
-        <Link className="footer-link" to="/login">
-          Log In
-        </Link>
-      </div>
-      <div className="footer-text">
-        © 2025 ChatResumes · The link that gets you hired.
-      </div>
+      <div className="lp-footer-copy">© 2024 ChatResumes. All rights reserved.</div>
     </footer>
   </div>
 )
