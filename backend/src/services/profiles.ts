@@ -23,9 +23,11 @@ type PublicStoryPayload = {
   updatedAt: string;
 };
 
+
 type PublicProfilePayload = {
   displayName: string;
   headline: string | null;
+  imageUrl: string | null;
   location: string | null;
   publicUrl: string;
   slug: string;
@@ -444,10 +446,11 @@ export const saveQuizAnswers = async ({
   };
 };
 
-const buildPublicProfilePayload = (profile: Profile): PublicProfilePayload => {
+const buildPublicProfilePayload = (profile: Profile, imageUrl?: string | null): PublicProfilePayload => {
   return {
     displayName: profile.displayName?.trim() || 'Candidate',
     headline: profile.headline,
+    imageUrl: imageUrl ?? null,
     location: profile.location,
     publicUrl: buildPublicUrl(profile.slug),
     slug: profile.slug,
@@ -558,12 +561,21 @@ export const resolvePublicProfileBySlug = async ({
     visitId = visit.id;
   }
 
+  let clerkImageUrl: string | null = null;
+  try {
+    const { getClerkUser } = await import('../auth/clerk.js');
+    const clerkUser = await getClerkUser(profile.userId);
+    clerkImageUrl = clerkUser.imageUrl ?? null;
+  } catch {
+    // silently ignore — image is optional
+  }
+
   return {
     approvedStories: approvedStoryRecords.map(mapPublicStory),
     approvedStoryRecords,
     availability,
     fallbackMessage: null,
-    profile: buildPublicProfilePayload(profile),
+    profile: buildPublicProfilePayload(profile, clerkImageUrl),
     profileRecord: profile,
     visitId,
     visitorToken: resolvedVisitorToken,

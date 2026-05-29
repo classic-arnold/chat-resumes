@@ -368,30 +368,33 @@ export const PublicRecruiterChatPage = () => {
               <div className="rc-avatar-outer-ring">
                 <img
                   className="rc-avatar-img"
-                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"
+                  src={
+                    profile?.imageUrl ??
+                    `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.displayName ?? 'C')}&background=4f46e5&color=fff&size=150&bold=true`
+                  }
                   alt={profile?.displayName ?? 'Candidate avatar'}
+                  onError={(e) => {
+                    const target = e.currentTarget
+                    target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.displayName ?? 'C')}&background=4f46e5&color=fff&size=150&bold=true`
+                  }}
                 />
               </div>
             </div>
             <h2 className="rc-profile-name">{profile?.displayName ?? 'Candidate AI'}</h2>
             <p className="rc-profile-headline">{profile?.headline ?? 'Software Engineer'}</p>
 
-            <span className="rc-expertise-title">Key Expertise</span>
-            <div className="rc-tags-container">
-              {profile?.targetRoles && profile.targetRoles.length > 0 ? (
-                profile.targetRoles.map((role, idx) => (
-                  <span key={idx} className="rc-tag-chip">
-                    {role}
-                  </span>
-                ))
-              ) : (
-                <>
-                  <span className="rc-tag-chip">Next.js</span>
-                  <span className="rc-tag-chip">Rust</span>
-                  <span className="rc-tag-chip">Cloud Infra</span>
-                </>
-              )}
-            </div>
+            {profile?.targetRoles && profile.targetRoles.length > 0 && (
+              <>
+                <span className="rc-expertise-title">Key Expertise</span>
+                <div className="rc-tags-container">
+                  {profile.targetRoles.map((role, idx) => (
+                    <span key={idx} className="rc-tag-chip">
+                      {role}
+                    </span>
+                  ))}
+                </div>
+              </>
+            )}
 
             <div className="rc-buttons-container">
               <button className="rc-action-btn-outline">
