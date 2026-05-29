@@ -1,6 +1,4 @@
 import { Link } from 'react-router-dom'
-
-import { quizQuestions } from '../lib/quizQuestions'
 import chatUi2 from '../assets/chat-ui-2.png'
 import pdfUi from '../assets/pdf-ui.png'
 import chatUi1 from '../assets/chat-ui-1.png'
@@ -57,8 +55,6 @@ const steps = [
     title: 'Share Your Link',
   },
 ]
-
-const questions = quizQuestions
 
 const pricingFeatures = [
   { text: 'Personal AI chatbot trained on your experience' },
@@ -236,7 +232,7 @@ export const LandingPage = () => (
         <div className="lp-pricing-inner">
           <h2 className="lp-section-h2 lp-section-h2-dark">Invest in your career.<br />One simple price.</h2>
           <p className="lp-pricing-sub">No complex tiers. No hidden fees. Get the ultimate AI-powered resume and interview tool for a single, flat monthly rate.</p>
-          
+
           <div className="lp-pricing-card-split">
             <div className="lp-pricing-card-left">
               <div className="lp-pricing-plan-badge">PRO AI</div>
@@ -255,7 +251,7 @@ export const LandingPage = () => (
                 Cancel anytime. 7-day money-back guarantee.
               </p>
             </div>
-            
+
             <div className="lp-pricing-card-right">
               <ul className="lp-pricing-features">
                 {pricingFeatures.map((f, i) => (
@@ -283,7 +279,7 @@ export const LandingPage = () => (
         <div className="lp-testimonials-inner">
           <p className="lp-testimonials-eyebrow">REAL CANDIDATES. REAL CALLBACKS.</p>
           <h2 className="lp-section-h2 lp-section-h2-dark">They stopped being a PDF in a pile.</h2>
-          
+
           <div className="lp-testimonials-grid">
             {testimonials.map((t, idx) => (
               <div className="lp-testimonial-card" key={idx}>
@@ -313,7 +309,7 @@ export const LandingPage = () => (
         <div className="lp-faq-inner">
           <h2 className="lp-section-h2 lp-section-h2-white">Common Questions</h2>
           <p className="lp-faq-sub">Everything you need to know about the product and billing.</p>
-          
+
           <div className="lp-faq-grid">
             {faqItems.map((item, idx) => (
               <div className="lp-faq-card" key={idx}>

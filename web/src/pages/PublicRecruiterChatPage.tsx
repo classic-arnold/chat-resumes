@@ -2,7 +2,6 @@ import { type FormEvent, type KeyboardEvent, useEffect, useRef, useState } from 
 import { Link, useParams } from 'react-router-dom'
 import type { Socket } from 'socket.io-client'
 
-import { Button } from '../components/ui/Button'
 import {
   connectRecruiterSocket,
   fetchPublicProfile,
