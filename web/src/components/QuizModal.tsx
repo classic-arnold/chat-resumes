@@ -95,12 +95,12 @@ export const QuizModal = ({ isOpen, onClose, onSaved }: QuizModalProps) => {
       aria-label="Intake quiz"
     >
       <div className="bg-white rounded-[20px] w-full max-w-[720px] max-h-[85vh] flex flex-col shadow-[0_24px_70px_rgba(15,23,42,0.25)] overflow-hidden border border-slate-100 font-sans">
-        
+
         {/* Modal Header */}
         <div className="relative p-[1.5rem] border-b border-slate-100 flex flex-col gap-[0.75rem]">
           {/* Accent Line */}
           <div className="absolute top-0 left-0 right-0 h-[4px] bg-gradient-to-r from-[#5B54F7] to-blue-bright" />
-          
+
           <div className="flex items-start justify-between gap-[1rem]">
             <div className="flex items-center gap-[0.75rem]">
               <div className="w-[36px] h-[36px] rounded-full bg-indigo-50 border border-indigo-100/50 flex items-center justify-center text-[#5B54F7]">
@@ -113,7 +113,7 @@ export const QuizModal = ({ isOpen, onClose, onSaved }: QuizModalProps) => {
                 </h2>
               </div>
             </div>
-            
+
             <button
               aria-label="Close"
               className="p-[0.5rem] bg-transparent border-none text-slate-400 hover:text-slate-700 cursor-pointer rounded-full hover:bg-slate-50 transition-colors"
@@ -131,8 +131,8 @@ export const QuizModal = ({ isOpen, onClose, onSaved }: QuizModalProps) => {
               <span className="text-[#5B54F7]">{answeredCount} of {QUIZ_TOTAL} answered</span>
             </div>
             <div className="w-full h-[6px] bg-slate-100 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-[#5B54F7] to-blue-bright rounded-full transition-all duration-500 ease-out" 
+              <div
+                className="h-full bg-gradient-to-r from-[#5B54F7] to-blue-bright rounded-full transition-all duration-500 ease-out"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
@@ -150,22 +150,21 @@ export const QuizModal = ({ isOpen, onClose, onSaved }: QuizModalProps) => {
             quizQuestions.map((question, idx) => {
               const value = answers[question.id] ?? ''
               const isAnswered = value.trim().length > 0
-              
+
               return (
-                <div 
-                  className={`flex flex-col gap-[0.6rem] p-[1.25rem] rounded-[16px] border transition-all ${
-                    isAnswered 
-                      ? 'border-indigo-100 bg-indigo-50/[0.02]' 
-                      : 'border-slate-100 bg-white'
-                  }`} 
+                <div
+                  className={`flex flex-col gap-[0.6rem] p-[1.25rem] rounded-[16px] border transition-all ${isAnswered
+                    ? 'border-indigo-100 bg-indigo-50/[0.02]'
+                    : 'border-slate-100 bg-white'
+                    }`}
                   key={question.id}
                 >
                   <div className="flex items-center justify-between gap-[0.75rem]">
                     <div className="flex items-center gap-[0.55rem]">
-                      <span className="w-[20px] h-[20px] rounded-full bg-[#5B54F7]/10 text-[#5B54F7] flex items-center justify-center text-[0.7rem] font-extrabold">
+                      <span className="w-[20px] h-[20px] rounded-full bg-[#5B54F7]/10 text-[#5B54F7] flex items-center justify-center text-[0.7rem] font-extrabold leading-none flex-shrink-0">
                         {question.number || idx + 1}
                       </span>
-                      <span className="text-[0.66rem] font-bold uppercase tracking-[0.06em] bg-slate-100 text-slate-600 px-[0.55rem] py-[0.15rem] rounded-full">
+                      <span className="inline-flex items-center justify-center text-[0.66rem] font-bold uppercase tracking-[0.06em] bg-slate-100 text-slate-600 px-[0.55rem] py-[0.15rem] rounded-full leading-none h-[20px]">
                         {question.category}
                       </span>
                     </div>
@@ -176,14 +175,14 @@ export const QuizModal = ({ isOpen, onClose, onSaved }: QuizModalProps) => {
                       </span>
                     )}
                   </div>
-                  
-                  <label 
-                    className="font-inter font-bold text-[0.92rem] text-[#0f1f4b] leading-tight" 
+
+                  <label
+                    className="font-inter font-bold text-[0.92rem] text-[#0f1f4b] leading-tight"
                     htmlFor={`quiz-${question.id}`}
                   >
                     {question.text}
                   </label>
-                  
+
                   <textarea
                     className="w-full border border-slate-200 rounded-[12px] p-[0.75rem_1rem] font-sans text-[0.85rem] text-[#0f1f4b] bg-white resize-y min-h-[100px] focus:outline-none focus:border-[#5B54F7] focus:ring-4 focus:ring-indigo-100/50 transition-all placeholder-slate-400"
                     id={`quiz-${question.id}`}
@@ -193,7 +192,7 @@ export const QuizModal = ({ isOpen, onClose, onSaved }: QuizModalProps) => {
                     rows={4}
                     value={value}
                   />
-                  
+
                   <div className="flex items-start justify-between gap-[0.75rem] text-[0.72rem] text-slate-500 mt-[0.1rem]">
                     <span className="leading-[1.4] flex-1">{question.hint}</span>
                     <span className="flex-shrink-0 font-semibold font-mono text-slate-400">
@@ -215,16 +214,16 @@ export const QuizModal = ({ isOpen, onClose, onSaved }: QuizModalProps) => {
 
         {/* Modal Footer */}
         <div className="flex justify-end items-center gap-[0.75rem] p-[1.25rem_1.5rem] border-t border-slate-100 bg-slate-50/50">
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             className="px-[1.25rem] py-[0.6rem] bg-white hover:bg-slate-100 text-slate-700 text-[0.82rem] font-bold rounded-[12px] border border-slate-200 transition-all cursor-pointer"
           >
             Cancel
           </button>
-          
-          <button 
-            disabled={isSaving || isLoading} 
-            onClick={() => void handleSave()} 
+
+          <button
+            disabled={isSaving || isLoading}
+            onClick={() => void handleSave()}
             className="inline-flex items-center justify-center gap-[0.5rem] px-[1.5rem] py-[0.6rem] bg-[#5B54F7] hover:bg-[#4a43e6] disabled:opacity-50 text-white text-[0.82rem] font-bold rounded-[12px] transition-all cursor-pointer border-none shadow-[0_4px_12px_rgba(91,84,247,0.15)] active:scale-[0.98]"
           >
             {isSaving && <Loader2 className="w-[14px] h-[14px] animate-spin" />}
