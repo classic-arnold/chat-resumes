@@ -147,7 +147,7 @@ export const QuizModal = ({ isOpen, onClose, onSaved }: QuizModalProps) => {
               <span className="font-medium">Loading your profile quiz answers...</span>
             </div>
           ) : (
-            quizQuestions.map((question, idx) => {
+            quizQuestions.map((question) => {
               const value = answers[question.id] ?? ''
               const isAnswered = value.trim().length > 0
 
@@ -160,10 +160,11 @@ export const QuizModal = ({ isOpen, onClose, onSaved }: QuizModalProps) => {
                   key={question.id}
                 >
                   <div className="flex items-center justify-between gap-[0.75rem]">
-                    <div className="flex items-center gap-[0.55rem]">
-                      <span className="w-[20px] h-[20px] rounded-full bg-[#5B54F7]/10 text-[#5B54F7] flex items-center justify-center text-[0.7rem] font-extrabold leading-none flex-shrink-0">
-                        {question.number || idx + 1}
+                    <div className="flex items-center gap-[0.5rem]">
+                      <span className="text-[0.72rem] font-bold text-[#5B54F7] uppercase tracking-wider">
+                        {question.number}
                       </span>
+                      <span className="w-[3px] h-[3px] rounded-full bg-slate-300" aria-hidden="true" />
                       <span className="inline-flex items-center justify-center text-[0.66rem] font-bold uppercase tracking-[0.06em] bg-slate-100 text-slate-600 px-[0.55rem] py-[0.15rem] rounded-full leading-none h-[20px]">
                         {question.category}
                       </span>
