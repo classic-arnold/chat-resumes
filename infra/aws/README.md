@@ -39,7 +39,7 @@ CDK_CONFIG_PATH=config/chat-resumes.json npm run sync-runtime:dry-run -- --seed 
 ## Runtime Config Flow
 
 - Deployed runtime config lives in one place: SSM Parameter Store under the product stage prefix.
-- `runtime.env` remains the operator-managed seed file for deployed backend values. For ChatResumes it currently seeds `NODE_ENV`, `CLIENT_ORIGIN`, `APP_BASE_URL`, `DATABASE_URL`, `SOCKET_PATH`, `CLERK_SECRET_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID`, and `OPENAI_API_KEY`.
+- `runtime.env` remains the operator-managed seed file for deployed backend values. For ChatResumes it currently seeds `NODE_ENV`, `CLIENT_ORIGIN`, `APP_BASE_URL`, `DATABASE_URL`, `SOCKET_PATH`, `CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID`, and `OPENAI_API_KEY`.
 - `sync-runtime` mirrors `OPENAI_API_KEY` from the product root `.env` when present and canonical.
 - `CDK_CONFIG_PATH=config/chat-resumes.json npm run sync-runtime -- --seed runtime.env` writes the current seed values to SSM as `String` and `SecureString` parameters under `/products/chat-resumes/mvp/runtime/backend/`.
 - `sync-runtime` fails fast if any resolved runtime value still looks like a placeholder such as `replace-me` or an `.example` host, or if a mirrored key in `runtime.env` diverges from the canonical value in the product root `.env`.

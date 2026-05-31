@@ -64,6 +64,7 @@ const rawEnvSchema = z
     SOCKET_PATH: z.string().min(1).default('/socket.io'),
     AWS_REGION: z.string().min(1).default('us-east-1'),
     STORAGE_BUCKET_NAME: optionalNonEmptyString,
+    CLERK_PUBLISHABLE_KEY: optionalNonEmptyString,
     CLERK_SECRET_KEY: optionalNonEmptyString,
     STRIPE_SECRET_KEY: optionalNonEmptyString,
     STRIPE_WEBHOOK_SECRET: optionalNonEmptyString,
@@ -76,6 +77,7 @@ const rawEnvSchema = z
     }
 
     const requiredInProduction = [
+      'CLERK_PUBLISHABLE_KEY',
       'CLERK_SECRET_KEY',
       'STRIPE_SECRET_KEY',
       'STRIPE_WEBHOOK_SECRET',
@@ -115,8 +117,11 @@ export const env = Object.freeze({
   awsRegion: parsedEnv.data.AWS_REGION,
   storageBucketName: parsedEnv.data.STORAGE_BUCKET_NAME,
   usesS3Storage: Boolean(parsedEnv.data.STORAGE_BUCKET_NAME),
+  clerkPublishableKey: parsedEnv.data.CLERK_PUBLISHABLE_KEY,
   clerkSecretKey: parsedEnv.data.CLERK_SECRET_KEY,
-  isClerkConfigured: Boolean(parsedEnv.data.CLERK_SECRET_KEY),
+  isClerkConfigured: Boolean(
+    parsedEnv.data.CLERK_PUBLISHABLE_KEY && parsedEnv.data.CLERK_SECRET_KEY,
+  ),
   stripeSecretKey: parsedEnv.data.STRIPE_SECRET_KEY,
   stripeWebhookSecret: parsedEnv.data.STRIPE_WEBHOOK_SECRET,
   stripePriceId: parsedEnv.data.STRIPE_PRICE_ID,

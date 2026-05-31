@@ -50,6 +50,6 @@ Minimal Express + TypeScript backend for ChatResumes.
 Copy `.env.example` to `.env` and set at least the database connection before running Prisma commands.
 
 - `DATABASE_URL` points Prisma at the PostgreSQL database for the MVP
-- `CLERK_SECRET_KEY` is required to verify backend auth and bootstrap local users from Clerk
+- `CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` are required to enable Clerk-backed API auth locally and in production
 - `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and `STRIPE_PRICE_ID` are required for the Stripe billing flow
 - `OPENAI_API_KEY` enables live OpenAI-backed replies for the private candidate chat and public recruiter chat

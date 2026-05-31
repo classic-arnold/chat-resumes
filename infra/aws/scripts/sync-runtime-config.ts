@@ -441,6 +441,13 @@ function main() {
       source: 'infra config storage',
     },
     {
+      name: 'CLERK_PUBLISHABLE_KEY',
+      value: requireSeedValue(envEntries, 'CLERK_PUBLISHABLE_KEY', usedKeys),
+      type: 'String',
+      required: true,
+      source: 'runtime seed',
+    },
+    {
       name: 'CLERK_SECRET_KEY',
       value: requireSeedValue(envEntries, 'CLERK_SECRET_KEY', usedKeys),
       type: 'SecureString',
