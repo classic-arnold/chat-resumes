@@ -40,9 +40,9 @@ const formatBytes = (bytes: number) => {
 }
 
 const documentStatusPill = (status: DocumentSummary['status']) => {
-  if (status === 'ready') return <span className="ui-pill ui-pill-active">Ready</span>
-  if (status === 'failed') return <span className="ui-pill ui-pill-danger">Failed</span>
-  return <span className="ui-pill ui-pill-neutral">Processing</span>
+  if (status === 'ready') return <span className="inline-flex items-center justify-center rounded-full py-[0.25rem] px-[0.65rem] text-[0.66rem] font-semibold tracking-[0.06em] uppercase bg-[#d1fae5] text-[#065f46]">Ready</span>
+  if (status === 'failed') return <span className="inline-flex items-center justify-center rounded-full py-[0.25rem] px-[0.65rem] text-[0.66rem] font-semibold tracking-[0.06em] uppercase bg-[#fee2e2] text-[#991b1b]">Failed</span>
+  return <span className="inline-flex items-center justify-center rounded-full py-[0.25rem] px-[0.65rem] text-[0.66rem] font-semibold tracking-[0.06em] uppercase bg-[#f1f5f9] text-[#475569]">Processing</span>
 }
 
 const DocumentsCard = () => {
@@ -113,7 +113,7 @@ const DocumentsCard = () => {
       />
       <div
         aria-label="Upload documents"
-        className={`dropzone${isDragging ? ' dragover' : ''}`}
+        className={`flex flex-col items-center justify-center border-2 border-dashed border-border rounded-[10px] py-[2rem] px-[1.5rem] text-center cursor-pointer transition-all duration-120 hover:bg-blue-pale/25 ${isDragging ? 'bg-blue-pale/50 border-blue-bright' : 'bg-transparent'}`}
         onClick={() => inputRef.current?.click()}
         onDragLeave={(event) => {
           event.preventDefault()
@@ -131,12 +131,13 @@ const DocumentsCard = () => {
         role="button"
         tabIndex={0}
       >
-        <div className="dropzone-title">
+        <div className="text-[0.82rem] text-navy-text font-semibold">
           {isUploading ? 'Uploading…' : 'Drop files here or click to browse'}
         </div>
-        <div className="dropzone-hint">PDF · DOCX · TXT · MD · up to 10 MB</div>
+        <div className="text-[0.72rem] text-muted mt-[0.25rem]">PDF · DOCX · TXT · MD · up to 10 MB</div>
         <input
           accept=".pdf,.docx,.txt,.md,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown"
+          className="hidden"
           multiple
           onChange={(event) => {
             void handleFiles(event.target.files)
@@ -146,25 +147,25 @@ const DocumentsCard = () => {
           type="file"
         />
       </div>
-      {error ? <div className="ui-error-text" style={{ marginTop: '0.6rem' }}>{error}</div> : null}
-      <div className="doc-list">
+      {error ? <div className="text-[0.74rem] text-[#b42318] mt-[0.6rem]">{error}</div> : null}
+      <div className="flex flex-col gap-[0.55rem] mt-[1.25rem]">
         {isLoading ? (
-          <div className="ui-status-text">Loading documents…</div>
+          <div className="text-center text-[0.74rem] text-muted py-[2rem] px-[1rem]">Loading documents…</div>
         ) : documents.length === 0 ? (
           <EmptyState icon="📄" text="No documents yet." subtext="Your first upload trains your AI." />
         ) : (
           documents.map((document) => (
-            <div className="doc-item" key={document.id}>
-              <div className="doc-item-info">
-                <div className="doc-item-name" title={document.originalName}>
+            <div className="flex items-center justify-between gap-[0.75rem] py-[0.6rem] px-[0.75rem] bg-[#f8faff] border border-border rounded-[8px]" key={document.id}>
+              <div className="flex-1 min-w-0">
+                <div className="text-[0.8rem] font-semibold text-navy-text truncate" title={document.originalName}>
                   {document.originalName}
                 </div>
-                <div className="doc-item-meta">
+                <div className="text-[0.7rem] text-muted mt-[0.15rem]">
                   {formatBytes(document.sizeBytes)}
                   {document.error ? ` · ${document.error}` : ''}
                 </div>
               </div>
-              <div className="ui-row">
+              <div className="flex items-center gap-[0.5rem]">
                 {documentStatusPill(document.status)}
                 <Button
                   onClick={() => void handleDelete(document.id)}
@@ -194,9 +195,9 @@ const ShareLinkCard = ({
   const publicUrl = data?.profile.publicUrl ?? ''
   const isActive = Boolean(data?.publicLinkActive)
   const statusPill = isActive ? (
-    <span className="ui-pill ui-pill-active">Active</span>
+    <span className="inline-flex items-center justify-center rounded-full py-[0.25rem] px-[0.65rem] text-[0.66rem] font-semibold tracking-[0.06em] uppercase bg-[#d1fae5] text-[#065f46]">Active</span>
   ) : (
-    <span className="ui-pill ui-pill-inactive">Inactive</span>
+    <span className="inline-flex items-center justify-center rounded-full py-[0.25rem] px-[0.65rem] text-[0.66rem] font-semibold tracking-[0.06em] uppercase bg-[#f1f5f9] text-[#475569]">Inactive</span>
   )
 
   return (
@@ -211,15 +212,15 @@ const ShareLinkCard = ({
             : 'Subscribe to activate. Your link stays the same once active.'
         }
       />
-      <div className="ui-row" style={{ gap: '0.5rem', marginTop: '0.5rem' }}>
+      <div className="flex items-center gap-[0.5rem] mt-[0.5rem]">
         <input
           aria-label="Public link"
-          className="ui-input ui-input-readonly"
+          className="w-full py-[0.6rem] px-[0.85rem] font-mono text-[0.82rem] border border-border rounded-[8px] text-navy-text bg-off-white cursor-default select-all focus:outline-none focus:border-blue-bright focus:shadow-[0_0_0_3px_rgba(37,99,235,0.15)]"
           readOnly
           value={publicUrl || 'Loading…'}
         />
       </div>
-      <div className="ui-row" style={{ gap: '0.5rem', marginTop: '0.6rem', flexWrap: 'wrap' }}>
+      <div className="flex items-center gap-[0.5rem] mt-[0.6rem] flex-wrap">
         {isActive ? (
           <>
             <Button onClick={onCopy} variant="primary">
@@ -340,7 +341,7 @@ export const DashboardPage = () => {
             {dashboard.isOpeningPortal ? 'Opening…' : 'Billing'}
           </Button>
         ) : !isSubscribed ? (
-          <Link className="ui-btn ui-btn-primary ui-btn-sm" to="/pricing">
+          <Link className="inline-flex items-center justify-center gap-[0.45rem] border border-blue-deep rounded-[8px] py-[0.4rem] px-[0.7rem] font-mono font-medium text-[0.72rem] tracking-[0.01em] cursor-pointer transition-all duration-120 bg-blue-deep text-white border-blue-deep hover:bg-blue-mid hover:border-blue-mid no-underline whitespace-nowrap" to="/pricing">
             Subscribe
           </Link>
         ) : null
@@ -352,9 +353,9 @@ export const DashboardPage = () => {
         onCopy={() => void handleCopy()}
       />
 
-      {dashboard.error ? <div className="ui-error-text">{dashboard.error}</div> : null}
+      {dashboard.error ? <div className="text-[0.74rem] text-[#b42318]">{dashboard.error}</div> : null}
 
-      <div className="ui-grid-2-wide">
+      <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-[1.25rem] items-start">
         <DocumentsCard />
         <Card>
           <SectionHeader
@@ -362,7 +363,7 @@ export const DashboardPage = () => {
             title="Intake quiz"
             description="Answer the 5 questions recruiters always want to know. Your AI uses these to ground every reply."
             action={
-              <span className="ui-pill ui-pill-neutral">
+              <span className="inline-flex items-center justify-center rounded-full py-[0.25rem] px-[0.65rem] text-[0.66rem] font-semibold tracking-[0.06em] uppercase bg-[#f1f5f9] text-[#475569]">
                 {dashboard.data?.profile.quizAnsweredCount ?? 0} / {dashboard.data?.profile.quizTotal ?? 5} answered
               </span>
             }
@@ -377,7 +378,7 @@ export const DashboardPage = () => {
             title="Talk to your AI"
             description="Coach your AI through conversation. Each turn refines a STAR story you can approve."
           />
-          <Link className="ui-btn ui-btn-secondary ui-btn-block" to="/chat">
+          <Link className="inline-flex items-center justify-center gap-[0.45rem] border border-blue-deep rounded-[8px] py-[0.6rem] px-[0.95rem] font-mono font-medium text-[0.78rem] tracking-[0.01em] cursor-pointer transition-all duration-120 bg-transparent text-blue-deep border-blue-deep hover:bg-blue-pale no-underline whitespace-nowrap w-full" to="/chat">
             Open chat →
           </Link>
         </Card>
@@ -385,7 +386,7 @@ export const DashboardPage = () => {
 
       <Card>
         <SectionHeader eyebrow="Insights" title="At a glance" />
-        <div className="ui-stat-grid">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-[1.5rem] py-[0.5rem] px-0">
           <Stat label="Link views (7d)" value={metrics?.viewsThisWeek ?? 0} />
           <Stat label="Recruiter chats" value={metrics?.chatSessions ?? 0} />
           <Stat
@@ -409,15 +410,15 @@ export const DashboardPage = () => {
             }
           />
         ) : (
-          <div className="activity-list">
+          <div className="flex flex-col gap-0">
             {activity.map((item) => (
-              <div className="activity-row" key={item.id}>
-                <span className="activity-row-icon">{item.type === 'chat' ? '💬' : '👁'}</span>
-                <div className="activity-row-body">
-                  <div className="activity-row-title">{item.title}</div>
-                  <div className="activity-row-summary">{item.summary}</div>
+              <div className="flex items-center gap-[0.75rem] py-[0.85rem] px-0 border-b border-border last:border-b-0" key={item.id}>
+                <span className="w-[24px] h-[24px] rounded-full bg-blue-pale text-blue-deep inline-flex items-center justify-center text-[0.74rem]">{item.type === 'chat' ? '💬' : '👁'}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[0.8rem] font-semibold text-navy-text">{item.title}</div>
+                  <div className="text-[0.72rem] text-muted mt-[0.1rem]">{item.summary}</div>
                 </div>
-                <div className="activity-row-time">{formatRelativeTime(item.occurredAt)}</div>
+                <div className="text-[0.7rem] text-muted whitespace-nowrap">{formatRelativeTime(item.occurredAt)}</div>
               </div>
             ))}
           </div>

@@ -12,7 +12,7 @@ import {
   type CandidateChatState,
   type ChatMessage,
 } from '../lib/chat'
-import '../styles/candidate-chat.css'
+
 
 const QUICK_PROMPTS = [
   'Turn my last role into a STAR story',
@@ -167,25 +167,15 @@ export const ChatPage = () => {
   const approved = stories.filter((story) => story.status === 'approved')
 
   return (
-    <div className="cc-page-shell">
-      <header className="cc-header">
-        <Link className="cc-brand" to="/dashboard">
+    <div className="min-h-screen bg-[#090b16] text-white font-inter flex flex-col">
+      <header className="h-[60px] bg-[#0f1225] border-b border-white/8 flex items-center justify-between px-[1.5rem] sticky top-0 z-50">
+        <Link className="font-inter text-[1rem] font-extrabold text-white no-underline tracking-[-0.02em] flex items-center gap-[0.6rem]" to="/dashboard">
           ChatResumes
-          <div className="cc-studio-pill">AI Training Studio ⚡</div>
+          <div className="bg-[#6366f1]/15 text-[#6366f1] border border-[#6366f1]/25 rounded-full py-[0.2rem] px-[0.6rem] text-[0.62rem] font-bold uppercase tracking-[0.06em]">AI Training Studio ⚡</div>
         </Link>
-        <div className="cc-header-actions">
-          <Link className="cc-back-link" to="/dashboard">
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              style={{ marginRight: '6px', verticalAlign: 'middle', display: 'inline-block' }}
-            >
+        <div className="flex items-center">
+          <Link className="inline-flex items-center text-[0.78rem] text-white/55 no-underline transition-colors duration-200 hover:text-white" to="/dashboard">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px', verticalAlign: 'middle', display: 'inline-block' }}>
               <line x1="19" y1="12" x2="5" y2="12" />
               <polyline points="12 19 5 12 12 5" />
             </svg>
@@ -194,22 +184,22 @@ export const ChatPage = () => {
         </div>
       </header>
 
-      <div className="cc-layout">
-        <aside className="cc-sidebar">
-          <div className="cc-sidebar-section">
-            <div className="cc-section-title">
+      <div className="grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)] gap-0 flex-1">
+        <aside className="bg-[#0f1225] border-r border-white/8 p-[1.25rem] flex flex-col gap-[1.5rem] overflow-y-auto">
+          <div className="flex flex-col gap-[0.75rem]">
+            <div className="flex items-center justify-between text-[0.68rem] font-bold uppercase tracking-[0.1em] text-white/40">
               Draft Stories
-              <span className="cc-section-count">{drafts.length}</span>
+              <span className="bg-white/6 text-white/55 rounded-full py-[0.1rem] px-[0.45rem] text-[0.68rem] font-semibold">{drafts.length}</span>
             </div>
             {drafts.length === 0 ? (
-              <div className="cc-status-text">No drafts yet. Chat with the AI to extract one!</div>
+              <div className="text-[0.74rem] text-white/40 text-center py-[0.75rem]">No drafts yet. Chat with the AI to extract one!</div>
             ) : (
               drafts.map((story) => (
-                <div className="cc-story-card" key={story.id}>
-                  <div className="cc-story-title">{story.title}</div>
-                  <div className="cc-story-meta">{story.result || 'Needs a measurable result.'}</div>
+                <div className="bg-white/4 border border-white/8 rounded-[10px] p-[0.85rem] flex flex-col gap-[0.4rem]" key={story.id}>
+                  <div className="text-[0.8rem] font-semibold text-white leading-[1.4]">{story.title}</div>
+                  <div className="text-[0.7rem] text-white/45 leading-[1.5] italic">{story.result || 'Needs a measurable result.'}</div>
                   <button
-                    className="cc-approve-btn"
+                    className="mt-[0.35rem] bg-[#6366f1] text-white border-none rounded-[7px] py-[0.45rem] px-[0.75rem] text-[0.72rem] font-semibold cursor-pointer transition-all duration-200 hover:bg-[#4f46e5] disabled:opacity-55 disabled:cursor-not-allowed"
                     disabled={state.approvingId === story.id}
                     onClick={() => void handleApprove(story.id)}
                   >
@@ -220,32 +210,22 @@ export const ChatPage = () => {
             )}
           </div>
 
-          <div className="cc-sidebar-section">
-            <div className="cc-section-title">
+          <div className="flex flex-col gap-[0.75rem]">
+            <div className="flex items-center justify-between text-[0.68rem] font-bold uppercase tracking-[0.1em] text-white/40">
               Approved Stories
-              <span className="cc-section-count">{approved.length}</span>
+              <span className="bg-white/6 text-white/55 rounded-full py-[0.1rem] px-[0.45rem] text-[0.68rem] font-semibold">{approved.length}</span>
             </div>
             {approved.length === 0 ? (
-              <div className="cc-status-text">
+              <div className="text-[0.74rem] text-white/40 text-center py-[0.75rem]">
                 None approved yet. Approved stories appear on your public link.
               </div>
             ) : (
               approved.map((story) => (
-                <div className="cc-story-card cc-story-card-approved" key={story.id}>
-                  <div className="cc-story-title">{story.title}</div>
-                  <div className="cc-story-meta">{story.result}</div>
-                  <div className="cc-approved-badge">
-                    <svg
-                      width="10"
-                      height="10"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      style={{ marginRight: '4px', verticalAlign: 'middle', display: 'inline-block' }}
-                    >
+                <div className="bg-[rgba(16,185,129,0.06)] border border-[#10b981]/20 rounded-[10px] p-[0.85rem] flex flex-col gap-[0.4rem]" key={story.id}>
+                  <div className="text-[0.8rem] font-semibold text-white leading-[1.4]">{story.title}</div>
+                  <div className="text-[0.7rem] text-white/45 leading-[1.5] italic">{story.result}</div>
+                  <div className="inline-flex items-center text-[0.66rem] font-bold text-[#10b981] uppercase tracking-[0.06em] mt-[0.2rem]">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px', verticalAlign: 'middle', display: 'inline-block' }}>
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
                     Live on Profile
@@ -256,20 +236,18 @@ export const ChatPage = () => {
           </div>
         </aside>
 
-        <section className="cc-main">
-          <div className="cc-thread">
-            <div className="cc-starter-pill">
+        <section className="flex flex-col flex-1 p-[1.5rem] overflow-hidden">
+          <div className="flex-1 overflow-y-auto pr-[0.5rem] mb-[1.5rem] flex flex-col gap-[1.5rem]">
+            <div className="self-center border border-white/10 bg-white/4 py-[0.35rem] px-[1rem] rounded-full text-[0.65rem] text-white/40 tracking-[0.08em] font-medium mb-[0.5rem] text-center">
               TRAIN YOUR AI VOICE BY DESCRIBING YOUR REAL CAREER WINS
             </div>
 
             {state.error ? (
-              <div className="cc-status-text" style={{ color: '#ef4444' }}>
-                {state.error}
-              </div>
+              <div className="text-[0.74rem] text-[#ef4444] text-center my-[1rem]">{state.error}</div>
             ) : null}
 
             {state.isLoading && !state.data ? (
-              <div className="cc-status-text">Loading chat studio…</div>
+              <div className="text-[0.74rem] text-white/40 text-center my-[1rem]">Loading chat studio…</div>
             ) : state.data && state.data.messages.length === 0 ? (
               <EmptyState
                 icon="💬"
@@ -280,30 +258,20 @@ export const ChatPage = () => {
               state.data?.messages.map((message) => {
                 const isUser = isUserMessage(message)
                 return (
-                  <div key={message.id} className={`cc-msg-group ${isUser ? 'user' : 'ai'}`}>
-                    <div className={`cc-msg-label ${isUser ? 'user' : 'ai'}`}>
+                  <div key={message.id} className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} max-w-[82%] ${isUser ? 'self-end' : 'self-start'}`}>
+                    <div className={`text-[0.68rem] font-semibold mb-[0.35rem] ${isUser ? 'text-white/40 text-right mr-[0.2rem]' : 'text-[#6366f1] flex items-center gap-[0.25rem] ml-[0.2rem]'}`}>
                       {isUser ? (
                         'You (Candidate)'
                       ) : (
                         <>
                           AI Voice Coach
-                          <svg
-                            width="12"
-                            height="12"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            style={{ marginLeft: '4px', verticalAlign: 'middle', display: 'inline-block' }}
-                          >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '4px', verticalAlign: 'middle', display: 'inline-block' }}>
                             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                           </svg>
                         </>
                       )}
                     </div>
-                    <div className={isUser ? 'cc-bubble-user' : 'cc-bubble-ai'}>
+                    <div className={isUser ? 'bg-[#6366f1] text-white py-[0.85rem] px-[1.1rem] rounded-[16px_16px_4px_16px] text-[0.86rem] leading-[1.6]' : 'bg-[#1a1d35] text-white/90 border border-white/8 py-[0.85rem] px-[1.1rem] rounded-[16px_16px_16px_4px] text-[0.86rem] leading-[1.6]'}>
                       {message.content}
                     </div>
                   </div>
@@ -312,24 +280,14 @@ export const ChatPage = () => {
             )}
 
             {state.isReplying ? (
-              <div className="cc-msg-group ai">
-                <div className="cc-msg-label ai">
+              <div className="flex flex-col items-start self-start max-w-[82%]">
+                <div className="text-[0.68rem] font-semibold mb-[0.35rem] text-[#6366f1] flex items-center gap-[0.25rem] ml-[0.2rem]">
                   AI Voice Coach
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    style={{ marginLeft: '4px', verticalAlign: 'middle', display: 'inline-block' }}
-                  >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '4px', verticalAlign: 'middle', display: 'inline-block' }}>
                     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                   </svg>
                 </div>
-                <div className="cc-bubble-ai" style={{ opacity: 0.85 }}>
+                <div className="bg-[#1a1d35] text-white/90 border border-white/8 py-[0.85rem] px-[1.1rem] rounded-[16px_16px_16px_4px] text-[0.86rem] leading-[1.6] opacity-85">
                   Thinking…
                 </div>
               </div>
@@ -337,10 +295,10 @@ export const ChatPage = () => {
             <div ref={threadEndRef} />
           </div>
 
-          <div className="cc-prompts-row">
+          <div className="flex flex-wrap gap-[0.5rem] mb-[0.75rem]">
             {QUICK_PROMPTS.map((prompt) => (
               <button
-                className="cc-prompt-chip"
+                className="bg-white/5 border border-white/10 text-[#6366f1] py-[0.4rem] px-[0.85rem] rounded-full text-[0.72rem] font-medium cursor-pointer transition-all duration-200 hover:border-[#6366f1]/50 hover:bg-[#6366f1]/10 disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={state.isReplying}
                 key={prompt}
                 onClick={() => send(prompt)}
@@ -351,10 +309,10 @@ export const ChatPage = () => {
             ))}
           </div>
 
-          <div className="cc-composer-container">
-            <form className="cc-composer-pill" onSubmit={handleSubmit}>
+          <div className="flex flex-col gap-[0.65rem]">
+            <form className="bg-[#1a1d35] border border-white/10 rounded-full py-[0.5rem] pr-[0.5rem] pl-[1.5rem] flex items-center" onSubmit={handleSubmit}>
               <textarea
-                className="cc-composer-input"
+                className="flex-1 border-none outline-none text-[0.88rem] text-white bg-transparent py-[0.5rem] resize-none font-inherit placeholder:text-white/35"
                 aria-label="Message"
                 disabled={state.isLoading || state.isReplying}
                 onChange={(event) => setComposer(event.target.value)}
@@ -364,36 +322,18 @@ export const ChatPage = () => {
                 value={composer}
               />
               <button
-                className="cc-send-btn"
+                className="w-[38px] h-[38px] bg-[#6366f1] text-white rounded-full flex items-center justify-center cursor-pointer border-none transition-all duration-200 flex-shrink-0 hover:bg-[#4f46e5] disabled:bg-white/15 disabled:cursor-not-allowed"
                 disabled={state.isLoading || state.isReplying || !composer.trim()}
                 type="submit"
               >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="22" y1="2" x2="11" y2="13" />
                   <polygon points="22 2 15 22 11 13 2 9 22 2" />
                 </svg>
               </button>
             </form>
-            <div className="cc-composer-disclaimer">
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
+            <div className="flex items-center justify-center gap-[0.35rem] text-[0.66rem] text-white/35 text-center">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 text-white/25">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                 <path d="M7 11V7a5 5 0 0 1 10 0v4" />
               </svg>

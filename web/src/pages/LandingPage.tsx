@@ -2,14 +2,9 @@ import { Link } from 'react-router-dom'
 import chatUi2 from '../assets/chat-ui-2.png'
 import pdfUi from '../assets/pdf-ui.png'
 import chatUi1 from '../assets/chat-ui-1.png'
+import { ArrowRight } from 'lucide-react'
 
-const tickerItems = [
-  'Recruiters now expect a ChatResumes link',
-  'Top candidates are already live — are you?',
-  "Don't get passed over for being a static PDF",
-  'Interviews happen to those who stand out first',
-  'Your link is your edge — claim it before someone else does',
-]
+
 
 const stats = [
   {
@@ -26,33 +21,6 @@ const stats = [
     label: 'Always\nMessaging',
     prefix: '24',
     suffix: '/7',
-  },
-]
-
-const steps = [
-  {
-    description:
-      "We ask you what recruiters always want to know — your story, superpowers, and goals — to craft your AI's personality around your real voice.",
-    number: '1',
-    title: 'Answer Questions',
-  },
-  {
-    description:
-      'Drop your resume PDF and a short bio document. Our AI digests everything — experience, skills, achievements — until it knows you inside-out.',
-    number: '2',
-    title: 'Upload Your Docs',
-  },
-  {
-    description:
-      'Within 60 seconds, your personal AI chatbot is trained and live. It answers questions exactly as you would — only faster and always available.',
-    number: '3',
-    title: 'AI Goes Live',
-  },
-  {
-    description:
-      'You get a permanent URL at chatresumes.io/yourname. Add it to your resume header, LinkedIn, and email sig — and let it do the work.',
-    number: '4',
-    title: 'Share Your Link',
   },
 ]
 
@@ -111,90 +79,94 @@ const faqItems = [
 ]
 
 export const LandingPage = () => (
-  <div className="lp-root">
+  <div className="min-h-screen bg-lp-bg text-lp-text font-inter overflow-x-hidden">
     {/* NAV */}
-    <nav className="lp-nav">
-      <Link className="lp-logo" to="/">
-        <span className="lp-logo-icon">💬</span>
+    <nav className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-[2rem] h-[56px] bg-white/90 backdrop-blur-[12px] border-b border-[#e2e8f0]">
+      <Link className="flex items-center gap-[0.5rem] font-inter text-[1.05rem] font-extrabold text-[#0f172a] no-underline tracking-[-0.02em]" to="/">
+        <span className="text-[1rem]">💬</span>
         ChatResumes
       </Link>
-      <div className="lp-nav-links">
-        <a className="lp-nav-link" href="#how-it-works">How it works</a>
-        <a className="lp-nav-link" href="#pricing">Pricing</a>
+      <div className="hidden md:flex gap-[2rem]">
+        <a className="text-[0.82rem] text-[#475569] no-underline transition-colors duration-200 hover:text-[#0f172a]" href="#how-it-works">How it works</a>
+        <a className="text-[0.82rem] text-[#475569] no-underline transition-colors duration-200 hover:text-[#0f172a]" href="#pricing">Pricing</a>
       </div>
-      <Link className="lp-btn-cta" to="/pricing">Claim My URL →</Link>
+      <Link className="inline-flex items-center justify-center py-[0.6rem] px-[1.25rem] bg-lp-accent text-white rounded-full text-[0.82rem] font-light no-underline border-none cursor-pointer transition-all duration-200 hover:bg-lp-accent-hover hover:-translate-y-[1px] tracking-[0.01em]" to="/pricing">Claim My Link </Link>
     </nav>
 
     <main>
       {/* HERO */}
-      <section className="lp-hero">
-        <div className="lp-hero-inner">
-          <div className="lp-ticker-mini uppercase">
-            <span className="lp-ticker-dot" />
+      <section className="py-[100px] px-[2rem] md:py-[80px] md:px-[1.25rem] pb-[4rem] flex justify-center bg-white">
+        <div className="max-w-[900px] w-full flex flex-col items-center text-center mt-10">
+          <div className="inline-flex items-start gap-[0.5rem] max-w-[62ch] mb-[2rem] py-[0.5rem] px-[0.9rem] bg-[#f8fafc] border border-[#e2e8f0] rounded-full text-[0.65rem] md:text-[0.72rem] text-[#475569] leading-[1.5] uppercase">
+            <span className="flex-shrink-0 w-[6px] h-[6px] mt-[4px] bg-[#22C55E] 
+            rounded-full animate-lp-pulse" />
             recruiters are already clicking these links
           </div>
-          <h1 className="lp-hero-h1">
+          <h1 className="font-inter text-[2.2rem] md:text-[4.5rem] font-extrabold leading-[1.15] tracking-[-0.03em] text-[#0f172a] mb-[1.25rem]">
             You're not getting ignored<br />
             because you're<br />
-            <span className="lp-hero-accent">being unqualified.</span>
+            <span className="text-lp-accent">unqualified.</span>
           </h1>
-          <p className="lp-hero-sub">
-            ChatResumes has let you understand, only a few AI/NLP elements last your
-            questions HAP. That's cheaper, far cheaper, than starting a hiring pipeline.
+          <p className="max-w-[52ch] text-[1.15rem] leading-[1.75] text-[#475569] mb-[2rem]">
+            ChatResumes turns your experience into a live AI that answers recruiter
+            questions 24/7. Stop sending dead PDFs. Start sending a living portfolio.
           </p>
-          <div className="lp-hero-ctas">
-            <Link className="lp-btn-primary" to="/pricing">
-              Claim My Link — $19/mo
+          <div className="flex flex-col md:flex-row items-center gap-[0.9rem] mb-[3rem] w-full md:w-auto">
+            <Link className="w-full md:w-auto inline-flex items-center justify-center py-[0.8rem] px-[1.5rem] bg-lp-accent text-white rounded-full text-[0.82rem] font-semibold no-underline border-none cursor-pointer transition-all duration-200 hover:bg-lp-accent-hover hover:-translate-y-[1px] tracking-[0.01em]" to="/pricing">
+              Claim My Link — $19/mo <ArrowRight className="ml-2" />
             </Link>
-            <a className="lp-btn-ghost" href="#how-it-works">See how it works</a>
+            <a className="w-full md:w-auto inline-flex items-center justify-center py-[0.8rem] px-[1.5rem] bg-transparent text-[#475569] border border-[#cbd5e1] rounded-full text-[0.82rem] font-medium no-underline cursor-pointer transition-all duration-200 hover:text-[#0f172a] hover:border-[#94a3b8]" href="#how-it-works">See how it works</a>
           </div>
 
           {/* Chat preview card */}
-          <img src={chatUi2} alt="Chat preview" className="lp-chat-demo-img" />
+          <div className='w-full md:mt-10'>
+            <h2 className='text-[12px] font-light text-[#6B7280] mb-2 uppercase'>This is what recruiters see...</h2>
+            <img src={chatUi2} alt="Chat preview" className="w-full h-auto rounded-[12px] shadow-[0_30px_60px_rgba(15,23,42,0.12),0_12px_24px_rgba(15,23,42,0.04)] animate-lp-fade-up block" />
+          </div>
         </div>
       </section>
 
       {/* TICKER STRIP */}
-      <div className="lp-fomo-strip">
-        <div className="lp-fomo-track">
+      {/* <div className="py-[0.85rem] px-0 overflow-hidden bg-white border-t border-b border-[#e2e8f0]">
+        <div className="flex w-max animate-lp-marquee">
           {[...tickerItems, ...tickerItems].map((item, index) => (
-            <div className="lp-fomo-item" key={`${item}-${index}`}>
+            <div className="flex items-center gap-[2rem] px-[2rem] py-0 whitespace-nowrap text-[#475569] text-[0.72rem] tracking-[0.1em] uppercase after:content-['◆'] after:text-lp-accent after:text-[0.45rem] after:ml-[2rem]" key={`${item}-${index}`}>
               {item}
             </div>
           ))}
         </div>
-      </div>
+      </div> */}
 
       {/* STOP BEING A PDF */}
-      <section className="lp-stop-pdf">
-        <div className="lp-stop-pdf-inner">
-          <h2 className="lp-section-h2">Stop being a PDF in a pile of PDFs.</h2>
+      <section className="py-[5rem] px-[2rem] bg-lp-bg2 flex justify-center">
+        <div className="max-w-[900px] w-full">
+          <h2 className="font-inter text-[1.6rem] md:text-[2.4rem] font-extrabold tracking-[-0.03em] leading-[1.15] text-white text-center mb-[3rem]">Stop being a PDF in a pile of PDFs.</h2>
           {/* stop pdf demo */}
-          <div className="lp-stop-pdf-demo">
-            <div className="lp-pdf-left">
-              <div className="lp-pdf-card-label">NOT CHATRESUMES</div>
-              <img src={pdfUi} alt="PDF Resume" className="lp-stop-pdf-img" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-[1.5rem]">
+            <div>
+              <div className="text-[0.65rem] tracking-[0.15em] uppercase text-lp-muted mb-[0.75rem]">NOT CHATRESUMES</div>
+              <img src={pdfUi} alt="PDF Resume" className="w-full h-auto rounded-[10px] block border border-white/8 shadow-[0_10px_30px_rgba(0,0,0,0.25)]" />
             </div>
-            <div className="lp-pdf-right">
-              <div className="lp-pdf-card-label lp-pdf-card-label-active">✓ WITH CHATRESUMES</div>
-              <img src={chatUi1} alt="Chat UI Resume" className="lp-stop-chat-img" />
+            <div>
+              <div className="text-[0.65rem] tracking-[0.15em] uppercase text-lp-green mb-[0.75rem]">✓ WITH CHATRESUMES</div>
+              <img src={chatUi1} alt="Chat UI Resume" className="w-full h-auto rounded-[10px] block border border-lp-accent/30 shadow-[0_15px_40px_rgba(91,84,247,0.15)]" />
             </div>
           </div>
         </div>
       </section>
 
       {/* STATS */}
-      <section className="lp-stats">
-        <div className="lp-stats-inner">
+      <section className="flex justify-center bg-white border-t border-b border-[#e2e8f0]">
+        <div className="max-w-[900px] w-full grid grid-cols-1 md:grid-cols-3">
           {stats.map((stat) => (
-            <div className="lp-stat-cell" key={stat.label}>
-              <div className="lp-stat-num">
-                <span className="lp-stat-prefix">{stat.prefix}</span>
-                <span className="lp-stat-suffix">{stat.suffix}</span>
+            <div className="py-[3rem] px-[2.5rem] md:py-[2rem] md:px-[1.5rem] border-b md:border-b-0 md:border-r border-[#e2e8f0] last:border-b-0 last:border-r-0 text-center" key={stat.label}>
+              <div className="font-inter text-[3rem] font-extrabold tracking-[-0.04em] leading-[1] text-[#0f172a] mb-[0.5rem]">
+                <span>{stat.prefix}</span>
+                <span className="text-lp-accent">{stat.suffix}</span>
               </div>
-              <div className="lp-stat-label">
+              <div className="flex flex-col text-[0.7rem] tracking-[0.08em] uppercase text-[#475569] leading-[1.5]">
                 {stat.label.split('\n').map((line) => (
-                  <span className="lp-stat-label-line" key={line}>{line}</span>
+                  <span className="block" key={line}>{line}</span>
                 ))}
               </div>
             </div>
@@ -203,99 +175,316 @@ export const LandingPage = () => (
       </section>
 
       {/* HOW IT WORKS */}
-      <section className="lp-how" id="how-it-works">
-        <div className="lp-how-inner">
-          <p className="lp-section-eyebrow">How it works</p>
-          <h2 className="lp-section-h2 lp-section-h2-light">
-            Fast easy access to results within just 5 months.
+      <section className="py-[6rem] px-[2rem] flex flex-col items-center bg-white" id="how-it-works">
+        <div className="max-w-[900px] w-full text-center flex flex-col items-center mb-[5rem]">
+          <h2 className="font-inter text-[2.2rem] md:text-[3.5rem] font-extrabold leading-[1.15] tracking-[-0.03em] text-[#0f172a] mb-[1.25rem]">
+            From static PDF to<br />interactive AI <span className="text-[#5B54F7]">in minutes.</span>
           </h2>
-          <div className="lp-steps">
-            {steps.map((step) => (
-              <div className="lp-step" key={step.number}>
-                <div className="lp-step-num">{step.number}</div>
-                <div className="lp-step-body">
-                  <div className="lp-step-title">{step.title}</div>
-                  <div className="lp-step-desc">{step.description}</div>
+          <p className="max-w-[64ch] text-[0.88rem] md:text-[1rem] leading-[1.75] text-[#475569] mx-auto mb-[3.5rem]">
+            We've simplified the process of turning your professional history into an engaging, 24/7 AI advocate. Here is how we transform your career narrative.
+          </p>
+
+          {/* BEFORE & AFTER SHOWCASE CARD */}
+          <div className="w-full bg-[#FAFBFD] border border-[#e2e8f0] rounded-[24px] p-[2rem] md:p-[3rem] flex flex-col md:flex-row items-center justify-between gap-[2.5rem] shadow-[0_15px_45px_rgba(15,23,42,0.03)]">
+            {/* BEFORE (PDF Wireframe) */}
+            <div className="w-full md:w-[42%] bg-white border border-[#e2e8f0] rounded-[16px] p-[1.5rem] flex flex-col gap-[1rem] relative shadow-sm text-left">
+              <span className="absolute top-[1.25rem] right-[1.25rem] text-[0.62rem] font-bold tracking-[0.05em] uppercase px-[0.6rem] py-[0.25rem] bg-[#f1f5f9] text-[#475569] rounded-full">Before</span>
+              <div className="w-[32px] h-[32px] rounded-full bg-[#e2e8f0]" />
+              <div className="h-[12px] w-[70%] bg-[#e2e8f0] rounded-full" />
+              <div className="h-[12px] w-[90%] bg-[#f1f5f9] rounded-full" />
+              <div className="h-[12px] w-[85%] bg-[#f1f5f9] rounded-full" />
+              <div className="h-[12px] w-[50%] bg-[#f1f5f9] rounded-full mt-[0.5rem]" />
+              <div className="h-[12px] w-[80%] bg-[#f1f5f9] rounded-full" />
+              <div className="h-[12px] w-[75%] bg-[#f1f5f9] rounded-full" />
+            </div>
+
+            {/* TRANSITION ARROW */}
+            <div className="w-[44px] h-[44px] rounded-full bg-[#5B54F7] flex items-center justify-center text-white shadow-[0_4px_12px_rgba(91,84,247,0.3)] shrink-0 transition-transform duration-300 hover:scale-110">
+              <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </div>
+
+            {/* AFTER (AI Active Chat) */}
+            <div className="w-full md:w-[42%] bg-[#090A10] rounded-[16px] p-[1.5rem] flex flex-col gap-[1rem] relative border border-white/[0.05] shadow-lg text-left">
+              <span className="absolute top-[1.25rem] right-[1.25rem] text-[0.62rem] font-bold tracking-[0.05em] uppercase px-[0.6rem] py-[0.25rem] bg-[#5B54F7]/20 text-[#5B54F7] rounded-full">After</span>
+              <div className="text-white font-sans text-[0.78rem] bg-white/[0.05] border border-white/[0.05] rounded-[8px] p-[0.75rem] max-w-[85%]">
+                What impact did they have at their last role?
+              </div>
+              <div className="text-white font-sans text-[0.78rem] bg-[#5B54F7] rounded-[8px] p-[0.75rem] max-w-[85%] self-end">
+                They increased Q3 revenue by 42% through implementing a new automated sales funnel...
+              </div>
+              <div className="bg-white/[0.05] border border-white/[0.05] rounded-[8px] p-[0.6rem_0.75rem] flex justify-between items-center text-[0.72rem] text-white/40">
+                <span>Ask me anything...</span>
+                <span className="w-[16px] h-[16px] rounded-full bg-[#5B54F7] flex items-center justify-center text-white text-[0.55rem] font-bold">▲</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* STEP 1: THE INTERVIEW */}
+        <div className="max-w-[900px] w-full grid grid-cols-1 md:grid-cols-2 gap-[4rem] items-center mb-[6rem]">
+          {/* Left (Visual Mockup) */}
+          <div className="w-full aspect-[4/3] bg-[#F4F5FB] rounded-[24px] p-[2rem] md:p-[2.5rem] flex items-center justify-center relative shadow-sm border border-[#e2e8f6]">
+            {/* Inner Chat Box */}
+            <div className="w-full bg-white border border-[#e2e8f0] rounded-[16px] p-[1.5rem] flex flex-col gap-[1rem] shadow-md relative">
+              <span className="w-[32px] h-[32px] rounded-full bg-[#5B54F7]/10 flex items-center justify-center text-[#5B54F7] text-[1.1rem]">💬</span>
+              <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[12px] p-[1rem] flex gap-[0.75rem] items-start text-left">
+                <span className="w-[20px] h-[20px] rounded-full bg-[#5B54F7] flex items-center justify-center text-white text-[0.55rem] font-bold shrink-0 mt-[2px]">AI</span>
+                <p className="text-[0.78rem] text-[#334155] leading-normal font-medium">I see you led the redesign project. What was the biggest technical challenge you overcame?</p>
+              </div>
+              <div className="bg-[#FAFBFD] border border-[#e2e8f0] rounded-[12px] p-[1rem] flex gap-[0.75rem] items-start self-end max-w-[85%] text-left">
+                <p className="text-[0.78rem] text-[#334155] leading-normal font-medium">Migrating the legacy database while maintaining zero downtime. We had to...</p>
+                <span className="w-[20px] h-[20px] rounded-full bg-[#0F172A] flex items-center justify-center text-white text-[0.55rem] font-bold shrink-0 mt-[2px]">You</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Right (Text Content) */}
+          <div className="text-left flex flex-col gap-[1.25rem]">
+            <span className="text-[#5B54F7] text-[0.75rem] tracking-[0.15em] uppercase font-bold">01 / THE INTERVIEW</span>
+            <h3 className="text-[1.8rem] md:text-[2.2rem] font-extrabold text-[#0f172a] tracking-tight">How the AI learns your story.</h3>
+            <p className="text-[0.88rem] leading-[1.75] text-[#475569]">
+              We don't just scrape text. Our proprietary onboarding agent conducts a dynamic, conversational interview to uncover the nuances of your experience that a bullet point can't capture.
+            </p>
+            <ul className="flex flex-col gap-[1rem] p-0 m-0 list-none mt-[0.5rem]">
+              <li className="text-[0.88rem] text-[#334155] font-medium flex items-center gap-[0.75rem]">
+                <span className="flex-shrink-0 w-[20px] h-[20px] rounded-full bg-[#4F46E5] flex items-center justify-center">
+                  <svg className="w-[10px] h-[10px] text-white" fill="none" stroke="currentColor" strokeWidth="3.5" viewBox="0 0 24 24">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </span>
+                Contextual deep-dives into past projects
+              </li>
+              <li className="text-[0.88rem] text-[#334155] font-medium flex items-center gap-[0.75rem]">
+                <span className="flex-shrink-0 w-[20px] h-[20px] rounded-full bg-[#4F46E5] flex items-center justify-center">
+                  <svg className="w-[10px] h-[10px] text-white" fill="none" stroke="currentColor" strokeWidth="3.5" viewBox="0 0 24 24">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </span>
+                Extracts leadership philosophy and soft skills
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* STEP 2: THE TRAINING (DARK THEME SECTION) */}
+      <section className="py-[6rem] px-[2rem] bg-[#090A10] flex justify-center border-t border-b border-white/[0.05]">
+        <div className="max-w-[900px] w-full grid grid-cols-1 md:grid-cols-2 gap-[4rem] items-center">
+          {/* Left (Text Content) */}
+          <div className="text-left flex flex-col gap-[1.25rem]">
+            <span className="text-[#5B54F7] text-[0.75rem] tracking-[0.15em] uppercase font-bold">02 / THE TRAINING</span>
+            <h3 className="text-[1.8rem] md:text-[2.2rem] font-extrabold text-white tracking-tight">How it digests your resume.</h3>
+            <p className="text-[0.88rem] leading-[1.75] text-white/60">
+              Behind the scenes, we construct a specialized knowledge graph from your uploaded documents and interview responses. This allows your AI clone to hallucinate less and advocate more.
+            </p>
+          </div>
+
+          {/* Right (Visual Mockup) */}
+          <div className="w-full aspect-[4/3] bg-white/[0.02] border border-white/[0.05] rounded-[24px] p-[2rem] md:p-[2.5rem] flex items-center justify-center relative shadow-sm">
+            <div className="w-full bg-[#111322] border border-white/[0.05] rounded-[16px] p-[1.5rem] flex flex-col gap-[1.25rem] shadow-lg text-left">
+              <div className="flex justify-between items-center text-[0.82rem] font-bold text-white tracking-tight">
+                <span>Knowledge Graph Processing</span>
+                <span className="text-[1.1rem]">⚙️</span>
+              </div>
+              {/* Progress Item 1 */}
+              <div className="flex flex-col gap-[0.5rem]">
+                <div className="flex justify-between text-[0.7rem] text-white/50">
+                  <span className="flex items-center gap-[0.35rem]">📄 parsing_resume.pdf</span>
+                  <span className="text-white font-semibold">Parsed</span>
+                </div>
+                <div className="h-[6px] w-full bg-white/[0.05] rounded-full overflow-hidden">
+                  <div className="h-full w-full bg-[#5B54F7]" />
                 </div>
               </div>
-            ))}
+              {/* Progress Item 2 */}
+              <div className="flex flex-col gap-[0.5rem]">
+                <div className="flex justify-between text-[0.7rem] text-white/50">
+                  <span className="flex items-center gap-[0.35rem]">🕸️ indexing_nodes.db</span>
+                  <span className="text-[#5B54F7] font-semibold animate-pulse">Structuring</span>
+                </div>
+                <div className="h-[6px] w-full bg-white/[0.05] rounded-full overflow-hidden">
+                  <div className="h-full w-[70%] bg-[#5B54F7]" />
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="lp-how-ctas">
-            <a className="lp-btn-link" href="#questions">I understand all →</a>
-            <a className="lp-btn-link lp-btn-link-muted" href="#pricing">part → more</a>
+        </div>
+      </section>
+
+      {/* STEP 3 & STEP 4 CONTAINER */}
+      <section className="py-[6rem] px-[2rem] flex flex-col items-center bg-white">
+        {/* STEP 3: THE LAUNCH */}
+        <div className="max-w-[900px] w-full grid grid-cols-1 md:grid-cols-2 gap-[4rem] items-center mb-[6rem]">
+          {/* Left (Visual Mockup) */}
+          <div className="w-full aspect-[4/3] bg-[#F4F5FB] rounded-[24px] p-[2rem] md:p-[2.5rem] flex items-center justify-center relative shadow-sm border border-[#e2e8f6]">
+            <div className="w-full bg-white border border-[#e2e8f0] rounded-[16px] p-[1.5rem] flex flex-col gap-[1.25rem] shadow-md text-left">
+              <div className="flex justify-between items-center p-[0.75rem_1rem] bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px]">
+                <div className="flex flex-col gap-[0.15rem]">
+                  <span className="text-[0.82rem] font-bold text-[#0f172a]">chatresumes.com/alex-chen</span>
+                  <span className="text-[0.62rem] text-emerald-500 font-semibold flex items-center gap-[0.25rem]">
+                    <span className="w-[4px] h-[4px] bg-emerald-500 rounded-full animate-ping" /> Live • Ready to share
+                  </span>
+                </div>
+                <button className="text-[0.72rem] font-bold text-[#5B54F7] bg-[#5B54F7]/10 hover:bg-[#5B54F7]/15 px-[0.75rem] py-[0.35rem] rounded-[4px] border-none cursor-pointer">
+                  Copy
+                </button>
+              </div>
+              <div className="p-[0.75rem_1rem] bg-[#fafbfd] border border-dashed border-[#e2e8f0] rounded-[8px] text-[0.72rem] font-semibold text-[#475569] text-center">
+                Add to LinkedIn Bio • Email Signature • Portfolio
+              </div>
+            </div>
+          </div>
+
+          {/* Right (Text Content) */}
+          <div className="text-left flex flex-col gap-[1.25rem]">
+            <span className="text-[#5B54F7] text-[0.75rem] tracking-[0.15em] uppercase font-bold">03 / THE LAUNCH</span>
+            <h3 className="text-[1.8rem] md:text-[2.2rem] font-extrabold text-[#0f172a] tracking-tight">How your link goes live.</h3>
+            <p className="text-[0.88rem] leading-[1.75] text-[#475569]">
+              Instantly deploy your custom URL. It acts as a permanent, interactive gateway for recruiters and hiring managers to engage with your professional persona on their schedule.
+            </p>
+          </div>
+        </div>
+
+        {/* STEP 4: THE ANALYTICS */}
+        <div className="max-w-[900px] w-full bg-[#F4F5FB] rounded-[24px] p-[2rem] md:p-[2.5rem] border border-[#e2e8f6] shadow-sm flex flex-col items-center">
+          <div className="text-center flex flex-col items-center gap-[1rem] max-w-[620px] mb-[3rem]">
+            <span className="text-[#5B54F7] text-[0.75rem] tracking-[0.15em] uppercase font-bold">04 / THE ANALYTICS</span>
+            <h3 className="text-[1.8rem] md:text-[2.2rem] font-extrabold text-[#0f172a] tracking-tight">How you see what recruiters are asking.</h3>
+            <p className="text-[0.88rem] leading-[1.7] text-[#475569]">
+              Stop guessing what hiring managers care about. Get a secure dashboard showing exactly which skills and experiences they are inquiring about the most.
+            </p>
+          </div>
+
+          {/* Metric Cards Row */}
+          <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-[1.25rem] text-left">
+            {/* Metric 1 */}
+            <div className="bg-white border border-[#e2e8f0] rounded-[16px] p-[1.5rem] flex flex-col gap-[0.75rem] shadow-sm">
+              <span className="text-[0.65rem] tracking-[0.08em] uppercase text-[#6B7280] font-bold flex items-center gap-[0.35rem]">
+                📈 Total Engagements
+              </span>
+              <div className="text-[2.2rem] font-extrabold text-[#0f172a] leading-none">142</div>
+              <span className="text-[0.7rem] text-emerald-500 font-semibold">+12% from last week</span>
+            </div>
+
+            {/* Metric 2 */}
+            <div className="bg-white border border-[#e2e8f0] rounded-[16px] p-[1.5rem] flex flex-col gap-[0.75rem] shadow-sm">
+              <span className="text-[0.65rem] tracking-[0.08em] uppercase text-[#6B7280] font-bold flex items-center gap-[0.35rem]">
+                💬 Top Query Topic
+              </span>
+              <div className="text-[1.35rem] font-extrabold text-[#0f172a] truncate leading-snug">"Leadership Style"</div>
+              <span className="text-[0.7rem] text-[#6B7280]">Asked in 41% of chats</span>
+            </div>
+
+            {/* Metric 3 */}
+            <div className="bg-white border border-[#e2e8f0] rounded-[16px] p-[1.5rem] flex flex-col gap-[0.75rem] shadow-sm">
+              <span className="text-[0.65rem] tracking-[0.08em] uppercase text-[#6B7280] font-bold flex items-center gap-[0.35rem]">
+                ⏱️ Avg. Time Spent
+              </span>
+              <div className="text-[2.2rem] font-extrabold text-[#0f172a] leading-none">4m 12s</div>
+              <span className="text-[0.7rem] text-[#6B7280]">vs 30s on standard PDF</span>
+            </div>
           </div>
         </div>
       </section>
 
       {/* INVEST / PRICING */}
-      <section className="lp-pricing" id="pricing">
-        <div className="lp-pricing-inner">
-          <h2 className="lp-section-h2 lp-section-h2-dark">Invest in your career.<br />One simple price.</h2>
-          <p className="lp-pricing-sub">No complex tiers. No hidden fees. Get the ultimate AI-powered resume and interview tool for a single, flat monthly rate.</p>
+      <section className="py-[6rem] px-[2rem] flex justify-center bg-white border-t border-[#e2e8f0]" id="pricing">
+        <div className="max-w-[900px] w-full text-center">
+          <h2 className="font-inter text-[1.6rem] md:text-[2.4rem] font-extrabold tracking-[-0.03em] leading-[1.15] text-[#0f172a] mb-[1.25rem]">Invest in your career.<br />One simple price.</h2>
+          <p className="max-w-[64ch] text-[0.88rem] leading-[1.75] text-[#475569] mx-auto mb-[3.5rem]">No complex tiers. No hidden fees. Get the ultimate AI-powered resume and interview tool for a single, flat monthly rate.</p>
 
-          <div className="lp-pricing-card-split">
-            <div className="lp-pricing-card-left">
-              <div className="lp-pricing-plan-badge">PRO AI</div>
-              <h3 className="lp-pricing-card-title">The Edge</h3>
-              <div className="lp-pricing-price">
-                <span className="lp-pricing-price-num">$19</span>
-                <span className="lp-pricing-price-sub">/mo</span>
+          {/* TWO-COLUMN PRICING CARD */}
+          <div className="relative w-full grid grid-cols-1 md:grid-cols-2 bg-white border border-[#e2e8f0] border-t-4 border-t-lp-accent rounded-[16px] overflow-hidden shadow-[0_20px_50px_rgba(15,23,42,0.04)] text-left">
+            {/* LEFT COLUMN */}
+            <div className="p-[2.5rem] flex flex-col justify-between z-10">
+              <div>
+                <div className="inline-block p-[0.25rem_0.65rem] bg-[rgba(91,84,247,0.08)] border border-[rgba(91,84,247,0.2)] rounded-full text-[0.65rem] tracking-[0.08em] font-bold uppercase text-lp-accent mb-[1rem]">
+                  PRO AI
+                </div>
+                <h3 className="text-[2rem] font-extrabold text-[#0f172a] m-0 mb-[0.5rem] tracking-tight">
+                  The Edge
+                </h3>
+                <div className="flex items-baseline gap-[0.15rem] font-extrabold text-[#0f172a] mb-[1.25rem]">
+                  <span className="text-[3rem] leading-[1]">$19</span>
+                  <span className="text-[0.95rem] text-[#475569] font-medium">/mo</span>
+                </div>
+                <p className="text-[0.85rem] leading-[1.6] text-[#475569] mb-[2rem]">
+                  Everything you need to stand out, optimized for modern recruiting.
+                </p>
               </div>
-              <p className="lp-pricing-card-desc">
-                Everything you need to stand out, optimized for modern recruiting.
-              </p>
-              <Link className="lp-btn-primary lp-btn-pricing" to="/pricing">
-                Start Your Free Trial
-              </Link>
-              <p className="lp-pricing-note">
-                Cancel anytime. 7-day money-back guarantee.
-              </p>
+
+              <div>
+                <Link
+                  className="w-full inline-flex items-center justify-center py-[0.85rem] px-[1.5rem] bg-[#5B54F7] text-white rounded-[6px] text-[0.88rem] font-semibold border-none cursor-pointer transition-all duration-200 hover:bg-[#4a43e6] disabled:opacity-55 disabled:cursor-not-allowed tracking-[0.01em] no-underline"
+                  to="/pricing"
+                >
+                  Start Your Free Trial
+                </Link>
+                <div className="text-[0.7rem] text-[#6B7280] text-center mt-[1rem]">
+                  Cancel anytime. 7-day money-back guarantee.
+                </div>
+              </div>
             </div>
 
-            <div className="lp-pricing-card-right">
-              <ul className="lp-pricing-features">
+            {/* RIGHT COLUMN */}
+            <div className="p-[2.5rem] flex flex-col justify-center z-10">
+              <ul className="flex flex-col gap-[1.25rem] p-0 m-0 list-none">
                 {pricingFeatures.map((f, i) => (
-                  <li key={i} className="lp-pricing-feature">
-                    <span className="lp-pricing-check">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <li key={i} className="text-[0.88rem] text-[#334155] font-medium flex items-start gap-[0.75rem]">
+                    <span className="flex-shrink-0 w-[20px] h-[20px] rounded-full bg-[#4F46E5] flex items-center justify-center mt-[1px]">
+                      <svg
+                        className="w-[10px] h-[10px] text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="3.5"
+                        viewBox="0 0 24 24"
+                      >
                         <polyline points="20 6 9 17 4 12" />
                       </svg>
                     </span>
-                    <span className="lp-pricing-feature-text">
+                    <span className="leading-tight">
                       {f.text}
-                      {f.bold && <strong>{f.bold}</strong>}
+                      {f.bold && <strong className="font-semibold text-[#0f172a]">{f.bold}</strong>}
                       {f.text2}
                     </span>
                   </li>
                 ))}
               </ul>
             </div>
+
+            {/* CENTERED VERTICAL DIVIDER LINE (Does not touch top/bottom, hidden on mobile) */}
+            <div className="hidden md:block absolute top-[10%] bottom-[10%] left-1/2 w-[1px] bg-[#e2e8f0] z-20" />
+
+            {/* CENTERED HORIZONTAL DIVIDER LINE (Visible on mobile only) */}
+            <div className="block md:hidden absolute left-[10%] right-[10%] top-1/2 h-[1px] bg-[#e2e8f0] z-20" />
           </div>
         </div>
       </section>
 
       {/* TESTIMONIALS */}
-      <section className="lp-testimonials">
-        <div className="lp-testimonials-inner">
-          <p className="lp-testimonials-eyebrow">REAL CANDIDATES. REAL CALLBACKS.</p>
-          <h2 className="lp-section-h2 lp-section-h2-dark">They stopped being a PDF in a pile.</h2>
+      <section className="py-[6rem] px-[2rem] flex justify-center bg-white border-t border-[#e2e8f0]">
+        <div className="max-w-[900px] w-full text-center">
+          <p className="text-[0.72rem] tracking-[0.18em] uppercase text-lp-accent font-bold mb-[0.75rem]">REAL CANDIDATES. REAL CALLBACKS.</p>
+          <h2 className="font-inter text-[1.6rem] md:text-[2.4rem] font-extrabold tracking-[-0.03em] leading-[1.15] text-[#0f172a] mb-[2.5rem]">They stopped being a PDF in a pile.</h2>
 
-          <div className="lp-testimonials-grid">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-[1.5rem] text-left mt-[3.5rem]">
             {testimonials.map((t, idx) => (
-              <div className="lp-testimonial-card" key={idx}>
-                <div className="lp-testimonial-stars">
+              <div className="bg-white border border-[#e2e8f0] rounded-[12px] p-[2rem] flex flex-col justify-between shadow-[0_4px_20px_rgba(0,0,0,0.01)]" key={idx}>
+                <div className="text-[#fbbf24] text-[0.85rem] mb-[1rem]">
                   {Array.from({ length: t.stars }).map((_, i) => (
-                    <span key={i} className="lp-star">★</span>
+                    <span key={i}>★</span>
                   ))}
                 </div>
-                <p className="lp-testimonial-quote">{t.quote}</p>
-                <div className="lp-testimonial-user">
-                  <div className="lp-testimonial-avatar" style={{ backgroundColor: t.color }}>
+                <p className="text-[0.82rem] leading-[1.7] text-[#334155] italic mb-[1.5rem]">{t.quote}</p>
+                <div className="flex items-center gap-[0.75rem]">
+                  <div className="w-[32px] h-[32px] rounded-full flex items-center justify-center font-inter text-[0.72rem] font-bold text-[#1e293b] flex-shrink-0" style={{ backgroundColor: t.color }}>
                     {t.initials}
                   </div>
-                  <div className="lp-testimonial-info">
-                    <div className="lp-testimonial-name">{t.name}</div>
-                    <div className="lp-testimonial-role">{t.role}</div>
+                  <div className="flex flex-col gap-[1px]">
+                    <div className="text-[0.8rem] font-bold text-[#0f172a]">{t.name}</div>
+                    <div className="text-[0.7rem] text-[#64748b] font-medium">{t.role}</div>
                   </div>
                 </div>
               </div>
@@ -305,24 +494,24 @@ export const LandingPage = () => (
       </section>
 
       {/* FAQ */}
-      <section className="lp-faq" id="faq">
-        <div className="lp-faq-inner">
-          <h2 className="lp-section-h2 lp-section-h2-white">Common Questions</h2>
-          <p className="lp-faq-sub">Everything you need to know about the product and billing.</p>
+      <section className="py-[6rem] px-[2rem] flex justify-center bg-[#0a0b10]" id="faq">
+        <div className="max-w-[900px] w-full text-center">
+          <h2 className="font-inter text-[1.6rem] md:text-[2.4rem] font-extrabold tracking-[-0.03em] leading-[1.15] text-white mb-[2.5rem]">Common Questions</h2>
+          <p className="text-[0.88rem] text-white/45 mb-[3.5rem]">Everything you need to know about the product and billing.</p>
 
-          <div className="lp-faq-grid">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-[1.5rem] text-left">
             {faqItems.map((item, idx) => (
-              <div className="lp-faq-card" key={idx}>
-                <div className="lp-faq-icon">
+              <div className="bg-white/[0.02] border border-white/[0.05] rounded-[12px] p-[2rem] flex gap-[1rem]" key={idx}>
+                <div className="text-white/35 mt-[3px] flex-shrink-0">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="12" r="10" />
                     <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
                     <line x1="12" y1="17" x2="12.01" y2="17" />
                   </svg>
                 </div>
-                <div className="lp-faq-content">
-                  <h3 className="lp-faq-question">{item.question}</h3>
-                  <p className="lp-faq-answer">{item.answer}</p>
+                <div className="flex flex-col">
+                  <h3 className="font-inter text-[0.95rem] font-bold text-white mb-[0.6rem]">{item.question}</h3>
+                  <p className="text-[0.8rem] leading-[1.65] text-white/60">{item.answer}</p>
                 </div>
               </div>
             ))}
@@ -332,14 +521,14 @@ export const LandingPage = () => (
     </main>
 
     {/* FOOTER */}
-    <footer className="lp-footer">
-      <div className="lp-footer-logo">ChatResumes</div>
-      <div className="lp-footer-links">
-        <span className="lp-footer-link">Privacy Policy</span>
-        <span className="lp-footer-link">Terms of Service</span>
-        <span className="lp-footer-link">Cookie Policy</span>
+    <footer className="flex items-center justify-between flex-wrap gap-[1rem] p-[2rem] bg-[#0a0b10] border-t border-white/[0.05] flex-col md:flex-row">
+      <div className="font-inter text-[0.95rem] font-extrabold text-white">ChatResumes</div>
+      <div className="flex gap-[2rem]">
+        <span className="text-[0.75rem] text-white/40 cursor-pointer transition-colors duration-200 hover:text-white">Privacy Policy</span>
+        <span className="text-[0.75rem] text-white/40 cursor-pointer transition-colors duration-200 hover:text-white">Terms of Service</span>
+        <span className="text-[0.75rem] text-white/40 cursor-pointer transition-colors duration-200 hover:text-white">Cookie Policy</span>
       </div>
-      <div className="lp-footer-copy">© 2024 ChatResumes. All rights reserved.</div>
+      <div className="text-[0.72rem] text-white/25">© 2024 ChatResumes. All rights reserved.</div>
     </footer>
   </div>
 )

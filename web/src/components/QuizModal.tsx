@@ -84,7 +84,7 @@ export const QuizModal = ({ isOpen, onClose, onSaved }: QuizModalProps) => {
 
   return (
     <div
-      className="quiz-modal-overlay"
+      className="fixed inset-0 bg-[#0f172a]/55 flex items-center justify-center p-[1rem] z-[1000] backdrop-blur-[4px]"
       onClick={(event) => {
         if (event.target === event.currentTarget) onClose()
       }}
@@ -92,18 +92,18 @@ export const QuizModal = ({ isOpen, onClose, onSaved }: QuizModalProps) => {
       aria-modal="true"
       aria-label="Intake quiz"
     >
-      <div className="quiz-modal">
-        <div className="quiz-modal-header">
+      <div className="bg-white rounded-[16px] w-full max-w-[720px] max-h-[90vh] flex flex-col shadow-[0_24px_60px_rgba(15,23,42,0.25)] overflow-hidden">
+        <div className="flex items-start justify-between p-[1.25rem_1.5rem] border-b border-border gap-[1rem]">
           <div>
-            <div className="quiz-modal-eyebrow">Intake quiz</div>
-            <div className="quiz-modal-title">The 5 questions recruiters ask</div>
-            <div className="quiz-modal-progress">
+            <div className="text-[0.7rem] uppercase tracking-[0.08em] text-muted">Intake quiz</div>
+            <div className="font-inter font-bold text-[1.1rem] text-navy-text mt-[0.2rem]">The 5 questions recruiters ask</div>
+            <div className="text-[0.78rem] text-muted mt-[0.25rem]">
               {answeredCount} / {QUIZ_TOTAL} answered
             </div>
           </div>
           <button
             aria-label="Close"
-            className="quiz-modal-close"
+            className="bg-transparent border-none text-[1.6rem] leading-[1] cursor-pointer text-muted hover:text-navy-text p-[0.25rem_0.5rem]"
             onClick={onClose}
             type="button"
           >
@@ -111,23 +111,23 @@ export const QuizModal = ({ isOpen, onClose, onSaved }: QuizModalProps) => {
           </button>
         </div>
 
-        <div className="quiz-modal-body">
+        <div className="p-[1.25rem_1.5rem] overflow-y-auto flex flex-col gap-[1.25rem]">
           {isLoading ? (
-            <div className="ui-status-text">Loading…</div>
+            <div className="text-[0.74rem] text-muted">Loading…</div>
           ) : (
             quizQuestions.map((question) => {
               const value = answers[question.id] ?? ''
               return (
-                <div className="quiz-q" key={question.id}>
-                  <div className="quiz-q-meta">
-                    <span className="quiz-q-num">{question.number}</span>
-                    <span className="quiz-q-cat">{question.category}</span>
+                <div className="flex flex-col gap-[0.4rem]" key={question.id}>
+                  <div className="flex items-center gap-[0.5rem] text-[0.7rem] uppercase tracking-[0.08em] text-muted">
+                    <span>{question.number}</span>
+                    <span className="bg-[#f1f5f9] rounded-full p-[0.1rem_0.55rem]">{question.category}</span>
                   </div>
-                  <label className="quiz-q-text" htmlFor={`quiz-${question.id}`}>
+                  <label className="font-inter font-semibold text-[0.98rem] text-navy-text" htmlFor={`quiz-${question.id}`}>
                     {question.text}
                   </label>
                   <textarea
-                    className="quiz-q-textarea"
+                    className="w-full border border-border rounded-[10px] p-[0.7rem_0.85rem] font-mono text-[0.85rem] text-navy-text bg-white resize-y min-h-[90px] focus:outline-none focus:border-blue-bright focus:shadow-[0_0_0_3px_rgba(37,99,235,0.15)]"
                     id={`quiz-${question.id}`}
                     maxLength={MAX_CHARS}
                     onChange={(event) => handleChange(question.id, event.target.value)}
@@ -135,9 +135,9 @@ export const QuizModal = ({ isOpen, onClose, onSaved }: QuizModalProps) => {
                     rows={4}
                     value={value}
                   />
-                  <div className="quiz-q-footer">
-                    <span className="quiz-q-hint">{question.hint}</span>
-                    <span className="quiz-q-count">
+                  <div className="flex justify-between gap-[0.75rem] text-[0.72rem] text-muted">
+                    <span className="flex-1">{question.hint}</span>
+                    <span className="flex-shrink-0">
                       {value.length} / {MAX_CHARS}
                     </span>
                   </div>
@@ -145,10 +145,10 @@ export const QuizModal = ({ isOpen, onClose, onSaved }: QuizModalProps) => {
               )
             })
           )}
-          {error ? <div className="ui-error-text">{error}</div> : null}
+          {error ? <div className="text-[0.74rem] text-[#b42318]">{error}</div> : null}
         </div>
 
-        <div className="quiz-modal-footer">
+        <div className="flex justify-end gap-[0.5rem] p-[1rem_1.5rem] border-t border-border bg-[#f8fafc]">
           <Button onClick={onClose} variant="ghost">
             Cancel
           </Button>
