@@ -158,15 +158,14 @@ const DocumentsCard = () => {
         title="Documents"
         description="Drop a PDF resume, DOCX, or text file. We extract the text and feed it to your AI."
       />
-      
+
       {/* Premium Upload Dropzone */}
       <div
         aria-label="Upload documents"
-        className={`flex flex-col items-center justify-center border-2 border-dashed rounded-[14px] py-[2.5rem] px-[1.5rem] text-center cursor-pointer transition-all duration-300 ${
-          isDragging 
-            ? 'bg-indigo-50/60 border-[#5B54F7] scale-[1.01] shadow-[0_4px_20px_rgba(91,84,247,0.1)]' 
-            : 'border-slate-200 hover:border-[#5B54F7] hover:bg-slate-50/50'
-        }`}
+        className={`flex flex-col items-center justify-center border-2 border-dashed rounded-[14px] py-[2.5rem] px-[1.5rem] text-center cursor-pointer transition-all duration-300 ${isDragging
+          ? 'bg-indigo-50/60 border-[#5B54F7] scale-[1.01] shadow-[0_4px_20px_rgba(91,84,247,0.1)]'
+          : 'border-slate-200 hover:border-[#5B54F7] hover:bg-slate-50/50'
+          }`}
         onClick={() => inputRef.current?.click()}
         onDragLeave={(event) => {
           event.preventDefault()
@@ -225,8 +224,8 @@ const DocumentsCard = () => {
         ) : (
           <div className="flex flex-col gap-[0.5rem]">
             {documents.map((document) => (
-              <div 
-                className="flex items-center justify-between gap-[0.75rem] py-[0.75rem] px-[1rem] bg-white border border-slate-100 rounded-[12px] shadow-[0_2px_8px_rgba(0,0,0,0.01)] hover:border-slate-200 transition-all" 
+              <div
+                className="flex items-center justify-between gap-[0.75rem] py-[0.75rem] px-[1rem] bg-white border border-slate-100 rounded-[12px] shadow-[0_2px_8px_rgba(0,0,0,0.01)] hover:border-slate-200 transition-all"
                 key={document.id}
               >
                 <div className="flex items-center gap-[0.75rem] min-w-0 flex-1">
@@ -294,7 +293,7 @@ const ShareLinkCard = ({
     <Card className="relative overflow-hidden border border-slate-100 shadow-[0_12px_36px_rgba(15,31,75,0.04)] bg-white rounded-[16px] p-[1.5rem] md:p-[2rem]">
       {/* Visual top highlight */}
       <div className="absolute top-0 left-0 right-0 h-[4px] bg-gradient-to-r from-[#5B54F7] to-blue-bright" />
-      
+
       <SectionHeader
         action={statusPill}
         eyebrow="Recruiter share link"
@@ -305,7 +304,7 @@ const ShareLinkCard = ({
             : 'Activate your subscription to go live. Your custom link stays reserved.'
         }
       />
-      
+
       {/* Modern link input widget */}
       <div className="flex flex-col md:flex-row items-stretch gap-[0.75rem] mt-[1rem]">
         <div className="flex-1 flex items-center gap-[0.55rem] py-[0.65rem] px-[1rem] border border-slate-200 rounded-[12px] bg-slate-50/50 hover:border-slate-300 transition-colors">
@@ -317,12 +316,12 @@ const ShareLinkCard = ({
             value={publicUrl || 'Loading Link...'}
           />
         </div>
-        
+
         <div className="flex items-stretch gap-[0.5rem] flex-shrink-0">
           {isActive ? (
             <>
-              <button 
-                onClick={onCopy} 
+              <button
+                onClick={onCopy}
                 className="inline-flex items-center justify-center gap-[0.5rem] px-[1.25rem] py-[0.65rem] bg-[#5B54F7] hover:bg-[#4a43e6] text-white text-[0.82rem] font-bold rounded-[12px] transition-all cursor-pointer border-none shadow-[0_4px_12px_rgba(91,84,247,0.15)] active:scale-[0.98]"
               >
                 <Copy size={15} />
@@ -333,9 +332,9 @@ const ShareLinkCard = ({
                     : 'Copy Link'}
               </button>
               {publicUrl ? (
-                <a 
-                  href={publicUrl} 
-                  target="_blank" 
+                <a
+                  href={publicUrl}
+                  target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center justify-center gap-[0.5rem] px-[1.25rem] py-[0.65rem] bg-slate-100 hover:bg-slate-200 text-[#0f1f4b] text-[0.82rem] font-semibold rounded-[12px] transition-all no-underline cursor-pointer border-none"
                 >
@@ -345,8 +344,8 @@ const ShareLinkCard = ({
               ) : null}
             </>
           ) : (
-            <Link 
-              to="/pricing" 
+            <Link
+              to="/pricing"
               className="inline-flex items-center justify-center gap-[0.5rem] px-[1.5rem] py-[0.65rem] bg-[#5B54F7] hover:bg-[#4a43e6] text-white text-[0.82rem] font-bold rounded-[12px] transition-all no-underline cursor-pointer border-none shadow-[0_4px_12px_rgba(91,84,247,0.15)] active:scale-[0.98]"
             >
               Activate link — Subscribe
@@ -452,8 +451,8 @@ export const DashboardPage = () => {
             {dashboard.isOpeningPortal ? 'Opening…' : 'Billing'}
           </button>
         ) : !isSubscribed ? (
-          <Link 
-            className="inline-flex items-center justify-center gap-[0.45rem] border-none rounded-[8px] py-[0.45rem] px-[1rem] font-inter font-bold text-[0.78rem] tracking-[0.01em] cursor-pointer transition-all bg-[#5B54F7] text-white hover:bg-[#4a43e6] no-underline whitespace-nowrap shadow-[0_4px_12px_rgba(91,84,247,0.2)]" 
+          <Link
+            className="inline-flex items-center justify-center gap-[0.45rem] border-none rounded-[8px] py-[0.45rem] px-[1rem] font-inter font-bold text-[0.78rem] tracking-[0.01em] cursor-pointer transition-all bg-[#5B54F7] text-white hover:bg-[#4a43e6] no-underline whitespace-nowrap shadow-[0_4px_12px_rgba(91,84,247,0.2)]"
             to="/pricing"
           >
             Subscribe
@@ -462,7 +461,7 @@ export const DashboardPage = () => {
       }
     >
       <div className="font-sans flex flex-col gap-[1.5rem]">
-        
+
         <ShareLinkCard
           copyState={dashboard.copyState}
           data={dashboard.data}
@@ -479,10 +478,10 @@ export const DashboardPage = () => {
         {/* Training Area Split Columns */}
         <div className="grid grid-cols-1 md:grid-cols-[1.8fr_1fr] gap-[1.5rem] items-start">
           <DocumentsCard />
-          
+
           <div className="flex flex-col gap-[1.5rem]">
             {/* Intake Quiz Panel */}
-            <Card className="flex flex-col gap-[1.25rem] border border-slate-100 shadow-[0_12px_36px_rgba(15,31,75,0.04)] bg-white rounded-[16px] p-[1.5rem] border-l-4 border-l-[#5B54F7]">
+            <Card className="flex flex-col gap-[1.25rem] border border-slate-100 shadow-[0_12px_36px_rgba(15,31,75,0.04)] bg-white rounded-[16px] p-[1.5rem]">
               <div className="flex items-start justify-between gap-[0.5rem]">
                 <div className="w-[36px] h-[36px] rounded-full bg-indigo-50 border border-indigo-100/50 flex items-center justify-center flex-shrink-0 text-[#5B54F7]">
                   <BookOpen size={18} />
@@ -497,8 +496,8 @@ export const DashboardPage = () => {
                   Answer the key questions recruiters ask. Your AI uses these facts to ground every response.
                 </p>
               </div>
-              <button 
-                onClick={() => setIsQuizOpen(true)} 
+              <button
+                onClick={() => setIsQuizOpen(true)}
                 className="w-full bg-[#5B54F7] hover:bg-[#4a43e6] text-white py-[0.75rem] px-[1.25rem] rounded-[12px] text-[0.82rem] font-bold flex items-center justify-center gap-[0.5rem] transition-all cursor-pointer border-none shadow-[0_4px_12px_rgba(91,84,247,0.15)] active:scale-[0.98]"
               >
                 {(dashboard.data?.profile.quizAnsweredCount ?? 0) > 0 ? 'Continue quiz' : 'Open quiz'}
@@ -506,7 +505,7 @@ export const DashboardPage = () => {
             </Card>
 
             {/* Talk to AI Studio Panel */}
-            <Card className="flex flex-col gap-[1.25rem] border border-slate-100 shadow-[0_12px_36px_rgba(15,31,75,0.04)] bg-white rounded-[16px] p-[1.5rem] border-l-4 border-l-blue-bright">
+            <Card className="flex flex-col gap-[1.25rem] border border-slate-100 shadow-[0_12px_36px_rgba(15,31,75,0.04)] bg-white rounded-[16px] p-[1.5rem]">
               <div className="w-[36px] h-[36px] rounded-full bg-blue-50 border border-blue-100/50 flex items-center justify-center flex-shrink-0 text-blue-600">
                 <MessageSquare size={18} />
               </div>
@@ -516,7 +515,7 @@ export const DashboardPage = () => {
                   Coach your AI agent via conversation. Each exchange helps write and refine key career accomplishments.
                 </p>
               </div>
-              <Link 
+              <Link
                 to="/chat"
                 className="w-full bg-slate-50 hover:bg-slate-100 text-[#5B54F7] py-[0.75rem] px-[1.25rem] rounded-[12px] text-[0.82rem] font-bold flex items-center justify-center gap-[0.5rem] transition-all no-underline cursor-pointer border border-indigo-50 active:scale-[0.98]"
               >
@@ -533,7 +532,7 @@ export const DashboardPage = () => {
             <h3 className="font-inter font-bold text-[1rem] text-[#0f1f4b] m-0 tracking-tight">At a Glance</h3>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-[1rem] md:gap-[1.5rem]">
-            
+
             {/* Views Metric */}
             <div className="bg-slate-50/50 border border-slate-100 rounded-[12px] p-[1rem] flex flex-col gap-[0.5rem]">
               <div className="flex items-center gap-[0.5rem]">
@@ -596,7 +595,7 @@ export const DashboardPage = () => {
             <Eye className="w-[18px] h-[18px] text-[#5B54F7]" />
             <h3 className="font-inter font-bold text-[1rem] text-[#0f1f4b] m-0 tracking-tight">Recent Activity</h3>
           </div>
-          
+
           {activity.length === 0 ? (
             <EmptyState
               icon="👁"
@@ -610,15 +609,14 @@ export const DashboardPage = () => {
           ) : (
             <div className="flex flex-col">
               {activity.map((item, idx) => (
-                <div 
-                  className="flex items-center gap-[0.75rem] py-[0.95rem] border-b border-slate-100 last:border-b-0 hover:bg-slate-50/30 px-[0.5rem] -mx-[0.5rem] rounded-[8px] transition-colors" 
+                <div
+                  className="flex items-center gap-[0.75rem] py-[0.95rem] border-b border-slate-100 last:border-b-0 hover:bg-slate-50/30 px-[0.5rem] -mx-[0.5rem] rounded-[8px] transition-colors"
                   key={item.id || idx}
                 >
-                  <div className={`w-[32px] h-[32px] rounded-full flex items-center justify-center flex-shrink-0 ${
-                    item.type === 'chat' 
-                      ? 'bg-indigo-50 text-[#5B54F7]' 
-                      : 'bg-blue-50 text-blue-600'
-                  }`}>
+                  <div className={`w-[32px] h-[32px] rounded-full flex items-center justify-center flex-shrink-0 ${item.type === 'chat'
+                    ? 'bg-indigo-50 text-[#5B54F7]'
+                    : 'bg-blue-50 text-blue-600'
+                    }`}>
                     {item.type === 'chat' ? <MessageSquare size={14} /> : <Eye size={14} />}
                   </div>
                   <div className="flex-1 min-w-0">
