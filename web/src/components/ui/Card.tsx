@@ -8,8 +8,15 @@ type CardProps = HTMLAttributes<HTMLDivElement> & {
 
 export const Card = ({ children, className, flush, padding = 'md', ...rest }: CardProps) => {
   const padClass =
-    padding === 'sm' ? 'ui-card-tight' : padding === 'lg' ? 'ui-card-pad-lg' : ''
-  const classes = ['ui-card', flush ? 'ui-card-flush' : '', padClass, className ?? '']
+    padding === 'sm'
+      ? 'py-[0.9rem] px-[1rem]'
+      : padding === 'lg'
+        ? 'p-[1.75rem]'
+        : 'p-[1.25rem]'
+  
+  const baseClasses = 'bg-white border border-border rounded-[14px] shadow-[0_18px_48px_rgba(10,36,99,0.08)]'
+  const flushClasses = flush ? 'p-0 overflow-hidden' : ''
+  const classes = [baseClasses, flushClasses, padClass, className ?? '']
     .filter(Boolean)
     .join(' ')
   return (

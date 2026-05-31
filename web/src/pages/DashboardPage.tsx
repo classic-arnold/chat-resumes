@@ -1,13 +1,27 @@
 import { useAuth } from '@clerk/react'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import {
+  Copy,
+  ExternalLink,
+  FileText,
+  Trash2,
+  UploadCloud,
+  MessageSquare,
+  Clock,
+  Sparkles,
+  BookOpen,
+  Eye,
+  AlertCircle,
+  FileCode,
+  TrendingUp,
+  Link2
+} from 'lucide-react'
 
 import { AppShell } from '../components/ui/AppShell'
-import { Button, ButtonLink } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { EmptyState } from '../components/ui/EmptyState'
 import { SectionHeader } from '../components/ui/SectionHeader'
-import { Stat } from '../components/ui/Stat'
 import { QuizModal } from '../components/QuizModal'
 import { createPortalSession } from '../lib/billing'
 import { fetchDashboard, type DashboardSummary } from '../lib/dashboard'
@@ -39,10 +53,43 @@ const formatBytes = (bytes: number) => {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
+const getFileIcon = (fileName: string) => {
+  const lower = fileName.toLowerCase()
+  if (lower.endsWith('.pdf')) {
+    return <FileText className="text-rose-500 w-[18px] h-[18px]" />
+  }
+  if (lower.endsWith('.docx') || lower.endsWith('.doc')) {
+    return <FileText className="text-blue-500 w-[18px] h-[18px]" />
+  }
+  if (lower.endsWith('.md') || lower.endsWith('.txt')) {
+    return <FileCode className="text-slate-500 w-[18px] h-[18px]" />
+  }
+  return <FileText className="text-slate-400 w-[18px] h-[18px]" />
+}
+
 const documentStatusPill = (status: DocumentSummary['status']) => {
-  if (status === 'ready') return <span className="ui-pill ui-pill-active">Ready</span>
-  if (status === 'failed') return <span className="ui-pill ui-pill-danger">Failed</span>
-  return <span className="ui-pill ui-pill-neutral">Processing</span>
+  if (status === 'ready') {
+    return (
+      <span className="inline-flex items-center gap-[0.35rem] rounded-full py-[0.25rem] px-[0.65rem] text-[0.66rem] font-bold tracking-[0.04em] uppercase bg-emerald-50 text-emerald-700 border border-emerald-100/80">
+        <span className="w-[6px] h-[6px] rounded-full bg-emerald-500 animate-pulse" />
+        Ready
+      </span>
+    )
+  }
+  if (status === 'failed') {
+    return (
+      <span className="inline-flex items-center gap-[0.35rem] rounded-full py-[0.25rem] px-[0.65rem] text-[0.66rem] font-bold tracking-[0.04em] uppercase bg-rose-50 text-rose-700 border border-rose-100">
+        <span className="w-[6px] h-[6px] rounded-full bg-rose-500" />
+        Failed
+      </span>
+    )
+  }
+  return (
+    <span className="inline-flex items-center gap-[0.35rem] rounded-full py-[0.25rem] px-[0.65rem] text-[0.66rem] font-bold tracking-[0.04em] uppercase bg-indigo-50 text-indigo-700 border border-indigo-100">
+      <span className="w-[6px] h-[6px] rounded-full bg-[#5B54F7] animate-ping" />
+      Processing
+    </span>
+  )
 }
 
 const DocumentsCard = () => {
@@ -105,15 +152,20 @@ const DocumentsCard = () => {
   }
 
   return (
-    <Card>
+    <Card className="flex flex-col gap-[1.25rem] border border-slate-100 shadow-[0_12px_36px_rgba(15,31,75,0.04)] bg-white rounded-[16px]">
       <SectionHeader
         eyebrow="Train your AI"
         title="Documents"
         description="Drop a PDF resume, DOCX, or text file. We extract the text and feed it to your AI."
       />
+
+      {/* Premium Upload Dropzone */}
       <div
         aria-label="Upload documents"
-        className={`dropzone${isDragging ? ' dragover' : ''}`}
+        className={`flex flex-col items-center justify-center border-2 border-dashed rounded-[14px] py-[2.5rem] px-[1.5rem] text-center cursor-pointer transition-all duration-300 ${isDragging
+          ? 'bg-indigo-50/60 border-[#5B54F7] scale-[1.01] shadow-[0_4px_20px_rgba(91,84,247,0.1)]'
+          : 'border-slate-200 hover:border-[#5B54F7] hover:bg-slate-50/50'
+          }`}
         onClick={() => inputRef.current?.click()}
         onDragLeave={(event) => {
           event.preventDefault()
@@ -131,12 +183,18 @@ const DocumentsCard = () => {
         role="button"
         tabIndex={0}
       >
-        <div className="dropzone-title">
-          {isUploading ? 'Uploading…' : 'Drop files here or click to browse'}
+        <div className="w-[44px] h-[44px] rounded-full bg-slate-50 flex items-center justify-center mb-[0.75rem] border border-slate-100 transition-colors group-hover:bg-indigo-50">
+          <UploadCloud className="w-[20px] h-[20px] text-[#5B54F7]" />
         </div>
-        <div className="dropzone-hint">PDF · DOCX · TXT · MD · up to 10 MB</div>
+        <div className="text-[0.85rem] text-[#0f1f4b] font-semibold tracking-tight">
+          {isUploading ? 'Uploading documents...' : 'Drop files here or click to browse'}
+        </div>
+        <div className="text-[0.72rem] text-slate-500 mt-[0.25rem]">
+          Supports PDF · DOCX · TXT · MD (up to 10 MB)
+        </div>
         <input
           accept=".pdf,.docx,.txt,.md,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown"
+          className="hidden"
           multiple
           onChange={(event) => {
             void handleFiles(event.target.files)
@@ -146,36 +204,62 @@ const DocumentsCard = () => {
           type="file"
         />
       </div>
-      {error ? <div className="ui-error-text" style={{ marginTop: '0.6rem' }}>{error}</div> : null}
-      <div className="doc-list">
+
+      {error ? (
+        <div className="flex items-center gap-[0.5rem] text-[0.78rem] text-rose-600 bg-rose-50 border border-rose-100 rounded-[8px] p-[0.75rem_1rem]">
+          <AlertCircle className="w-[16px] h-[16px] flex-shrink-0" />
+          <span>{error}</span>
+        </div>
+      ) : null}
+
+      {/* Documents List */}
+      <div className="flex flex-col gap-[0.75rem]">
         {isLoading ? (
-          <div className="ui-status-text">Loading documents…</div>
+          <div className="text-center text-[0.8rem] text-slate-500 py-[2.5rem] px-[1rem] flex flex-col items-center justify-center gap-[0.5rem]">
+            <span className="w-[20px] h-[20px] rounded-full border-2 border-indigo-100 border-t-[#5B54F7] animate-spin" />
+            <span>Loading your trained documents...</span>
+          </div>
         ) : documents.length === 0 ? (
-          <EmptyState icon="📄" text="No documents yet." subtext="Your first upload trains your AI." />
+          <EmptyState icon="📄" text="No documents uploaded yet." subtext="Upload your resume or portfolio documents to train your personal AI recruiter agent." />
         ) : (
-          documents.map((document) => (
-            <div className="doc-item" key={document.id}>
-              <div className="doc-item-info">
-                <div className="doc-item-name" title={document.originalName}>
-                  {document.originalName}
+          <div className="flex flex-col gap-[0.5rem]">
+            {documents.map((document) => (
+              <div
+                className="flex items-center justify-between gap-[0.75rem] py-[0.75rem] px-[1rem] bg-white border border-slate-100 rounded-[12px] shadow-[0_2px_8px_rgba(0,0,0,0.01)] hover:border-slate-200 transition-all"
+                key={document.id}
+              >
+                <div className="flex items-center gap-[0.75rem] min-w-0 flex-1">
+                  <div className="w-[36px] h-[36px] rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center flex-shrink-0">
+                    {getFileIcon(document.originalName)}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[0.82rem] font-bold text-[#0f1f4b] truncate" title={document.originalName}>
+                      {document.originalName}
+                    </div>
+                    <div className="text-[0.72rem] text-slate-500 mt-[0.15rem] flex items-center gap-[0.5rem]">
+                      <span>{formatBytes(document.sizeBytes)}</span>
+                      {document.error ? (
+                        <>
+                          <span className="w-[3px] h-[3px] rounded-full bg-slate-300" />
+                          <span className="text-rose-600">{document.error}</span>
+                        </>
+                      ) : null}
+                    </div>
+                  </div>
                 </div>
-                <div className="doc-item-meta">
-                  {formatBytes(document.sizeBytes)}
-                  {document.error ? ` · ${document.error}` : ''}
+                <div className="flex items-center gap-[0.75rem]">
+                  {documentStatusPill(document.status)}
+                  <button
+                    onClick={() => void handleDelete(document.id)}
+                    className="p-[0.5rem] text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-full border-none transition-all cursor-pointer"
+                    title="Delete document"
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </div>
               </div>
-              <div className="ui-row">
-                {documentStatusPill(document.status)}
-                <Button
-                  onClick={() => void handleDelete(document.id)}
-                  size="sm"
-                  variant="danger"
-                >
-                  Delete
-                </Button>
-              </div>
-            </div>
-          ))
+            ))}
+          </div>
         )}
       </div>
     </Card>
@@ -194,52 +278,80 @@ const ShareLinkCard = ({
   const publicUrl = data?.profile.publicUrl ?? ''
   const isActive = Boolean(data?.publicLinkActive)
   const statusPill = isActive ? (
-    <span className="ui-pill ui-pill-active">Active</span>
+    <span className="inline-flex items-center gap-[0.35rem] rounded-full py-[0.25rem] px-[0.65rem] text-[0.66rem] font-bold tracking-[0.04em] uppercase bg-emerald-50 text-emerald-700 border border-emerald-100">
+      <span className="w-[6px] h-[6px] rounded-full bg-emerald-500 animate-pulse" />
+      Active
+    </span>
   ) : (
-    <span className="ui-pill ui-pill-inactive">Inactive</span>
+    <span className="inline-flex items-center gap-[0.35rem] rounded-full py-[0.25rem] px-[0.65rem] text-[0.66rem] font-bold tracking-[0.04em] uppercase bg-slate-50 text-slate-600 border border-slate-100">
+      <span className="w-[6px] h-[6px] rounded-full bg-slate-400" />
+      Inactive
+    </span>
   )
 
   return (
-    <Card padding="lg">
+    <Card className="relative overflow-hidden border border-slate-100 shadow-[0_12px_36px_rgba(15,31,75,0.04)] bg-white rounded-[16px] p-[1.5rem] md:p-[2rem]">
+      {/* Visual top highlight */}
+      <div className="absolute top-0 left-0 right-0 h-[4px] bg-gradient-to-r from-[#5B54F7] to-blue-bright" />
+
       <SectionHeader
         action={statusPill}
         eyebrow="Recruiter share link"
         title="Your public AI link"
         description={
           isActive
-            ? 'Send this to recruiters. Works while you sleep.'
-            : 'Subscribe to activate. Your link stays the same once active.'
+            ? 'Send this to recruiters. It interacts and screens candidates 24/7.'
+            : 'Activate your subscription to go live. Your custom link stays reserved.'
         }
       />
-      <div className="ui-row" style={{ gap: '0.5rem', marginTop: '0.5rem' }}>
-        <input
-          aria-label="Public link"
-          className="ui-input ui-input-readonly"
-          readOnly
-          value={publicUrl || 'Loading…'}
-        />
-      </div>
-      <div className="ui-row" style={{ gap: '0.5rem', marginTop: '0.6rem', flexWrap: 'wrap' }}>
-        {isActive ? (
-          <>
-            <Button onClick={onCopy} variant="primary">
-              {copyState === 'copied'
-                ? 'Copied'
-                : copyState === 'failed'
-                  ? 'Copy failed'
-                  : 'Copy link'}
-            </Button>
-            {publicUrl ? (
-              <ButtonLink href={publicUrl} rel="noreferrer" target="_blank" variant="secondary">
-                Open
-              </ButtonLink>
-            ) : null}
-          </>
-        ) : (
-          <ButtonLink href="/pricing" variant="primary">
-            Activate link — Subscribe
-          </ButtonLink>
-        )}
+
+      {/* Modern link input widget */}
+      <div className="flex flex-col md:flex-row items-stretch gap-[0.75rem] mt-[1rem]">
+        <div className="flex-1 flex items-center gap-[0.55rem] py-[0.65rem] px-[1rem] border border-slate-200 rounded-[12px] bg-slate-50/50 hover:border-slate-300 transition-colors">
+          <Link2 className="w-[16px] h-[16px] text-slate-400 flex-shrink-0" />
+          <input
+            aria-label="Public link"
+            className="w-full font-inter text-[0.85rem] text-[#0f1f4b] bg-transparent border-none outline-none select-all font-semibold"
+            readOnly
+            value={publicUrl || 'Loading Link...'}
+          />
+        </div>
+
+        <div className="flex items-stretch gap-[0.5rem] flex-shrink-0">
+          {isActive ? (
+            <>
+              <button
+                onClick={onCopy}
+                className="inline-flex items-center justify-center gap-[0.5rem] px-[1.25rem] py-[0.65rem] bg-[#5B54F7] hover:bg-[#4a43e6] text-white text-[0.82rem] font-bold rounded-[12px] transition-all cursor-pointer border-none shadow-[0_4px_12px_rgba(91,84,247,0.15)] active:scale-[0.98]"
+              >
+                <Copy size={15} />
+                {copyState === 'copied'
+                  ? 'Copied!'
+                  : copyState === 'failed'
+                    ? 'Copy failed'
+                    : 'Copy Link'}
+              </button>
+              {publicUrl ? (
+                <a
+                  href={publicUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center gap-[0.5rem] px-[1.25rem] py-[0.65rem] bg-slate-100 hover:bg-slate-200 text-[#0f1f4b] text-[0.82rem] font-semibold rounded-[12px] transition-all no-underline cursor-pointer border-none"
+                >
+                  <ExternalLink size={15} />
+                  Open
+                </a>
+              ) : null}
+            </>
+          ) : (
+            <Link
+              to="/pricing"
+              className="inline-flex items-center justify-center gap-[0.5rem] px-[1.5rem] py-[0.65rem] bg-[#5B54F7] hover:bg-[#4a43e6] text-white text-[0.82rem] font-bold rounded-[12px] transition-all no-underline cursor-pointer border-none shadow-[0_4px_12px_rgba(91,84,247,0.15)] active:scale-[0.98]"
+            >
+              Activate link — Subscribe
+            </Link>
+          )}
+        </div>
       </div>
     </Card>
   )
@@ -331,98 +443,196 @@ export const DashboardPage = () => {
     <AppShell
       action={
         billing?.canManageBilling ? (
-          <Button
+          <button
             disabled={dashboard.isOpeningPortal}
             onClick={() => void handleManageBilling()}
-            size="sm"
-            variant="ghost"
+            className="inline-flex items-center justify-center gap-[0.45rem] border border-slate-200 rounded-[8px] py-[0.45rem] px-[0.9rem] font-inter font-bold text-[0.78rem] tracking-[0.01em] cursor-pointer transition-all bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-50"
           >
             {dashboard.isOpeningPortal ? 'Opening…' : 'Billing'}
-          </Button>
+          </button>
         ) : !isSubscribed ? (
-          <Link className="ui-btn ui-btn-primary ui-btn-sm" to="/pricing">
+          <Link
+            className="inline-flex items-center justify-center gap-[0.45rem] border-none rounded-[8px] py-[0.45rem] px-[1rem] font-inter font-bold text-[0.78rem] tracking-[0.01em] cursor-pointer transition-all bg-[#5B54F7] text-white hover:bg-[#4a43e6] no-underline whitespace-nowrap shadow-[0_4px_12px_rgba(91,84,247,0.2)]"
+            to="/pricing"
+          >
             Subscribe
           </Link>
         ) : null
       }
     >
-      <ShareLinkCard
-        copyState={dashboard.copyState}
-        data={dashboard.data}
-        onCopy={() => void handleCopy()}
-      />
+      <div className="font-sans flex flex-col gap-[1.5rem]">
 
-      {dashboard.error ? <div className="ui-error-text">{dashboard.error}</div> : null}
+        <ShareLinkCard
+          copyState={dashboard.copyState}
+          data={dashboard.data}
+          onCopy={() => void handleCopy()}
+        />
 
-      <div className="ui-grid-2-wide">
-        <DocumentsCard />
-        <Card>
-          <SectionHeader
-            eyebrow="Train your AI"
-            title="Intake quiz"
-            description="Answer the 5 questions recruiters always want to know. Your AI uses these to ground every reply."
-            action={
-              <span className="ui-pill ui-pill-neutral">
-                {dashboard.data?.profile.quizAnsweredCount ?? 0} / {dashboard.data?.profile.quizTotal ?? 5} answered
-              </span>
-            }
-          />
-          <Button block onClick={() => setIsQuizOpen(true)} variant="primary">
-            {(dashboard.data?.profile.quizAnsweredCount ?? 0) > 0 ? 'Continue quiz' : 'Open quiz'}
-          </Button>
-        </Card>
-        <Card>
-          <SectionHeader
-            eyebrow="Or train via chat"
-            title="Talk to your AI"
-            description="Coach your AI through conversation. Each turn refines a STAR story you can approve."
-          />
-          <Link className="ui-btn ui-btn-secondary ui-btn-block" to="/chat">
-            Open chat →
-          </Link>
-        </Card>
-      </div>
-
-      <Card>
-        <SectionHeader eyebrow="Insights" title="At a glance" />
-        <div className="ui-stat-grid">
-          <Stat label="Link views (7d)" value={metrics?.viewsThisWeek ?? 0} />
-          <Stat label="Recruiter chats" value={metrics?.chatSessions ?? 0} />
-          <Stat
-            label="Avg chat (min)"
-            value={metrics?.averageChatDurationMinutes ?? 0}
-          />
-          <Stat label="Approved stories" value={metrics?.approvedStoriesCount ?? 0} />
-        </div>
-      </Card>
-
-      <Card>
-        <SectionHeader eyebrow="Activity" title="Recent recruiter activity" />
-        {activity.length === 0 ? (
-          <EmptyState
-            icon="👁"
-            text="Nothing yet."
-            subtext={
-              isSubscribed
-                ? 'Recruiter visits and chats will appear here.'
-                : 'Activate your link to start collecting recruiter activity.'
-            }
-          />
-        ) : (
-          <div className="activity-list">
-            {activity.map((item) => (
-              <div className="activity-row" key={item.id}>
-                <span className="activity-row-icon">{item.type === 'chat' ? '💬' : '👁'}</span>
-                <div className="activity-row-body">
-                  <div className="activity-row-title">{item.title}</div>
-                  <div className="activity-row-summary">{item.summary}</div>
-                </div>
-                <div className="activity-row-time">{formatRelativeTime(item.occurredAt)}</div>
-              </div>
-            ))}
+        {dashboard.error ? (
+          <div className="flex items-center gap-[0.5rem] text-[0.78rem] text-rose-600 bg-rose-50 border border-rose-100 rounded-[12px] p-[1rem]">
+            <AlertCircle className="w-[18px] h-[18px] flex-shrink-0" />
+            <span>{dashboard.error}</span>
           </div>
-        )}
-      </Card>
+        ) : null}
+
+        {/* Training Area Split Columns */}
+        <div className="grid grid-cols-1 md:grid-cols-[1.8fr_1fr] gap-[1.5rem] items-start">
+          <DocumentsCard />
+
+          <div className="flex flex-col gap-[1.5rem]">
+            {/* Intake Quiz Panel */}
+            <Card className="flex flex-col gap-[1.25rem] border border-slate-100 shadow-[0_12px_36px_rgba(15,31,75,0.04)] bg-white rounded-[16px] p-[1.5rem]">
+              <div className="flex items-start justify-between gap-[0.5rem]">
+                <div className="w-[36px] h-[36px] rounded-full bg-indigo-50 border border-indigo-100/50 flex items-center justify-center flex-shrink-0 text-[#5B54F7]">
+                  <BookOpen size={18} />
+                </div>
+                <span className="inline-flex items-center justify-center rounded-full py-[0.25rem] px-[0.65rem] text-[0.66rem] font-bold tracking-[0.04em] uppercase bg-slate-50 text-slate-600 border border-slate-100">
+                  {dashboard.data?.profile.quizAnsweredCount ?? 0} / {dashboard.data?.profile.quizTotal ?? 5} answered
+                </span>
+              </div>
+              <div>
+                <h3 className="font-inter font-bold text-[0.98rem] text-[#0f1f4b] m-0 tracking-tight">Intake Quiz</h3>
+                <p className="text-[0.78rem] text-slate-500 mt-[0.35rem] leading-[1.5] m-0">
+                  Answer the key questions recruiters ask. Your AI uses these facts to ground every response.
+                </p>
+              </div>
+              <button
+                onClick={() => setIsQuizOpen(true)}
+                className="w-full bg-[#5B54F7] hover:bg-[#4a43e6] text-white py-[0.75rem] px-[1.25rem] rounded-[12px] text-[0.82rem] font-bold flex items-center justify-center gap-[0.5rem] transition-all cursor-pointer border-none shadow-[0_4px_12px_rgba(91,84,247,0.15)] active:scale-[0.98]"
+              >
+                {(dashboard.data?.profile.quizAnsweredCount ?? 0) > 0 ? 'Continue quiz' : 'Open quiz'}
+              </button>
+            </Card>
+
+            {/* Talk to AI Studio Panel */}
+            <Card className="flex flex-col gap-[1.25rem] border border-slate-100 shadow-[0_12px_36px_rgba(15,31,75,0.04)] bg-white rounded-[16px] p-[1.5rem]">
+              <div className="w-[36px] h-[36px] rounded-full bg-blue-50 border border-blue-100/50 flex items-center justify-center flex-shrink-0 text-blue-600">
+                <MessageSquare size={18} />
+              </div>
+              <div>
+                <h3 className="font-inter font-bold text-[0.98rem] text-[#0f1f4b] m-0 tracking-tight">Talk to your AI</h3>
+                <p className="text-[0.78rem] text-slate-500 mt-[0.35rem] leading-[1.5] m-0">
+                  Coach your AI agent via conversation. Each exchange helps write and refine key career accomplishments.
+                </p>
+              </div>
+              <Link
+                to="/chat"
+                className="w-full bg-slate-50 hover:bg-slate-100 text-[#5B54F7] py-[0.75rem] px-[1.25rem] rounded-[12px] text-[0.82rem] font-bold flex items-center justify-center gap-[0.5rem] transition-all no-underline cursor-pointer border border-indigo-50 active:scale-[0.98]"
+              >
+                Open AI Studio →
+              </Link>
+            </Card>
+          </div>
+        </div>
+
+        {/* Insights Analytics */}
+        <Card className="border border-slate-100 shadow-[0_12px_36px_rgba(15,31,75,0.04)] bg-white rounded-[16px] p-[1.5rem]">
+          <div className="flex items-center gap-[0.5rem] mb-[1.25rem]">
+            <TrendingUp className="w-[18px] h-[18px] text-[#5B54F7]" />
+            <h3 className="font-inter font-bold text-[1rem] text-[#0f1f4b] m-0 tracking-tight">At a Glance</h3>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-[1rem] md:gap-[1.5rem]">
+
+            {/* Views Metric */}
+            <div className="bg-slate-50/50 border border-slate-100 rounded-[12px] p-[1rem] flex flex-col gap-[0.5rem]">
+              <div className="flex items-center gap-[0.5rem]">
+                <div className="w-[28px] h-[28px] rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <Eye size={14} />
+                </div>
+                <span className="text-[0.72rem] font-semibold text-slate-500 uppercase tracking-[0.05em]">Views (7d)</span>
+              </div>
+              <div className="text-[1.8rem] font-extrabold text-[#0f1f4b] leading-tight tracking-tight mt-[0.25rem]">
+                {metrics?.viewsThisWeek ?? 0}
+              </div>
+            </div>
+
+            {/* Chats Metric */}
+            <div className="bg-slate-50/50 border border-slate-100 rounded-[12px] p-[1rem] flex flex-col gap-[0.5rem]">
+              <div className="flex items-center gap-[0.5rem]">
+                <div className="w-[28px] h-[28px] rounded-full bg-indigo-50 text-[#5B54F7] flex items-center justify-center">
+                  <MessageSquare size={14} />
+                </div>
+                <span className="text-[0.72rem] font-semibold text-slate-500 uppercase tracking-[0.05em]">Chats</span>
+              </div>
+              <div className="text-[1.8rem] font-extrabold text-[#0f1f4b] leading-tight tracking-tight mt-[0.25rem]">
+                {metrics?.chatSessions ?? 0}
+              </div>
+            </div>
+
+            {/* Duration Metric */}
+            <div className="bg-slate-50/50 border border-slate-100 rounded-[12px] p-[1rem] flex flex-col gap-[0.5rem]">
+              <div className="flex items-center gap-[0.5rem]">
+                <div className="w-[28px] h-[28px] rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <Clock size={14} />
+                </div>
+                <span className="text-[0.72rem] font-semibold text-slate-500 uppercase tracking-[0.05em]">Avg Chat</span>
+              </div>
+              <div className="text-[1.8rem] font-extrabold text-[#0f1f4b] leading-tight tracking-tight mt-[0.25rem] flex items-baseline">
+                {metrics?.averageChatDurationMinutes ?? 0}
+                <span className="text-[0.8rem] text-slate-400 font-normal ml-[0.15rem]">min</span>
+              </div>
+            </div>
+
+            {/* Stories Metric */}
+            <div className="bg-slate-50/50 border border-slate-100 rounded-[12px] p-[1rem] flex flex-col gap-[0.5rem]">
+              <div className="flex items-center gap-[0.5rem]">
+                <div className="w-[28px] h-[28px] rounded-full bg-amber-50 text-amber-500 flex items-center justify-center">
+                  <Sparkles size={14} />
+                </div>
+                <span className="text-[0.72rem] font-semibold text-slate-500 uppercase tracking-[0.05em]">Stories</span>
+              </div>
+              <div className="text-[1.8rem] font-extrabold text-[#0f1f4b] leading-tight tracking-tight mt-[0.25rem]">
+                {metrics?.approvedStoriesCount ?? 0}
+              </div>
+            </div>
+
+          </div>
+        </Card>
+
+        {/* Recruiter Activity Log */}
+        <Card className="border border-slate-100 shadow-[0_12px_36px_rgba(15,31,75,0.04)] bg-white rounded-[16px] p-[1.5rem]">
+          <div className="flex items-center gap-[0.5rem] mb-[1.25rem]">
+            <Eye className="w-[18px] h-[18px] text-[#5B54F7]" />
+            <h3 className="font-inter font-bold text-[1rem] text-[#0f1f4b] m-0 tracking-tight">Recent Activity</h3>
+          </div>
+
+          {activity.length === 0 ? (
+            <EmptyState
+              icon="👁"
+              text="No interactions recorded yet."
+              subtext={
+                isSubscribed
+                  ? 'Recruiter visits, views, and chat sessions will populate here in real-time.'
+                  : 'Activate your link to go live and begin tracking recruiter engagements.'
+              }
+            />
+          ) : (
+            <div className="flex flex-col">
+              {activity.map((item, idx) => (
+                <div
+                  className="flex items-center gap-[0.75rem] py-[0.95rem] border-b border-slate-100 last:border-b-0 hover:bg-slate-50/30 px-[0.5rem] -mx-[0.5rem] rounded-[8px] transition-colors"
+                  key={item.id || idx}
+                >
+                  <div className={`w-[32px] h-[32px] rounded-full flex items-center justify-center flex-shrink-0 ${item.type === 'chat'
+                    ? 'bg-indigo-50 text-[#5B54F7]'
+                    : 'bg-blue-50 text-blue-600'
+                    }`}>
+                    {item.type === 'chat' ? <MessageSquare size={14} /> : <Eye size={14} />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[0.82rem] font-bold text-[#0f1f4b]">{item.title}</div>
+                    <div className="text-[0.78rem] text-slate-500 mt-[0.1rem] truncate">{item.summary}</div>
+                  </div>
+                  <div className="text-[0.74rem] text-slate-400 font-semibold whitespace-nowrap ml-[0.5rem]">
+                    {formatRelativeTime(item.occurredAt)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+
+      </div>
 
       <QuizModal
         isOpen={isQuizOpen}

@@ -49,6 +49,7 @@ export type PublicStory = {
 export type PublicProfile = {
   displayName: string
   headline: string | null
+  imageUrl: string | null
   location: string | null
   publicUrl: string
   slug: string
