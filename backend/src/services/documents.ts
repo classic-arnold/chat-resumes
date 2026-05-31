@@ -1,5 +1,10 @@
 import type { Document } from '@prisma/client';
 
+// Polyfill for DOMMatrix which is required by pdfjs-dist / pdf-parse on Node < 20.19.0
+if (typeof globalThis.DOMMatrix === 'undefined') {
+  globalThis.DOMMatrix = class DOMMatrix {} as any;
+}
+
 import { ApiError } from '../middleware/api-error-handler.js';
 import { logger } from '../lib/logger.js';
 import { prisma } from '../lib/prisma.js';
