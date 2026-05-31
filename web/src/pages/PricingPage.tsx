@@ -1,8 +1,10 @@
 import { useAuth } from '@clerk/react'
 import { useState } from 'react'
-import { Link as RouterLink, useNavigate as useReactNavigate } from 'react-router-dom'
+import { useNavigate as useReactNavigate } from 'react-router-dom'
 
 import { createCheckout } from '../lib/billing'
+import { Navbar } from '../components/Navbar'
+import { Footer } from '../components/Footer'
 
 const FEATURES = [
   'Personal AI chatbot trained on your experience',
@@ -68,24 +70,7 @@ export const PricingPage = () => {
   return (
     <div className="min-h-screen flex flex-col bg-[#FAFBFD] text-[#0F172A] font-sans antialiased">
       {/* NAVBAR */}
-      <nav className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-[2rem] h-[56px] bg-white/90 backdrop-blur-[12px] border-b border-[#e2e8f0]">
-        <RouterLink className="flex items-center gap-[0.5rem] font-sans text-[1.05rem] font-extrabold text-[#0f172a] no-underline tracking-[-0.02em]" to="/">
-          <span className="text-[1rem]">💬</span>
-          ChatResumes
-        </RouterLink>
-        <div className="hidden md:flex items-center gap-[2rem]">
-          <RouterLink className="text-[0.82rem] text-[#475569] no-underline transition-colors duration-200 hover:text-[#0f172a]" to="/#how-it-works">
-            How It Works
-          </RouterLink>
-          <RouterLink className="text-[0.82rem] text-[#5B54F7] font-semibold no-underline transition-colors duration-200 flex flex-col items-center relative" to="/pricing">
-            Pricing
-            <span className="absolute -bottom-[18px] w-[4px] h-[4px] bg-[#5B54F7] rounded-full" />
-          </RouterLink>
-        </div>
-        <RouterLink className="inline-flex items-center justify-center py-[0.6rem] px-[1.25rem] bg-[#5B54F7] text-white rounded-full text-[0.82rem] font-light no-underline border-none cursor-pointer transition-all duration-200 hover:bg-[#4a43e6] hover:-translate-y-[1px] tracking-[0.01em]" to="/pricing">
-          Claim My Link
-        </RouterLink>
-      </nav>
+      <Navbar />
 
       {/* MAIN TOP SECTION */}
       <main className="flex-1 flex flex-col items-center pt-[100px] pb-[80px] px-[1.5rem]">
@@ -163,7 +148,7 @@ export const PricingPage = () => {
             <div className="hidden md:block absolute top-[10%] bottom-[10%] left-1/2 w-[1px] bg-[#e2e8f0] z-20" />
 
             {/* CENTERED HORIZONTAL DIVIDER LINE (Visible on mobile only) */}
-            <div className="block md:hidden absolute left-[10%] right-[10%] top-1/2 h-[1px] bg-[#e2e8f0] z-20" />
+            <div className="block md:hidden absolute left-[10%] right-[10%] top-[55%] h-[1px] bg-[#e2e8f0] z-20" />
           </div>
         </div>
       </main>
@@ -212,17 +197,7 @@ export const PricingPage = () => {
       </section>
 
       {/* FOOTER */}
-      <footer className="flex items-center justify-between flex-wrap gap-[1rem] p-[2rem] bg-[#090A10] border-t border-white/[0.05] flex-col md:flex-row">
-        <div className="text-[0.95rem] font-extrabold text-white">ChatResumes</div>
-        <div className="flex gap-[2rem] text-[0.75rem] text-white/40">
-          <span className="cursor-pointer transition-colors duration-200 hover:text-white">Privacy Policy</span>
-          <span className="cursor-pointer transition-colors duration-200 hover:text-white">Terms of Service</span>
-          <span className="cursor-pointer transition-colors duration-200 hover:text-white">Cookie Policy</span>
-        </div>
-        <div className="text-[0.75rem] text-white/40">
-          © 2024 ChatResumes. All rights reserved.
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }
