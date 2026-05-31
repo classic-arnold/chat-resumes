@@ -1,0 +1,43 @@
+version: 0.2
+
+env:
+  variables:
+    PRODUCT_DIR: products/stack-audit
+    DEPLOY_DIR: products/stack-audit/infra/deploy
+
+phases:
+  install:
+    commands:
+      - echo "=== Install Phase ==="
+      - aws --version
+      - docker --version
+
+  pre_build:
+    commands:
+      - echo "=== Pre-Build Phase ==="
+      - REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
+      - echo "Logging into ${REGISTRY}"
+      - aws ecr get-login-password --region "${AWS_DEFAULT_REGION}" | docker login --username AWS --password-stdin "${REGISTRY}"
+
+  build:
+    commands:
+      - echo "=== Build Phase ==="
+      - docker build --target backend -f "${DOCKERFILE_PATH}" -t "${IMAGE_REPO_NAME}:${IMAGE_TAG}" "${PRODUCT_DIR}"
+      - REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
+      - REPOSITORY_URI="${REGISTRY}/${IMAGE_REPO_NAME}"
+      - docker tag "${IMAGE_REPO_NAME}:${IMAGE_TAG}" "${REPOSITORY_URI}:${IMAGE_TAG}"
+      - docker push "${REPOSITORY_URI}:${IMAGE_TAG}"
+
+  post_build:
+    commands:
+      - echo "=== Post-Build Phase ==="
+      - printf '%s' "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_NAME}:${IMAGE_TAG}" > "${DEPLOY_DIR}/image-uri.txt"
+      - cat "${DEPLOY_DIR}/image-uri.txt"
+
+artifacts:
+  files:
+    - 'appspec.yml'
+    - '*.sh'
+    - 'image-uri.txt'
+  base-directory: products/stack-audit/infra/deploy
+  discard-paths: no

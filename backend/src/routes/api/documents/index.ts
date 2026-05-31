@@ -81,12 +81,13 @@ documentsRouter.get(
     const user = await syncLocalUserFromClerk(auth.userId);
     const documentId = resolveStringParam(request.params.documentId);
     const document = await getDocumentForOwner({ documentId, userId: user.id });
+    const documentStream = await storage.createReadStream(document.storageKey);
 
     response.setHeader('Content-Type', document.mimeType);
     response.setHeader(
       'Content-Disposition',
       `attachment; filename="${document.originalName.replace(/"/g, '')}"`,
     );
-    storage.createReadStream(document.storageKey).pipe(response);
+    documentStream.pipe(response);
   }),
 );

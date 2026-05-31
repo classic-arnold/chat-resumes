@@ -1,0 +1,42 @@
+{
+  "app": {
+    "name": "Growth Product",
+    "slug": "growth-product",
+    "stage": "growth",
+    "account": "111111111111",
+    "region": "us-east-1",
+    "port": 3000,
+    "healthCheckPath": "/health"
+  },
+  "deployment": {
+    "github": {
+      "owner": "your-github-org",
+      "repo": "your-app-repo",
+      "branch": "main",
+      "connectionArn": "arn:aws:codestar-connections:us-east-1:111111111111:connection/replace-me"
+    },
+    "build": {
+      "buildSpecPath": "buildspec.yml",
+      "imageTag": "latest"
+    },
+    "codedeploy": {
+      "deploymentMode": "blue-green-placeholder"
+    }
+  },
+  "domain": {
+    "enabled": true,
+    "domainName": "app.example.com",
+    "hostedZoneDomain": "example.com",
+    "recordName": "app",
+    "certificateMode": "create-dns-validated"
+  },
+  "data": {
+    "datastore": "rds-postgres",
+    "cache": "elasticache-serverless",
+    "backupRetentionDays": 14,
+    "multiAz": true
+  },
+  "storage": {
+    "appBucketMode": "dedicated"
+  }
+}

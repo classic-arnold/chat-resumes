@@ -1,0 +1,37 @@
+{
+  "app": {
+    "name": "Stack Audit Validation Tool",
+    "slug": "stack-audit",
+    "stage": "validation-tool",
+    "account": "595873916767",
+    "region": "us-east-2",
+    "port": 4000,
+    "healthCheckPath": "/api/health"
+  },
+  "deployment": {
+    "github": {
+      "owner": "classic-arnold",
+      "repo": "product_factory",
+      "branch": "main",
+      "connectionArn": "arn:aws:codeconnections:us-east-2:595873916767:connection/0a271d63-5a40-4b87-a34f-e4038e0a74c9"
+    },
+    "build": {
+      "buildSpecPath": "products/stack-audit/infra/deploy/buildspec.yml",
+      "imageTag": "latest",
+      "dockerfilePath": "products/stack-audit/Dockerfile"
+    }
+  },
+  "data": {
+    "datastore": "rds-postgres",
+    "backupRetentionDays": 1,
+    "multiAz": false
+  },
+  "domain": {
+    "enabled": true,
+    "domainName": "stack-audit-backend.fitbody.tools",
+    "hostedZoneDomain": "fitbody.tools",
+    "hostedZoneId": "Z06645801HQN30JCLGRND",
+    "certificateMode": "create-dns-validated",
+    "createAliasRecord": true
+  }
+}

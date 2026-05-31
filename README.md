@@ -6,6 +6,7 @@ Validate-stage monorepo scaffold for ChatResumes.
 
 - `web/`: Vite + React + TypeScript frontend
 - `backend/`: Express + TypeScript API
+- `infra/aws/`: EC2 + ALB + CodePipeline CDK scaffold for backend deployment
 
 ## Current scope
 
@@ -23,7 +24,7 @@ Validate-stage monorepo scaffold for ChatResumes.
 
 - Live database migrations against a provisioned Postgres instance
 - Email
-- Infrastructure and deployment
+- Production-ready infrastructure rollout. The current backend deployment scaffold lives in `infra/aws/`, but uploads still need durable object storage before that path is production-safe.
 
 ## Workspace commands
 

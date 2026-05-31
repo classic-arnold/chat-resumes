@@ -14,6 +14,7 @@
     "prisma:migrate:deploy": "prisma migrate deploy"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.823.0",
     "@clerk/express": "^2.1.15",
     "@prisma/client": "^6.8.2",
     "cors": "^2.8.5",

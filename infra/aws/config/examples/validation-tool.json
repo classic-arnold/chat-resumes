@@ -1,0 +1,26 @@
+{
+  "app": {
+    "name": "Validation Tool",
+    "slug": "validation-tool",
+    "stage": "validation-tool",
+    "account": "111111111111",
+    "region": "us-east-1",
+    "port": 3000,
+    "healthCheckPath": "/health"
+  },
+  "deployment": {
+    "github": {
+      "owner": "your-github-org",
+      "repo": "your-app-repo",
+      "branch": "main",
+      "connectionArn": "arn:aws:codestar-connections:us-east-1:111111111111:connection/replace-me"
+    },
+    "build": {
+      "buildSpecPath": "buildspec.yml",
+      "imageTag": "latest"
+    }
+  },
+  "domain": {
+    "enabled": false
+  }
+}

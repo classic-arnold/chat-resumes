@@ -1,0 +1,28 @@
+{
+  "name": "product-factory-aws-cdk-template",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Reusable AWS CDK v2 template for EC2-based product deployments",
+  "scripts": {
+    "build": "node ./node_modules/typescript/bin/tsc -p tsconfig.json",
+    "synth": "cdk synth",
+    "deploy": "npm run deploy:infra && npm run sync-runtime && npm run start-pipeline",
+    "deploy:infra": "cdk deploy",
+    "diff": "cdk diff",
+    "cdk": "cdk",
+    "sync-runtime": "node ./node_modules/ts-node/dist/bin.js --project tsconfig.json scripts/sync-runtime-config.ts",
+    "sync-runtime:dry-run": "npm run sync-runtime -- --dry-run",
+    "start-pipeline": "node ./node_modules/ts-node/dist/bin.js --project tsconfig.json scripts/start-pipeline-execution.ts",
+    "start-pipeline:dry-run": "npm run start-pipeline -- --dry-run"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.195.0",
+    "constructs": "^10.4.2"
+  },
+  "devDependencies": {
+    "aws-cdk": "^2.1015.0",
+    "@types/node": "^22.15.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "app": {
+    "name": "ChatResumes Backend",
+    "slug": "chat-resumes",
+    "stage": "mvp",
+    "account": "595873916767",
+    "region": "us-east-2",
+    "port": 4000,
+    "healthCheckPath": "/health"
+  },
+  "compute": {
+    "minCapacity": 1,
+    "desiredCapacity": 1,
+    "maxCapacity": 1
+  },
+  "deployment": {
+    "github": {
+      "owner": "classic-arnold",
+      "repo": "chat-resumes",
+      "branch": "main",
+      "connectionArn": "arn:aws:codeconnections:us-east-2:595873916767:connection/0a271d63-5a40-4b87-a34f-e4038e0a74c9",
+      "pushPaths": [
+        "Dockerfile",
+        "package.json",
+        "yarn.lock",
+        "backend/**",
+        "infra/**",
+        "web/package.json"
+      ]
+    },
+    "build": {
+      "buildSpecPath": "infra/deploy/buildspec.yml",
+      "imageTag": "latest",
+      "dockerfilePath": "Dockerfile"
+    }
+  },
+  "domain": {
+    "enabled": false
+  },
+  "storage": {
+    "appBucketMode": "dedicated"
+  },
+  "data": {
+    "datastore": "rds-postgres",
+    "backupRetentionDays": 7,
+    "multiAz": false
+  }
+}
