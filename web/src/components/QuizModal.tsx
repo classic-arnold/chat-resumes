@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@clerk/react'
+import { X, BookOpen, Loader2, AlertCircle } from 'lucide-react'
 
 import { fetchQuiz, saveQuiz, type QuizAnswers } from '../lib/quiz'
 import { quizQuestions, QUIZ_TOTAL, type QuizQuestionId } from '../lib/quizQuestions'
-import { Button } from './ui/Button'
 
 type QuizModalProps = {
   isOpen: boolean
@@ -82,9 +82,11 @@ export const QuizModal = ({ isOpen, onClose, onSaved }: QuizModalProps) => {
     return value && value.trim().length > 0 ? acc + 1 : acc
   }, 0)
 
+  const progressPercent = (answeredCount / QUIZ_TOTAL) * 100
+
   return (
     <div
-      className="fixed inset-0 bg-[#0f172a]/55 flex items-center justify-center p-[1rem] z-[1000] backdrop-blur-[4px]"
+      className="fixed inset-0 bg-slate-900/60 flex items-center justify-center p-[1rem] z-[1000] backdrop-blur-[6px]"
       onClick={(event) => {
         if (event.target === event.currentTarget) onClose()
       }}
@@ -92,52 +94,109 @@ export const QuizModal = ({ isOpen, onClose, onSaved }: QuizModalProps) => {
       aria-modal="true"
       aria-label="Intake quiz"
     >
-      <div className="bg-white rounded-[16px] w-full max-w-[720px] max-h-[90vh] flex flex-col shadow-[0_24px_60px_rgba(15,23,42,0.25)] overflow-hidden">
-        <div className="flex items-start justify-between p-[1.25rem_1.5rem] border-b border-border gap-[1rem]">
-          <div>
-            <div className="text-[0.7rem] uppercase tracking-[0.08em] text-muted">Intake quiz</div>
-            <div className="font-inter font-bold text-[1.1rem] text-navy-text mt-[0.2rem]">The 5 questions recruiters ask</div>
-            <div className="text-[0.78rem] text-muted mt-[0.25rem]">
-              {answeredCount} / {QUIZ_TOTAL} answered
+      <div className="bg-white rounded-[20px] w-full max-w-[720px] max-h-[85vh] flex flex-col shadow-[0_24px_70px_rgba(15,23,42,0.25)] overflow-hidden border border-slate-100 font-sans">
+        
+        {/* Modal Header */}
+        <div className="relative p-[1.5rem] border-b border-slate-100 flex flex-col gap-[0.75rem]">
+          {/* Accent Line */}
+          <div className="absolute top-0 left-0 right-0 h-[4px] bg-gradient-to-r from-[#5B54F7] to-blue-bright" />
+          
+          <div className="flex items-start justify-between gap-[1rem]">
+            <div className="flex items-center gap-[0.75rem]">
+              <div className="w-[36px] h-[36px] rounded-full bg-indigo-50 border border-indigo-100/50 flex items-center justify-center text-[#5B54F7]">
+                <BookOpen size={18} />
+              </div>
+              <div>
+                <div className="text-[0.66rem] uppercase tracking-[0.1em] text-[#5B54F7] font-extrabold">Intake Quiz</div>
+                <h2 className="font-inter font-extrabold text-[1.2rem] text-[#0f1f4b] m-0 tracking-tight mt-[0.15rem]">
+                  The 5 core recruiter questions
+                </h2>
+              </div>
+            </div>
+            
+            <button
+              aria-label="Close"
+              className="p-[0.5rem] bg-transparent border-none text-slate-400 hover:text-slate-700 cursor-pointer rounded-full hover:bg-slate-50 transition-colors"
+              onClick={onClose}
+              type="button"
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          {/* Visual Progress Bar */}
+          <div className="mt-[0.25rem]">
+            <div className="flex items-center justify-between text-[0.78rem] font-semibold text-slate-500 mb-[0.35rem]">
+              <span>Progress</span>
+              <span className="text-[#5B54F7]">{answeredCount} of {QUIZ_TOTAL} answered</span>
+            </div>
+            <div className="w-full h-[6px] bg-slate-100 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-[#5B54F7] to-blue-bright rounded-full transition-all duration-500 ease-out" 
+                style={{ width: `${progressPercent}%` }}
+              />
             </div>
           </div>
-          <button
-            aria-label="Close"
-            className="bg-transparent border-none text-[1.6rem] leading-[1] cursor-pointer text-muted hover:text-navy-text p-[0.25rem_0.5rem]"
-            onClick={onClose}
-            type="button"
-          >
-            ×
-          </button>
         </div>
 
-        <div className="p-[1.25rem_1.5rem] overflow-y-auto flex flex-col gap-[1.25rem]">
+        {/* Scrollable Questions List */}
+        <div className="p-[1.5rem] overflow-y-auto flex flex-col gap-[1.5rem]">
           {isLoading ? (
-            <div className="text-[0.74rem] text-muted">Loading…</div>
+            <div className="text-center text-[0.8rem] text-slate-500 py-[4rem] px-[1rem] flex flex-col items-center justify-center gap-[0.75rem]">
+              <Loader2 className="w-[28px] h-[28px] text-[#5B54F7] animate-spin" />
+              <span className="font-medium">Loading your profile quiz answers...</span>
+            </div>
           ) : (
-            quizQuestions.map((question) => {
+            quizQuestions.map((question, idx) => {
               const value = answers[question.id] ?? ''
+              const isAnswered = value.trim().length > 0
+              
               return (
-                <div className="flex flex-col gap-[0.4rem]" key={question.id}>
-                  <div className="flex items-center gap-[0.5rem] text-[0.7rem] uppercase tracking-[0.08em] text-muted">
-                    <span>{question.number}</span>
-                    <span className="bg-[#f1f5f9] rounded-full p-[0.1rem_0.55rem]">{question.category}</span>
+                <div 
+                  className={`flex flex-col gap-[0.6rem] p-[1.25rem] rounded-[16px] border transition-all ${
+                    isAnswered 
+                      ? 'border-indigo-100 bg-indigo-50/[0.02]' 
+                      : 'border-slate-100 bg-white'
+                  }`} 
+                  key={question.id}
+                >
+                  <div className="flex items-center justify-between gap-[0.75rem]">
+                    <div className="flex items-center gap-[0.55rem]">
+                      <span className="w-[20px] h-[20px] rounded-full bg-[#5B54F7]/10 text-[#5B54F7] flex items-center justify-center text-[0.7rem] font-extrabold">
+                        {question.number || idx + 1}
+                      </span>
+                      <span className="text-[0.66rem] font-bold uppercase tracking-[0.06em] bg-slate-100 text-slate-600 px-[0.55rem] py-[0.15rem] rounded-full">
+                        {question.category}
+                      </span>
+                    </div>
+                    {isAnswered && (
+                      <span className="text-[0.7rem] font-bold text-emerald-600 flex items-center gap-[0.25rem]">
+                        <span className="w-[5px] h-[5px] rounded-full bg-emerald-500" />
+                        Completed
+                      </span>
+                    )}
                   </div>
-                  <label className="font-inter font-semibold text-[0.98rem] text-navy-text" htmlFor={`quiz-${question.id}`}>
+                  
+                  <label 
+                    className="font-inter font-bold text-[0.92rem] text-[#0f1f4b] leading-tight" 
+                    htmlFor={`quiz-${question.id}`}
+                  >
                     {question.text}
                   </label>
+                  
                   <textarea
-                    className="w-full border border-border rounded-[10px] p-[0.7rem_0.85rem] font-mono text-[0.85rem] text-navy-text bg-white resize-y min-h-[90px] focus:outline-none focus:border-blue-bright focus:shadow-[0_0_0_3px_rgba(37,99,235,0.15)]"
+                    className="w-full border border-slate-200 rounded-[12px] p-[0.75rem_1rem] font-sans text-[0.85rem] text-[#0f1f4b] bg-white resize-y min-h-[100px] focus:outline-none focus:border-[#5B54F7] focus:ring-4 focus:ring-indigo-100/50 transition-all placeholder-slate-400"
                     id={`quiz-${question.id}`}
                     maxLength={MAX_CHARS}
                     onChange={(event) => handleChange(question.id, event.target.value)}
-                    placeholder="Your answer…"
+                    placeholder="Provide your experience, projects, or background details here..."
                     rows={4}
                     value={value}
                   />
-                  <div className="flex justify-between gap-[0.75rem] text-[0.72rem] text-muted">
-                    <span className="flex-1">{question.hint}</span>
-                    <span className="flex-shrink-0">
+                  
+                  <div className="flex items-start justify-between gap-[0.75rem] text-[0.72rem] text-slate-500 mt-[0.1rem]">
+                    <span className="leading-[1.4] flex-1">{question.hint}</span>
+                    <span className="flex-shrink-0 font-semibold font-mono text-slate-400">
                       {value.length} / {MAX_CHARS}
                     </span>
                   </div>
@@ -145,16 +204,32 @@ export const QuizModal = ({ isOpen, onClose, onSaved }: QuizModalProps) => {
               )
             })
           )}
-          {error ? <div className="text-[0.74rem] text-[#b42318]">{error}</div> : null}
+
+          {error ? (
+            <div className="flex items-center gap-[0.5rem] text-[0.78rem] text-rose-600 bg-rose-50 border border-rose-100 rounded-[12px] p-[1rem]">
+              <AlertCircle className="w-[18px] h-[18px] flex-shrink-0" />
+              <span>{error}</span>
+            </div>
+          ) : null}
         </div>
 
-        <div className="flex justify-end gap-[0.5rem] p-[1rem_1.5rem] border-t border-border bg-[#f8fafc]">
-          <Button onClick={onClose} variant="ghost">
+        {/* Modal Footer */}
+        <div className="flex justify-end items-center gap-[0.75rem] p-[1.25rem_1.5rem] border-t border-slate-100 bg-slate-50/50">
+          <button 
+            onClick={onClose} 
+            className="px-[1.25rem] py-[0.6rem] bg-white hover:bg-slate-100 text-slate-700 text-[0.82rem] font-bold rounded-[12px] border border-slate-200 transition-all cursor-pointer"
+          >
             Cancel
-          </Button>
-          <Button disabled={isSaving || isLoading} onClick={() => void handleSave()} variant="primary">
-            {isSaving ? 'Saving…' : 'Save & close'}
-          </Button>
+          </button>
+          
+          <button 
+            disabled={isSaving || isLoading} 
+            onClick={() => void handleSave()} 
+            className="inline-flex items-center justify-center gap-[0.5rem] px-[1.5rem] py-[0.6rem] bg-[#5B54F7] hover:bg-[#4a43e6] disabled:opacity-50 text-white text-[0.82rem] font-bold rounded-[12px] transition-all cursor-pointer border-none shadow-[0_4px_12px_rgba(91,84,247,0.15)] active:scale-[0.98]"
+          >
+            {isSaving && <Loader2 className="w-[14px] h-[14px] animate-spin" />}
+            {isSaving ? 'Saving...' : 'Save & close'}
+          </button>
         </div>
       </div>
     </div>
