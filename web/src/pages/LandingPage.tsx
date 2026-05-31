@@ -3,6 +3,11 @@ import chatUi2 from '../assets/chat-ui-2.png'
 import pdfUi from '../assets/pdf-ui.png'
 import chatUi1 from '../assets/chat-ui-1.png'
 import { ArrowRight } from 'lucide-react'
+import beforeImg from '../assets/before.png'
+import afterImg from '../assets/after.png'
+import overlayImg from '../assets/Overlay.png'
+import overlayDarkImg from '../assets/overlay-dark.png'
+import linkCopyImg from '../assets/link-copy.png'
 
 
 
@@ -176,7 +181,7 @@ export const LandingPage = () => (
 
       {/* HOW IT WORKS */}
       <section className="py-[6rem] px-[2rem] flex flex-col items-center bg-white" id="how-it-works">
-        <div className="max-w-[900px] w-full text-center flex flex-col items-center mb-[5rem]">
+        <div className="max-w-7xl w-full text-center flex flex-col items-center mb-[5rem]">
           <h2 className="font-inter text-[2.2rem] md:text-[3.5rem] font-extrabold leading-[1.15] tracking-[-0.03em] text-[#0f172a] mb-[1.25rem]">
             From static PDF to<br />interactive AI <span className="text-[#5B54F7]">in minutes.</span>
           </h2>
@@ -185,17 +190,10 @@ export const LandingPage = () => (
           </p>
 
           {/* BEFORE & AFTER SHOWCASE CARD */}
-          <div className="w-full bg-[#FAFBFD] border border-[#e2e8f0] rounded-[24px] p-[2rem] md:p-[3rem] flex flex-col md:flex-row items-center justify-between gap-[2.5rem] shadow-[0_15px_45px_rgba(15,23,42,0.03)]">
-            {/* BEFORE (PDF Wireframe) */}
-            <div className="w-full md:w-[42%] bg-white border border-[#e2e8f0] rounded-[16px] p-[1.5rem] flex flex-col gap-[1rem] relative shadow-sm text-left">
-              <span className="absolute top-[1.25rem] right-[1.25rem] text-[0.62rem] font-bold tracking-[0.05em] uppercase px-[0.6rem] py-[0.25rem] bg-[#f1f5f9] text-[#475569] rounded-full">Before</span>
-              <div className="w-[32px] h-[32px] rounded-full bg-[#e2e8f0]" />
-              <div className="h-[12px] w-[70%] bg-[#e2e8f0] rounded-full" />
-              <div className="h-[12px] w-[90%] bg-[#f1f5f9] rounded-full" />
-              <div className="h-[12px] w-[85%] bg-[#f1f5f9] rounded-full" />
-              <div className="h-[12px] w-[50%] bg-[#f1f5f9] rounded-full mt-[0.5rem]" />
-              <div className="h-[12px] w-[80%] bg-[#f1f5f9] rounded-full" />
-              <div className="h-[12px] w-[75%] bg-[#f1f5f9] rounded-full" />
+          <div className="w-full bg-[#FAFBFD] rounded-[14px] p-[2rem] md:p-[3rem] flex flex-col md:flex-row items-center justify-between gap-[0.5rem]">
+            {/* BEFORE (PDF Wireframe Image) */}
+            <div className="w-full md:w-[45%] flex justify-center items-center">
+              <img src={beforeImg} alt="Before ChatResumes" className="h-[280px] md:h-[400px] object-contain" />
             </div>
 
             {/* TRANSITION ARROW */}
@@ -205,39 +203,18 @@ export const LandingPage = () => (
               </svg>
             </div>
 
-            {/* AFTER (AI Active Chat) */}
-            <div className="w-full md:w-[42%] bg-[#090A10] rounded-[16px] p-[1.5rem] flex flex-col gap-[1rem] relative border border-white/[0.05] shadow-lg text-left">
-              <span className="absolute top-[1.25rem] right-[1.25rem] text-[0.62rem] font-bold tracking-[0.05em] uppercase px-[0.6rem] py-[0.25rem] bg-[#5B54F7]/20 text-[#5B54F7] rounded-full">After</span>
-              <div className="text-white font-sans text-[0.78rem] bg-white/[0.05] border border-white/[0.05] rounded-[8px] p-[0.75rem] max-w-[85%]">
-                What impact did they have at their last role?
-              </div>
-              <div className="text-white font-sans text-[0.78rem] bg-[#5B54F7] rounded-[8px] p-[0.75rem] max-w-[85%] self-end">
-                They increased Q3 revenue by 42% through implementing a new automated sales funnel...
-              </div>
-              <div className="bg-white/[0.05] border border-white/[0.05] rounded-[8px] p-[0.6rem_0.75rem] flex justify-between items-center text-[0.72rem] text-white/40">
-                <span>Ask me anything...</span>
-                <span className="w-[16px] h-[16px] rounded-full bg-[#5B54F7] flex items-center justify-center text-white text-[0.55rem] font-bold">▲</span>
-              </div>
+            {/* AFTER (AI Active Chat Image) */}
+            <div className="w-full md:w-[45%] flex justify-center items-center">
+              <img src={afterImg} alt="After ChatResumes" className="h-[280px] md:h-[400px] object-contain" />
             </div>
           </div>
         </div>
 
         {/* STEP 1: THE INTERVIEW */}
-        <div className="max-w-[900px] w-full grid grid-cols-1 md:grid-cols-2 gap-[4rem] items-center mb-[6rem]">
-          {/* Left (Visual Mockup) */}
-          <div className="w-full aspect-[4/3] bg-[#F4F5FB] rounded-[24px] p-[2rem] md:p-[2.5rem] flex items-center justify-center relative shadow-sm border border-[#e2e8f6]">
-            {/* Inner Chat Box */}
-            <div className="w-full bg-white border border-[#e2e8f0] rounded-[16px] p-[1.5rem] flex flex-col gap-[1rem] shadow-md relative">
-              <span className="w-[32px] h-[32px] rounded-full bg-[#5B54F7]/10 flex items-center justify-center text-[#5B54F7] text-[1.1rem]">💬</span>
-              <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[12px] p-[1rem] flex gap-[0.75rem] items-start text-left">
-                <span className="w-[20px] h-[20px] rounded-full bg-[#5B54F7] flex items-center justify-center text-white text-[0.55rem] font-bold shrink-0 mt-[2px]">AI</span>
-                <p className="text-[0.78rem] text-[#334155] leading-normal font-medium">I see you led the redesign project. What was the biggest technical challenge you overcame?</p>
-              </div>
-              <div className="bg-[#FAFBFD] border border-[#e2e8f0] rounded-[12px] p-[1rem] flex gap-[0.75rem] items-start self-end max-w-[85%] text-left">
-                <p className="text-[0.78rem] text-[#334155] leading-normal font-medium">Migrating the legacy database while maintaining zero downtime. We had to...</p>
-                <span className="w-[20px] h-[20px] rounded-full bg-[#0F172A] flex items-center justify-center text-white text-[0.55rem] font-bold shrink-0 mt-[2px]">You</span>
-              </div>
-            </div>
+        <div className="max-w-5xl w-full grid grid-cols-1 md:grid-cols-2 gap-[4rem] items-center mb-[6rem]">
+          {/* Left (Visual Mockup Image) */}
+          <div className="w-full aspect-[4/3]   flex items-center justify-center relative">
+            <img src={overlayImg} alt="The Interview Overlay" className="w-full h-auto" />
           </div>
 
           {/* Right (Text Content) */}
@@ -271,44 +248,23 @@ export const LandingPage = () => (
 
       {/* STEP 2: THE TRAINING (DARK THEME SECTION) */}
       <section className="py-[6rem] px-[2rem] bg-[#090A10] flex justify-center border-t border-b border-white/[0.05]">
-        <div className="max-w-[900px] w-full grid grid-cols-1 md:grid-cols-2 gap-[4rem] items-center">
+        <div className="max-w-5xl w-full grid grid-cols-1 md:grid-cols-2 gap-[4rem] items-center">
           {/* Left (Text Content) */}
           <div className="text-left flex flex-col gap-[1.25rem]">
-            <span className="text-[#5B54F7] text-[0.75rem] tracking-[0.15em] uppercase font-bold">02 / THE TRAINING</span>
+            <span className="text-[0.75rem] tracking-[0.15em] uppercase font-bold">02 / THE TRAINING</span>
             <h3 className="text-[1.8rem] md:text-[2.2rem] font-extrabold text-white tracking-tight">How it digests your resume.</h3>
             <p className="text-[0.88rem] leading-[1.75] text-white/60">
               Behind the scenes, we construct a specialized knowledge graph from your uploaded documents and interview responses. This allows your AI clone to hallucinate less and advocate more.
             </p>
           </div>
 
-          {/* Right (Visual Mockup) */}
-          <div className="w-full aspect-[4/3] bg-white/[0.02] border border-white/[0.05] rounded-[24px] p-[2rem] md:p-[2.5rem] flex items-center justify-center relative shadow-sm">
-            <div className="w-full bg-[#111322] border border-white/[0.05] rounded-[16px] p-[1.5rem] flex flex-col gap-[1.25rem] shadow-lg text-left">
-              <div className="flex justify-between items-center text-[0.82rem] font-bold text-white tracking-tight">
-                <span>Knowledge Graph Processing</span>
-                <span className="text-[1.1rem]">⚙️</span>
-              </div>
-              {/* Progress Item 1 */}
-              <div className="flex flex-col gap-[0.5rem]">
-                <div className="flex justify-between text-[0.7rem] text-white/50">
-                  <span className="flex items-center gap-[0.35rem]">📄 parsing_resume.pdf</span>
-                  <span className="text-white font-semibold">Parsed</span>
-                </div>
-                <div className="h-[6px] w-full bg-white/[0.05] rounded-full overflow-hidden">
-                  <div className="h-full w-full bg-[#5B54F7]" />
-                </div>
-              </div>
-              {/* Progress Item 2 */}
-              <div className="flex flex-col gap-[0.5rem]">
-                <div className="flex justify-between text-[0.7rem] text-white/50">
-                  <span className="flex items-center gap-[0.35rem]">🕸️ indexing_nodes.db</span>
-                  <span className="text-[#5B54F7] font-semibold animate-pulse">Structuring</span>
-                </div>
-                <div className="h-[6px] w-full bg-white/[0.05] rounded-full overflow-hidden">
-                  <div className="h-full w-[70%] bg-[#5B54F7]" />
-                </div>
-              </div>
-            </div>
+          {/* Right (Visual Mockup Image with Glow) */}
+          <div className="w-full flex items-center justify-center relative">
+            {/* Glow Effect Backdrop */}
+            <div className="absolute w-[80%] h-[80%] bg-gradient-to-tr from-[#5B54F7] to-[#4F46E5] rounded-full blur-[60px] opacity-25 pointer-events-none z-0" />
+
+            {/* The Image */}
+            <img src={overlayDarkImg} alt="The Training Overlay" className="w-full h-auto relative z-10 rounded-[12px] shadow-[0_25px_60px_rgba(91,84,247,0.18)]" />
           </div>
         </div>
       </section>
@@ -316,25 +272,10 @@ export const LandingPage = () => (
       {/* STEP 3 & STEP 4 CONTAINER */}
       <section className="py-[6rem] px-[2rem] flex flex-col items-center bg-white">
         {/* STEP 3: THE LAUNCH */}
-        <div className="max-w-[900px] w-full grid grid-cols-1 md:grid-cols-2 gap-[4rem] items-center mb-[6rem]">
-          {/* Left (Visual Mockup) */}
-          <div className="w-full aspect-[4/3] bg-[#F4F5FB] rounded-[24px] p-[2rem] md:p-[2.5rem] flex items-center justify-center relative shadow-sm border border-[#e2e8f6]">
-            <div className="w-full bg-white border border-[#e2e8f0] rounded-[16px] p-[1.5rem] flex flex-col gap-[1.25rem] shadow-md text-left">
-              <div className="flex justify-between items-center p-[0.75rem_1rem] bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px]">
-                <div className="flex flex-col gap-[0.15rem]">
-                  <span className="text-[0.82rem] font-bold text-[#0f172a]">chatresumes.com/alex-chen</span>
-                  <span className="text-[0.62rem] text-emerald-500 font-semibold flex items-center gap-[0.25rem]">
-                    <span className="w-[4px] h-[4px] bg-emerald-500 rounded-full animate-ping" /> Live • Ready to share
-                  </span>
-                </div>
-                <button className="text-[0.72rem] font-bold text-[#5B54F7] bg-[#5B54F7]/10 hover:bg-[#5B54F7]/15 px-[0.75rem] py-[0.35rem] rounded-[4px] border-none cursor-pointer">
-                  Copy
-                </button>
-              </div>
-              <div className="p-[0.75rem_1rem] bg-[#fafbfd] border border-dashed border-[#e2e8f0] rounded-[8px] text-[0.72rem] font-semibold text-[#475569] text-center">
-                Add to LinkedIn Bio • Email Signature • Portfolio
-              </div>
-            </div>
+        <div className="max-w-5xl w-full grid grid-cols-1 md:grid-cols-2 gap-[4rem] items-center mb-[6rem]">
+          {/* Left (Visual Mockup Image) */}
+          <div className="w-full  flex items-center justify-center relative ">
+            <img src={linkCopyImg} alt="The Launch Link Copy" className="w-full h-auto" />
           </div>
 
           {/* Right (Text Content) */}
@@ -348,42 +289,63 @@ export const LandingPage = () => (
         </div>
 
         {/* STEP 4: THE ANALYTICS */}
-        <div className="max-w-[900px] w-full bg-[#F4F5FB] rounded-[24px] p-[2rem] md:p-[2.5rem] border border-[#e2e8f6] shadow-sm flex flex-col items-center">
-          <div className="text-center flex flex-col items-center gap-[1rem] max-w-[620px] mb-[3rem]">
-            <span className="text-[#5B54F7] text-[0.75rem] tracking-[0.15em] uppercase font-bold">04 / THE ANALYTICS</span>
-            <h3 className="text-[1.8rem] md:text-[2.2rem] font-extrabold text-[#0f172a] tracking-tight">How you see what recruiters are asking.</h3>
-            <p className="text-[0.88rem] leading-[1.7] text-[#475569]">
+        <div className="max-w-7xl w-full bg-[#F5F5F7] border border-[#E5E5E9]/65 rounded-[16px] p-[1.5rem] md:p-[4.5rem_4rem] shadow-sm flex flex-col items-center">
+          <div className="text-center flex flex-col items-center gap-[1rem] max-w-[620px] mb-[3.5rem]">
+            <span className="text-[#5B54F7] text-[0.75rem] tracking-[0.18em] uppercase font-bold">04 / THE ANALYTICS</span>
+            <h3 className="font-inter text-[2.2rem] md:text-[3.2rem] font-extrabold text-[#0f172a] tracking-[-0.03em] leading-[1.12]">
+              How you see what recruiters are asking.
+            </h3>
+            <p className="text-[0.9rem] md:text-[1rem] leading-[1.7] text-[#475569] mt-[0.5rem] opacity-90">
               Stop guessing what hiring managers care about. Get a secure dashboard showing exactly which skills and experiences they are inquiring about the most.
             </p>
           </div>
 
           {/* Metric Cards Row */}
-          <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-[1.25rem] text-left">
+          <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-[1.5rem] text-left">
             {/* Metric 1 */}
-            <div className="bg-white border border-[#e2e8f0] rounded-[16px] p-[1.5rem] flex flex-col gap-[0.75rem] shadow-sm">
-              <span className="text-[0.65rem] tracking-[0.08em] uppercase text-[#6B7280] font-bold flex items-center gap-[0.35rem]">
-                📈 Total Engagements
-              </span>
-              <div className="text-[2.2rem] font-extrabold text-[#0f172a] leading-none">142</div>
-              <span className="text-[0.7rem] text-emerald-500 font-semibold">+12% from last week</span>
+            <div className="bg-white border border-[#E5E5E9]/60 rounded-[20px] p-[1.75rem] flex flex-col shadow-[0_8px_30px_rgba(0,0,0,0.015)]">
+              <div className="flex items-center gap-[0.75rem]">
+                <div className="w-[32px] h-[32px] bg-[#EEEDFC] rounded-[8px] flex items-center justify-center text-[#5B54F7] shrink-0">
+                  <svg className="w-[16px] h-[16px]" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                </div>
+                <span className="text-[0.88rem] font-semibold text-[#475569]">Total Engagements</span>
+              </div>
+              <div className="text-[2.5rem] font-extrabold text-[#0f172a] tracking-tight mt-[1.5rem] leading-none">142</div>
+              <span className="text-[0.74rem] text-[#22C55E] font-bold mt-[0.75rem]">+12% from last week</span>
             </div>
 
             {/* Metric 2 */}
-            <div className="bg-white border border-[#e2e8f0] rounded-[16px] p-[1.5rem] flex flex-col gap-[0.75rem] shadow-sm">
-              <span className="text-[0.65rem] tracking-[0.08em] uppercase text-[#6B7280] font-bold flex items-center gap-[0.35rem]">
-                💬 Top Query Topic
-              </span>
-              <div className="text-[1.35rem] font-extrabold text-[#0f172a] truncate leading-snug">"Leadership Style"</div>
-              <span className="text-[0.7rem] text-[#6B7280]">Asked in 41% of chats</span>
+            <div className="bg-white border border-[#E5E5E9]/60 rounded-[20px] p-[1.75rem] flex flex-col shadow-[0_8px_30px_rgba(0,0,0,0.015)]">
+              <div className="flex items-center gap-[0.75rem]">
+                <div className="w-[32px] h-[32px] bg-[#EEEDFC] rounded-[8px] flex items-center justify-center text-[#5B54F7] shrink-0">
+                  <svg className="w-[16px] h-[16px]" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
+                </div>
+                <span className="text-[0.88rem] font-semibold text-[#475569]">Top Query Topic</span>
+              </div>
+              <div className="text-[1.55rem] font-extrabold text-[#0f172a] tracking-tight mt-[1.5rem] leading-none mb-[0.6rem] py-[0.15rem] truncate">
+                "Leadership Style"
+              </div>
+              <span className="text-[0.74rem] text-[#64748B] font-medium mt-[0.35rem]">Asked in 45% of chats</span>
             </div>
 
             {/* Metric 3 */}
-            <div className="bg-white border border-[#e2e8f0] rounded-[16px] p-[1.5rem] flex flex-col gap-[0.75rem] shadow-sm">
-              <span className="text-[0.65rem] tracking-[0.08em] uppercase text-[#6B7280] font-bold flex items-center gap-[0.35rem]">
-                ⏱️ Avg. Time Spent
-              </span>
-              <div className="text-[2.2rem] font-extrabold text-[#0f172a] leading-none">4m 12s</div>
-              <span className="text-[0.7rem] text-[#6B7280]">vs 30s on standard PDF</span>
+            <div className="bg-white border border-[#E5E5E9]/60 rounded-[20px] p-[1.75rem] flex flex-col shadow-[0_8px_30px_rgba(0,0,0,0.015)]">
+              <div className="flex items-center gap-[0.75rem]">
+                <div className="w-[32px] h-[32px] bg-[#EEEDFC] rounded-[8px] flex items-center justify-center text-[#5B54F7] shrink-0">
+                  <svg className="w-[16px] h-[16px]" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                </div>
+                <span className="text-[0.88rem] font-semibold text-[#475569]">Avg. Time Spent</span>
+              </div>
+              <div className="text-[2.5rem] font-extrabold text-[#0f172a] tracking-tight mt-[1.5rem] leading-none">4m 12s</div>
+              <span className="text-[0.74rem] text-[#64748B] font-medium mt-[0.75rem]">vs 30s on standard PDF</span>
             </div>
           </div>
         </div>
