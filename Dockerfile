@@ -25,6 +25,7 @@ RUN yarn workspace chat-resumes-backend build
 FROM base AS backend
 
 ENV NODE_ENV=production
+ENV PATH="/app/node_modules/.bin:${PATH}"
 
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/backend/package.json ./backend/package.json
