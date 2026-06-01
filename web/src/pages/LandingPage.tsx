@@ -104,7 +104,7 @@ export const LandingPage = () => (
           </p>
           <div className="flex flex-col md:flex-row items-center gap-[0.9rem] mb-[3rem] w-full md:w-auto">
             <Link className="w-full md:w-auto inline-flex items-center justify-center py-[0.8rem] px-[1.5rem] bg-lp-accent text-white rounded-full text-[0.82rem] font-semibold no-underline border-none cursor-pointer transition-all duration-200 hover:bg-lp-accent-hover hover:-translate-y-[1px] tracking-[0.01em]" to="/pricing">
-              Claim My Link — $19/mo <ArrowRight className="ml-2" />
+              Claim My Link — $9.99/mo <ArrowRight className="ml-2" />
             </Link>
             <a className="w-full md:w-auto inline-flex items-center justify-center py-[0.8rem] px-[1.5rem] bg-transparent text-[#475569] border border-[#cbd5e1] rounded-full text-[0.82rem] font-medium no-underline cursor-pointer transition-all duration-200 hover:text-[#0f172a] hover:border-[#94a3b8]" href="#how-it-works">See how it works</a>
           </div>

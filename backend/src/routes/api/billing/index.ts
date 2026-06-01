@@ -7,6 +7,7 @@ import {
   createBillingPortalSession,
   createCheckoutSession,
   getBillingStatusForUser,
+  reconcileStripeSubscriptionForUser,
 } from '../../../services/billing.js';
 import { syncLocalUserFromClerk } from '../../../services/users.js';
 
@@ -40,7 +41,9 @@ billingRouter.get(
   '/status',
   asyncHandler(async (request, response) => {
     const auth = assertApiAuthenticated(request);
-    const user = await syncLocalUserFromClerk(auth.userId);
+    const user = await reconcileStripeSubscriptionForUser(
+      await syncLocalUserFromClerk(auth.userId),
+    );
 
     response.json(getBillingStatusForUser(user));
   }),
@@ -68,7 +71,9 @@ billingRouter.post(
   '/portal-session',
   asyncHandler(async (request, response) => {
     const auth = assertApiAuthenticated(request);
-    const user = await syncLocalUserFromClerk(auth.userId);
+    const user = await reconcileStripeSubscriptionForUser(
+      await syncLocalUserFromClerk(auth.userId),
+    );
     const body = parseRequestBody(portalRequestSchema, request.body);
     const portalUrl = await createBillingPortalSession({
       returnUrl: body.returnUrl,

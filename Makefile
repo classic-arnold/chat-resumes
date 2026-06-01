@@ -4,13 +4,13 @@ COMPOSE := docker compose
 
 start:
 	$(COMPOSE) down --remove-orphans
-	$(COMPOSE) up -d postgres backend web
+	$(COMPOSE) up -d --force-recreate postgres backend web
 	@$(MAKE) --no-print-directory print-start-urls
 
 dev:
 	$(COMPOSE) down --remove-orphans
 	@$(MAKE) --no-print-directory print-dev-urls
-	$(COMPOSE) --profile dev up postgres backend-dev web-dev
+	$(COMPOSE) --profile dev up --force-recreate postgres backend-dev web-dev
 
 stop:
 	$(COMPOSE) down --remove-orphans

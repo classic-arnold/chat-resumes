@@ -118,6 +118,17 @@ const mapStripeStatus = (status: Stripe.Subscription.Status): SubscriptionStatus
   }
 };
 
+const rankStripeSubscription = (subscription: Stripe.Subscription) => {
+  const isActiveLike = subscription.status === 'active' || subscription.status === 'trialing';
+  const currentPeriodEnd = getStripeSubscriptionCurrentPeriodEnd(subscription)?.getTime() ?? 0;
+
+  return {
+    currentPeriodEnd,
+    isActiveLike,
+    created: subscription.created,
+  };
+};
+
 const syncSubscriptionRecord = async ({
   currentPeriodEnd,
   stripeCustomerId,
@@ -158,6 +169,24 @@ const syncSubscriptionRecord = async ({
     logger.warn('billing.subscription.missing_user', {
       stripeCustomerId,
       stripeSubscriptionId,
+    });
+    return null;
+  }
+
+  const existingUser = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!existingUser) {
+    logger.warn('billing.subscription.missing_user', {
+      stripeCustomerId,
+      stripeSubscriptionId,
+      userId,
     });
     return null;
   }
@@ -209,6 +238,61 @@ export const getBillingStatusForUser = (user: SyncedLocalUser) => {
     isStripeConfigured: env.isStripeCheckoutConfigured,
     status: user.subscription?.status ?? null,
   };
+};
+
+export const reconcileStripeSubscriptionForUser = async (user: SyncedLocalUser) => {
+  if (!user.subscription?.stripeCustomerId || !env.isStripeCheckoutConfigured) {
+    return user;
+  }
+
+  if (
+    hasActiveSubscription(user.subscription) &&
+    user.subscription.stripeSubscriptionId &&
+    user.subscription.currentPeriodEnd
+  ) {
+    return user;
+  }
+
+  const stripe = getStripeClient();
+  const subscriptions = await stripe.subscriptions.list({
+    customer: user.subscription.stripeCustomerId,
+    limit: 10,
+    status: 'all',
+  });
+
+  const latestRelevantSubscription = subscriptions.data
+    .slice()
+    .sort((left, right) => {
+      const leftRank = rankStripeSubscription(left);
+      const rightRank = rankStripeSubscription(right);
+
+      if (leftRank.isActiveLike !== rightRank.isActiveLike) {
+        return rightRank.isActiveLike ? 1 : -1;
+      }
+
+      if (leftRank.currentPeriodEnd !== rightRank.currentPeriodEnd) {
+        return rightRank.currentPeriodEnd - leftRank.currentPeriodEnd;
+      }
+
+      return rightRank.created - leftRank.created;
+    })[0];
+
+  if (!latestRelevantSubscription) {
+    return user;
+  }
+
+  await syncStripeSubscription(latestRelevantSubscription);
+
+  const refreshedUser = await prisma.user.findUnique({
+    where: {
+      id: user.id,
+    },
+    include: {
+      subscription: true,
+    },
+  });
+
+  return refreshedUser ?? user;
 };
 
 export const createCheckoutSession = async ({

@@ -64,7 +64,7 @@ export const PricingPage = () => {
     : isStarting
       ? 'Starting…'
       : isSignedIn
-        ? 'Subscribe — $19/mo'
+        ? 'Subscribe — $9.99/mo'
         : 'Start Your Free Trial'
 
   return (
@@ -94,7 +94,7 @@ export const PricingPage = () => {
                   The Edge
                 </h3>
                 <div className="flex items-baseline gap-[0.15rem] font-extrabold text-[#0f172a] mb-[1.25rem]">
-                  <span className="text-[3rem] leading-[1]">$19</span>
+                  <span className="text-[3rem] leading-[1]">$9.99</span>
                   <span className="text-[0.95rem] text-[#475569] font-medium">/mo</span>
                 </div>
                 <p className="text-[0.85rem] leading-[1.6] text-[#475569] mb-[2rem]">

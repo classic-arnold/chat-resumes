@@ -27,7 +27,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
           <span className="text-[0.82rem] text-white/50">Everything you need to stand out.</span>
         </div>
         <div className="flex items-baseline font-extrabold text-white leading-none">
-          <span className="text-[2.2rem]">$19</span>
+          <span className="text-[2.2rem]">$9.99</span>
           <span className="text-[0.88rem] text-white/50 font-normal ml-[0.15rem]">/mo</span>
         </div>
       </div>
