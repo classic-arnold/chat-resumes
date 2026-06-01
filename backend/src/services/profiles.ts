@@ -503,7 +503,7 @@ export const resolvePublicProfileBySlug = async ({
     where: { userId: profile.userId },
   });
 
-  if (!hasActiveSubscription(ownerSubscription)) {
+  if (!hasActiveSubscription(ownerSubscription) || !profile.isPublic) {
     return {
       approvedStories: [],
       approvedStoryRecords: [],
@@ -529,22 +529,9 @@ export const resolvePublicProfileBySlug = async ({
   const quizAnsweredCount = countQuizAnswered(parseQuizAnswers(profile.quizAnswers));
   const completeness = buildCompleteness(profile, approvedStoryRecords.length, quizAnsweredCount);
   const availability =
-    profile.isPublic && approvedStoryRecords.length > 0 && completeness.percentage >= 50
+    approvedStoryRecords.length > 0 && completeness.percentage >= 50
       ? 'ready'
       : 'training';
-
-  if (availability !== 'ready') {
-    return {
-      approvedStories: [],
-      approvedStoryRecords,
-      availability,
-      fallbackMessage: 'This candidate is still training their public AI profile.',
-      profile: null,
-      profileRecord: profile,
-      visitId: null,
-      visitorToken: resolvedVisitorToken,
-    };
-  }
 
   let visitId: string | null = null;
 
@@ -574,7 +561,10 @@ export const resolvePublicProfileBySlug = async ({
     approvedStories: approvedStoryRecords.map(mapPublicStory),
     approvedStoryRecords,
     availability,
-    fallbackMessage: null,
+    fallbackMessage:
+      availability === 'training'
+        ? 'This public AI profile is live, but still training. Answers are limited to the public profile and any approved stories added so far.'
+        : null,
     profile: buildPublicProfilePayload(profile, clerkImageUrl),
     profileRecord: profile,
     visitId,

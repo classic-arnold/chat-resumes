@@ -84,7 +84,7 @@ export const PublicRecruiterChatPage = () => {
           isLoading: false,
         }))
 
-        if (profile.availability !== 'ready') return
+        if (profile.availability === 'inactive' || profile.availability === 'missing') return
 
         const socket = connectRecruiterSocket({ slug, visitorToken: profile.visitorToken })
         if (cancelled) {
@@ -171,8 +171,10 @@ export const PublicRecruiterChatPage = () => {
 
   const profile = state.data?.profile
   const availability = state.data?.availability
+  const isUnavailable = availability === 'inactive' || availability === 'missing'
+  const isTraining = availability === 'training'
 
-  if (!state.isLoading && state.data && availability !== 'ready') {
+  if (!state.isLoading && state.data && isUnavailable) {
     return (
       <div className="min-h-screen flex flex-col bg-[#f8fafc] text-[#0f172a] items-center justify-center">
         <main className="flex-1 flex items-center justify-center p-[1rem]">
@@ -202,9 +204,9 @@ export const PublicRecruiterChatPage = () => {
           ChatResumes
         </Link>
         <div className="flex items-center gap-[1rem]">
-          <div className="inline-flex items-center gap-[0.35rem] bg-[rgba(16,185,129,0.1)] text-[#047857] py-[0.3rem] px-[0.7rem] rounded-full text-[0.72rem] font-semibold">
-            <span className="w-[6px] h-[6px] bg-[#10b981] rounded-full animate-pulse" />
-            Live Now
+          <div className={`inline-flex items-center gap-[0.35rem] py-[0.3rem] px-[0.7rem] rounded-full text-[0.72rem] font-semibold ${isTraining ? 'bg-[rgba(245,158,11,0.12)] text-[#b45309]' : 'bg-[rgba(16,185,129,0.1)] text-[#047857]'}`}>
+            <span className={`w-[6px] h-[6px] rounded-full animate-pulse ${isTraining ? 'bg-[#f59e0b]' : 'bg-[#10b981]'}`} />
+            {isTraining ? 'Training' : 'Live Now'}
           </div>
           <div className="text-right flex flex-col">
             <span className="font-bold text-[0.88rem] text-[#0f172a]">{profile?.displayName ?? 'Candidate AI'}</span>
@@ -219,6 +221,12 @@ export const PublicRecruiterChatPage = () => {
             <div className="self-center border border-[#e2e8f0] bg-white py-[0.4rem] px-[1rem] rounded-full text-[0.68rem] text-[#64748b] tracking-[0.06em] font-medium mb-[0.5rem] text-center">
               CONVERSATION STARTED WITH {profile?.displayName?.toUpperCase() ?? 'CANDIDATE'}'S AI VOICE
             </div>
+
+            {isTraining && state.data?.fallbackMessage ? (
+              <div className="self-center max-w-[720px] border border-amber-200 bg-amber-50 text-amber-900 py-[0.75rem] px-[1rem] rounded-[12px] text-[0.78rem] leading-[1.5] text-center">
+                {state.data.fallbackMessage}
+              </div>
+            ) : null}
 
             {state.error ? (
               <div className="text-[0.76rem] text-[#ef4444] text-center my-[1rem]">
@@ -248,7 +256,7 @@ export const PublicRecruiterChatPage = () => {
                         </>
                       )}
                     </div>
-                    <div className={isRecruiter ? 'bg-white border border-[#e2e8f0] text-[#0f172a] py-[1rem] px-[1.25rem] rounded-[18px_18px_18px_4px] text-[0.86rem] leading-[1.55] shadow-[0_2px_8px_rgba(15,23,42,0.02)]' : 'bg-[#4f46e5] text-white py-[1rem] px-[1.25rem] rounded-[18px_18px_18px_4px] text-[0.86rem] leading-[1.55] shadow-[0_10px_25px_rgba(79,70,229,0.2)]'}>
+                    <div style={{ whiteSpace: 'pre-wrap' }} className={isRecruiter ? 'bg-white border border-[#e2e8f0] text-[#0f172a] py-[1rem] px-[1.25rem] rounded-[18px_18px_18px_4px] text-[0.86rem] leading-[1.55] shadow-[0_2px_8px_rgba(15,23,42,0.02)]' : 'bg-[#4f46e5] text-white py-[1rem] px-[1.25rem] rounded-[18px_18px_18px_4px] text-[0.86rem] leading-[1.55] shadow-[0_10px_25px_rgba(79,70,229,0.2)]'}>
                       {message.content}
                     </div>
                   </div>
@@ -275,7 +283,7 @@ export const PublicRecruiterChatPage = () => {
             {RECRUITER_PROMPTS.map((prompt) => (
               <button
                 className="bg-white border border-[#e2e8f0] text-[#4f46e5] py-[0.4rem] px-[0.85rem] rounded-full text-[0.72rem] font-medium cursor-pointer transition-all duration-200 hover:border-[#4f46e5] hover:bg-[rgba(79,70,229,0.08)] disabled:opacity-60 disabled:cursor-not-allowed"
-                disabled={state.isReplying || availability !== 'ready'}
+                disabled={state.isReplying || isUnavailable}
                 key={prompt}
                 onClick={() => send(prompt)}
                 type="button"
@@ -290,7 +298,7 @@ export const PublicRecruiterChatPage = () => {
               <textarea
                 className="flex-1 border-none outline-none text-[0.88rem] text-[#0f172a] bg-transparent py-[0.5rem] resize-none font-inherit placeholder:text-[#64748b]"
                 aria-label="Ask the candidate AI"
-                disabled={availability !== 'ready' || state.isLoading || state.isReplying}
+                disabled={isUnavailable || state.isLoading || state.isReplying}
                 onChange={(event) => setComposer(event.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={`Ask ${profile?.displayName ?? 'Jordan'} anything...`}
@@ -300,7 +308,7 @@ export const PublicRecruiterChatPage = () => {
               <button
                 className="w-[40px] h-[40px] bg-[#4f46e5] text-white rounded-full flex items-center justify-center cursor-pointer border-none transition-all duration-200 flex-shrink-0 hover:bg-[#4338ca] hover:scale-[1.04] disabled:bg-[#cbd5e1] disabled:cursor-not-allowed"
                 disabled={
-                  availability !== 'ready' ||
+                  isUnavailable ||
                   state.isLoading ||
                   state.isReplying ||
                   !composer.trim()

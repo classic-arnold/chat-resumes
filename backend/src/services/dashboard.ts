@@ -138,6 +138,6 @@ export const getDashboardSummary = async (user: SyncedLocalUser) => {
       viewsThisWeek,
     },
     profile,
-    publicLinkActive: hasActiveSubscription(user.subscription),
+    publicLinkActive: hasActiveSubscription(user.subscription) && profile.isPublic,
   };
 };

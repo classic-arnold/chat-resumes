@@ -41,28 +41,20 @@ export type RecruiterChatState = PublicProfileResponse & {
 const candidateStarterMessage =
   'Let\'s build a recruiter-safe story bank. Start with the highest-stakes example you want your public AI to handle well.';
 
-const candidateReplyLibrary = [
-  {
-    keywords: ['star', 'story', 'storyline'],
-    reply:
-      'Lock the STAR shape. Tell me what was at risk, what you personally owned, what action you drove, and what changed because of you.',
-  },
-  {
-    keywords: ['result', 'metric', 'impact', 'measure'],
-    reply:
-      'The result still sounds soft. I need the before state, the outcome, and at least one proof point such as time saved, launch acceleration, or a business metric.',
-  },
-  {
-    keywords: ['stakeholder', 'alignment', 'conflict', 'pushback'],
-    reply:
-      'Name the conflicting stakeholders, the tradeoff you made, and why your call held under pressure. That is usually the most recruiter-relevant part.',
-  },
-  {
-    keywords: ['role', 'staff', 'scope', 'next'],
-    reply:
-      'Frame it as credibility, not preference. What scope do you want next, and which concrete example proves you can already operate there?',
-  },
+const candidatePromptPatterns = {
+  followUp: /what recruiter follow-up would you ask\??/i,
+  nextRole: /help me position my next role/i,
+  pushResult: /push me on the result/i,
+  starStory: /(star|story|storyline)/i,
+};
+
+const lowSignalCandidateMessagePatterns = [
+  /^(hi|hey|hello|yo|sup|ok|okay|thanks|thank you)[!. ]*$/i,
+  /^(turn my last role into a star story|push me on the result|what recruiter follow-up would you ask\??|help me position my next role)[!. ]*$/i,
 ];
+
+const unhelpfulCandidateReplyPattern =
+  /(can't safely|cannot safely|too broad and risky|too broad unless|reply with these 4 lines|those claims are too broad|i still need .* measurable result|need to be narrowed)/i;
 
 const recruiterRateLimit = new Map<string, { count: number; windowStartedAt: number }>();
 
@@ -163,15 +155,39 @@ const truncate = (value: string, maxLength: number) => {
   return value.length <= maxLength ? value : `${value.slice(0, maxLength - 1).trim()}…`;
 };
 
+const isSubstantiveCandidateMessage = (message: string) => {
+  const trimmedMessage = message.trim();
+
+  if (!trimmedMessage) {
+    return false;
+  }
+
+  if (lowSignalCandidateMessagePatterns.some((pattern) => pattern.test(trimmedMessage))) {
+    return false;
+  }
+
+  return trimmedMessage.split(/\s+/).length >= 3 || /\d/.test(trimmedMessage);
+};
+
+const selectDraftableCandidateMessages = (candidateMessages: string[]) => {
+  const normalizedMessages = candidateMessages.map((message) => message.trim()).filter(Boolean);
+  const substantiveMessages = normalizedMessages.filter(isSubstantiveCandidateMessage);
+
+  return (substantiveMessages.length > 0 ? substantiveMessages : normalizedMessages).slice(-4);
+};
+
 const buildDraftStory = (candidateMessages: string[]) => {
-  if (candidateMessages.length === 0) {
+  const draftableMessages = selectDraftableCandidateMessages(candidateMessages);
+
+  if (draftableMessages.length === 0) {
     return null;
   }
 
-  const sentences = extractSentences(candidateMessages);
-  const firstSentence = sentences[0] ?? candidateMessages[0];
+  const sentences = extractSentences(draftableMessages);
+  const firstSentence = sentences[0] ?? draftableMessages[0];
+  const latestMessage = draftableMessages[draftableMessages.length - 1];
   const title = truncate(
-    firstSentence
+    latestMessage
       .replace(/[^a-zA-Z0-9\s]/g, ' ')
       .split(/\s+/)
       .filter(Boolean)
@@ -180,16 +196,18 @@ const buildDraftStory = (candidateMessages: string[]) => {
     64,
   );
   const situation =
-    findSentence(sentences, /(problem|risk|deadline|conflict|broken|before|challenge|pressure)/i) ??
+    findSentence(sentences, /(problem|risk|deadline|conflict|broken|before|challenge|pressure|growth|scale|launch|organization|platform|team|product)/i) ??
     firstSentence;
   const task =
-    findSentence(sentences, /(owned|responsible|accountable|needed to|had to|my role)/i) ??
-    candidateMessages[0];
+    findSentence(sentences, /(owned|responsible|accountable|needed to|had to|my role|i led|i was in charge|oversaw|managed|supervised)/i) ??
+    latestMessage;
   const action =
-    findSentence(sentences, /(led|built|created|drove|launched|designed|negotiated|aligned|shipped|implemented|rolled out)/i) ??
-    candidateMessages[candidateMessages.length - 1];
+    findSentence(sentences, /(led|built|created|drove|launched|designed|negotiated|aligned|shipped|implemented|rolled out|managed|supervised|oversaw|proposed|invented)/i) ??
+    latestMessage;
   const result =
-    findSentence(sentences, /(\d|percent|week|month|day|revenue|saved|faster|increase|decrease|grew|improved|early)/i) ??
+    [...sentences]
+      .reverse()
+      .find((sentence) => /(\d|percent|week|month|day|revenue|saved|faster|increase|decrease|grew|improved|early|million|billion)/i.test(sentence)) ??
     '';
 
   return {
@@ -201,6 +219,72 @@ const buildDraftStory = (candidateMessages: string[]) => {
   };
 };
 
+const formatDraftStoryForReply = (storyDraft: ReturnType<typeof buildDraftStory>) => {
+  if (!storyDraft) {
+    return 'Situation: [missing]\n\nTask: [missing]\n\nAction: [missing]\n\nResult: [missing]';
+  }
+
+  return [
+    `Title: ${storyDraft.title}`,
+    '',
+    `Situation: ${storyDraft.situation || '[missing]'}`,
+    '',
+    `Task: ${storyDraft.task || '[missing]'}`,
+    '',
+    `Action: ${storyDraft.action || '[missing]'}`,
+    '',
+    `Result: ${storyDraft.result || '[missing]'}`,
+  ].join('\n');
+};
+
+const buildCandidateQuickReply = ({
+  content,
+  storyDraft,
+}: {
+  content: string;
+  storyDraft: ReturnType<typeof buildDraftStory>;
+}) => {
+  if (!storyDraft) {
+    return null;
+  }
+
+  if (candidatePromptPatterns.pushResult.test(content)) {
+    return [
+      'Let\'s pressure-test the result:',
+      '',
+      `Current result: ${storyDraft.result || '[missing]'}`,
+      '',
+      'Give me one stronger answer to one of these:',
+      '- What changed because of your leadership?',
+      '- How big was the scope: users, revenue, team, market, or timeline?',
+      '- What was true before your work that was no longer true after?',
+    ].join('\n');
+  }
+
+  if (candidatePromptPatterns.followUp.test(content)) {
+    return [
+      'A recruiter would likely ask:',
+      '',
+      `1. What exact scope were you accountable for in ${storyDraft.title}?`,
+      '2. What was the hardest tradeoff or decision you made?',
+      `3. How would you defend the result: ${storyDraft.result || 'what changed after your work'}?`,
+    ].join('\n');
+  }
+
+  if (candidatePromptPatterns.nextRole.test(content)) {
+    return [
+      'Based on this story, here is the positioning angle:',
+      '',
+      `You can frame yourself as someone who operates at broad scope, drives cross-functional execution, and carries high-stakes ownership.` ,
+      '',
+      'A strong next-role line would be:',
+      `I\'m looking for roles where I can lead large, ambiguous initiatives, align teams, and turn strategy into scaled execution.`,
+    ].join('\n');
+  }
+
+  return null;
+};
+
 const buildCandidateReply = ({
   content,
   storyDraft,
@@ -208,27 +292,54 @@ const buildCandidateReply = ({
   content: string;
   storyDraft: ReturnType<typeof buildDraftStory>;
 }) => {
-  const normalizedContent = content.toLowerCase();
-  const matchedReply = candidateReplyLibrary.find(({ keywords }) =>
-    keywords.some((keyword) => normalizedContent.includes(keyword)),
-  );
+  const quickReply = buildCandidateQuickReply({
+    content,
+    storyDraft,
+  });
 
-  if (matchedReply) {
-    return matchedReply.reply;
+  if (quickReply) {
+    return quickReply;
   }
 
-  const missingFields = [
-    !storyDraft?.situation ? 'what was broken or at risk' : null,
-    !storyDraft?.task ? 'what you personally owned' : null,
-    !storyDraft?.action ? 'the action or decision you drove' : null,
-    !storyDraft?.result ? 'a measurable result' : null,
-  ].filter((field): field is string => Boolean(field));
-
-  if (missingFields.length > 0) {
-    return `Good start. I still need ${missingFields.join(', ')}. Give me those in concrete terms so I can convert this into a stronger recruiter-safe STAR story.`;
+  if (!storyDraft) {
+    return [
+      'Give me the story in the roughest version you have.',
+      '',
+      'Use any of these formats:',
+      '- Situation / Task / Action / Result',
+      '- what happened / what you owned / what you did / what changed',
+      '',
+      'If your scope was executive or org-wide, say that directly. I\'ll draft from it.',
+    ].join('\n');
   }
 
-  return 'This is close to recruiter-safe. Tighten the business result, then approve the draft when the wording feels strong enough to publish.';
+  const draftReply = [
+    'Here is a working STAR draft from what you gave me:',
+    '',
+    formatDraftStoryForReply(storyDraft),
+  ];
+
+  if (!storyDraft.result) {
+    return [
+      ...draftReply,
+      '',
+      'One thing to tighten next: what changed afterward in a way you can say clearly?',
+    ].join('\n');
+  }
+
+  if (candidatePromptPatterns.starStory.test(content)) {
+    return [
+      ...draftReply,
+      '',
+      'If the scope is right, I can next tighten the wording or make it sound more executive.',
+    ].join('\n');
+  }
+
+  return [
+    ...draftReply,
+    '',
+    'If you want, I can now do one of three things: sharpen the result, tighten the title, or make the tone more executive.',
+  ].join('\n');
 };
 
 const formatConversationHistory = (
@@ -293,11 +404,13 @@ const buildCandidatePrompt = ({
       'You are ChatResumes, a sharp private AI coach for candidates.',
       'Your job is to turn raw experience into recruiter-safe STAR stories and stronger candidate positioning.',
       'Use only the provided conversation, profile facts, and uploaded document context.',
-      'Never invent metrics, company names, timelines, roles, or outcomes.',
-      'If information is missing, ask directly for the missing risk, ownership, action, or measurable result.',
-      'Keep replies concise and practical, usually 2 to 4 sentences.',
-      'If the candidate asks for a STAR rewrite, provide Situation, Task, Action, and Result labels.',
-      'Push for personal ownership and measurable business impact.',
+      'Treat the candidate\'s claims as the working draft truth for this session. Do not challenge plausibility, argue with them, or ask them to prove what they did.',
+      'Do not invent new metrics, dates, roles, or outcomes that the candidate did not state.',
+      'If details are missing, ask at most one focused clarifying question. If the candidate does not narrow further, still draft the best version from what they already gave you.',
+      'If the candidate describes executive, founder, or org-wide ownership, accept that scope and write at that level instead of forcing feature-level detail.',
+      'Prefer making progress over asking for more detail. Do not repeat the same clarification twice.',
+      'If the candidate asks for a STAR rewrite, provide Situation, Task, Action, and Result labels with clear spacing between sections.',
+      'Keep the tone collaborative, direct, and useful.',
     ].join(' '),
     userPrompt: [
       'Candidate profile facts:',
@@ -344,7 +457,11 @@ const generateCandidateReply = async ({
   });
   const aiReply = await generateAssistantReply(prompt);
 
-  return aiReply ?? buildCandidateReply({ content, storyDraft });
+  if (aiReply && !unhelpfulCandidateReplyPattern.test(aiReply)) {
+    return aiReply;
+  }
+
+  return buildCandidateReply({ content, storyDraft });
 };
 
 const getOrCreateCandidateSession = async (userId: string) => {
@@ -688,7 +805,7 @@ const seedRecruiterSessionIfEmpty = async ({
     return;
   }
 
-  const intro = `Hi, I\'m ${profile.displayName}\'s recruiter-facing AI profile. Ask about experience, leadership, target roles, or the approved stories below.`;
+  const intro = `Hi, I\'m ${profile.displayName}\'s recruiter-facing AI profile. Ask about experience, leadership, target roles, or any approved stories and public profile facts available so far.`;
   await prisma.recruiterChatMessage.create({
     data: {
       content: intro,
@@ -857,7 +974,11 @@ export const getRecruiterChatState = async ({
     visitorToken,
   });
 
-  if (publicProfile.availability !== 'ready' || !publicProfile.profileRecord || !publicProfile.profile) {
+  if (
+    (publicProfile.availability === 'inactive' || publicProfile.availability === 'missing') ||
+    !publicProfile.profileRecord ||
+    !publicProfile.profile
+  ) {
     return {
       approvedStories: publicProfile.approvedStories,
       availability: publicProfile.availability,
@@ -939,7 +1060,11 @@ export const processRecruiterChatTurn = async ({
     visitorToken,
   });
 
-  if (publicProfile.availability !== 'ready' || !publicProfile.profileRecord || !publicProfile.profile) {
+  if (
+    (publicProfile.availability === 'inactive' || publicProfile.availability === 'missing') ||
+    !publicProfile.profileRecord ||
+    !publicProfile.profile
+  ) {
     throw new ApiError({
       code: 'public_profile_unavailable',
       message: publicProfile.fallbackMessage ?? 'This public AI profile is not ready yet.',

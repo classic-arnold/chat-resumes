@@ -276,11 +276,17 @@ const ShareLinkCard = ({
   onCopy: () => void
 }) => {
   const publicUrl = data?.profile.publicUrl ?? ''
-  const isActive = Boolean(data?.publicLinkActive)
-  const statusPill = isActive ? (
+  const isAccessible = Boolean(data?.publicLinkActive)
+  const isReady = Boolean(data?.profile.publicReady)
+  const statusPill = isReady ? (
     <span className="inline-flex items-center gap-[0.35rem] rounded-full py-[0.25rem] px-[0.65rem] text-[0.66rem] font-bold tracking-[0.04em] uppercase bg-emerald-50 text-emerald-700 border border-emerald-100">
       <span className="w-[6px] h-[6px] rounded-full bg-emerald-500 animate-pulse" />
       Active
+    </span>
+  ) : isAccessible ? (
+    <span className="inline-flex items-center gap-[0.35rem] rounded-full py-[0.25rem] px-[0.65rem] text-[0.66rem] font-bold tracking-[0.04em] uppercase bg-amber-50 text-amber-700 border border-amber-100">
+      <span className="w-[6px] h-[6px] rounded-full bg-amber-500 animate-pulse" />
+      Training
     </span>
   ) : (
     <span className="inline-flex items-center gap-[0.35rem] rounded-full py-[0.25rem] px-[0.65rem] text-[0.66rem] font-bold tracking-[0.04em] uppercase bg-slate-50 text-slate-600 border border-slate-100">
@@ -299,8 +305,10 @@ const ShareLinkCard = ({
         eyebrow="Recruiter share link"
         title="Your public AI link"
         description={
-          isActive
+          isReady
             ? 'Send this to recruiters. It interacts and screens candidates 24/7.'
+            : isAccessible
+              ? 'Your link is live. The AI can answer from your public profile now, and approved stories will make it stronger.'
             : 'Activate your subscription to go live. Your custom link stays reserved.'
         }
       />
@@ -318,7 +326,7 @@ const ShareLinkCard = ({
         </div>
 
         <div className="flex items-stretch gap-[0.5rem] flex-shrink-0">
-          {isActive ? (
+          {isAccessible ? (
             <>
               <button
                 onClick={onCopy}

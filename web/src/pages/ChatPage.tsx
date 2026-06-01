@@ -271,7 +271,7 @@ export const ChatPage = () => {
                         </>
                       )}
                     </div>
-                    <div className={isUser ? 'bg-[#6366f1] text-white py-[0.85rem] px-[1.1rem] rounded-[16px_16px_4px_16px] text-[0.86rem] leading-[1.6]' : 'bg-[#1a1d35] text-white/90 border border-white/8 py-[0.85rem] px-[1.1rem] rounded-[16px_16px_16px_4px] text-[0.86rem] leading-[1.6]'}>
+                    <div style={{ whiteSpace: 'pre-wrap' }} className={isUser ? 'bg-[#6366f1] text-white py-[0.85rem] px-[1.1rem] rounded-[16px_16px_4px_16px] text-[0.86rem] leading-[1.6]' : 'bg-[#1a1d35] text-white/90 border border-white/8 py-[0.85rem] px-[1.1rem] rounded-[16px_16px_16px_4px] text-[0.86rem] leading-[1.6]'}>
                       {message.content}
                     </div>
                   </div>
