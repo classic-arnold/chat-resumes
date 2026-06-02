@@ -24,14 +24,71 @@ export const syncLocalUserFromClerk = async (clerkUserId: string) => {
     });
   }
 
-  return prisma.user.upsert({
+  const existingByClerkUserId = await prisma.user.findUnique({
     where: {
       clerkUserId,
     },
-    update: {
+    include: {
+      subscription: true,
+    },
+  });
+
+  if (existingByClerkUserId) {
+    if (existingByClerkUserId.email === email) {
+      return existingByClerkUserId;
+    }
+
+    const existingByEmail = await prisma.user.findUnique({
+      where: {
+        email,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (existingByEmail && existingByEmail.id !== existingByClerkUserId.id) {
+      return existingByClerkUserId;
+    }
+
+    return prisma.user.update({
+      where: {
+        id: existingByClerkUserId.id,
+      },
+      data: {
+        email,
+      },
+      include: {
+        subscription: true,
+      },
+    });
+  }
+
+  const existingByEmail = await prisma.user.findUnique({
+    where: {
       email,
     },
-    create: {
+    include: {
+      subscription: true,
+    },
+  });
+
+  if (existingByEmail) {
+    return prisma.user.update({
+      where: {
+        id: existingByEmail.id,
+      },
+      data: {
+        clerkUserId,
+      },
+      include: {
+        subscription: true,
+      },
+    });
+  }
+
+  return prisma.user.create({
+    data: {
       clerkUserId,
       email,
     },
