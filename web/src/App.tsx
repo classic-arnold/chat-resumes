@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Route, Routes, useLocation } from 'react-router-dom'
 
 import { ProtectedRoute } from './auth/ProtectedRoute'
+import { trackMetaPageView } from './lib/metaPixel'
 import { BillingCancelPage } from './pages/BillingCancelPage'
 import { BillingSuccessPage } from './pages/BillingSuccessPage'
 import { ChatPage } from './pages/ChatPage'
@@ -22,8 +23,19 @@ const ScrollToTop = () => {
   return null
 }
 
+const MetaPixelTracker = () => {
+  const { hash, pathname, search } = useLocation()
+
+  useEffect(() => {
+    trackMetaPageView(`${pathname}${search}${hash}`)
+  }, [hash, pathname, search])
+
+  return null
+}
+
 const App = () => (
   <>
+    <MetaPixelTracker />
     <ScrollToTop />
     <Routes>
       <Route path="/" element={<LandingPage />} />

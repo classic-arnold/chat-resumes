@@ -1,10 +1,15 @@
 import { useAuth } from '@clerk/react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate as useReactNavigate } from 'react-router-dom'
 
-import { createCheckout } from '../lib/billing'
-import { Navbar } from '../components/Navbar'
 import { Footer } from '../components/Footer'
+import { Navbar } from '../components/Navbar'
+import { createCheckout } from '../lib/billing'
+import {
+  META_PIXEL_CUSTOM_EVENTS,
+  META_PIXEL_SUBSCRIPTION,
+  trackMetaEvent,
+} from '../lib/metaPixel'
 
 const FEATURES = [
   'Personal AI chatbot trained on your experience',
@@ -39,14 +44,60 @@ export const PricingPage = () => {
   const [error, setError] = useState<string | null>(null)
   const [isStarting, setIsStarting] = useState(false)
 
+  useEffect(() => {
+    trackMetaEvent({
+      name: 'ViewContent',
+      parameters: {
+        content_ids: [META_PIXEL_SUBSCRIPTION.id],
+        content_type: 'product_group',
+        contents: [
+          {
+            id: META_PIXEL_SUBSCRIPTION.id,
+            quantity: META_PIXEL_SUBSCRIPTION.quantity,
+          },
+        ],
+        currency: META_PIXEL_SUBSCRIPTION.currency,
+        value: META_PIXEL_SUBSCRIPTION.value,
+      },
+    })
+  }, [])
+
   const startCheckout = async () => {
     if (!isLoaded) return
+
     if (!isSignedIn) {
+      trackMetaEvent({
+        kind: 'custom',
+        name: META_PIXEL_CUSTOM_EVENTS.signupIntent,
+        parameters: {
+          currency: META_PIXEL_SUBSCRIPTION.currency,
+          source: 'pricing',
+          value: META_PIXEL_SUBSCRIPTION.value,
+        },
+      })
       navigate('/signup')
       return
     }
+
     setError(null)
     setIsStarting(true)
+
+    trackMetaEvent({
+      name: 'InitiateCheckout',
+      parameters: {
+        content_ids: [META_PIXEL_SUBSCRIPTION.id],
+        contents: [
+          {
+            id: META_PIXEL_SUBSCRIPTION.id,
+            quantity: META_PIXEL_SUBSCRIPTION.quantity,
+          },
+        ],
+        currency: META_PIXEL_SUBSCRIPTION.currency,
+        num_items: META_PIXEL_SUBSCRIPTION.quantity,
+        value: META_PIXEL_SUBSCRIPTION.value,
+      },
+    })
+
     try {
       const { checkoutUrl } = await createCheckout(getToken, {
         cancelUrl: `${window.location.origin}/billing/cancel`,
@@ -54,7 +105,17 @@ export const PricingPage = () => {
       })
       window.location.assign(checkoutUrl)
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Unable to start checkout.')
+      const message = caught instanceof Error ? caught.message : 'Unable to start checkout.'
+
+      setError(message)
+      trackMetaEvent({
+        kind: 'custom',
+        name: META_PIXEL_CUSTOM_EVENTS.checkoutFailed,
+        parameters: {
+          message,
+          source: 'pricing',
+        },
+      })
       setIsStarting(false)
     }
   }
