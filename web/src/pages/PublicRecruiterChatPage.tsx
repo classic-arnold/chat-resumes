@@ -9,6 +9,7 @@ import {
   type PublicProfileResponse,
   type RecruiterChatState,
 } from '../lib/chat'
+import { trackPostHogEvent } from '../lib/posthog'
 
 
 const RECRUITER_PROMPTS = [
@@ -77,6 +78,12 @@ export const PublicRecruiterChatPage = () => {
         if (cancelled) return
 
         window.localStorage.setItem(visitorKey, profile.visitorToken)
+        trackPostHogEvent('public_profile_loaded', {
+          approved_story_count: profile.approvedStories.length,
+          availability: profile.availability,
+          has_summary: Boolean(profile.profile?.summary),
+          target_role_count: profile.profile?.targetRoles.length ?? 0,
+        })
         setState((current) => ({
           ...current,
           data: toInitialState(profile),
@@ -141,17 +148,29 @@ export const PublicRecruiterChatPage = () => {
     }
   }, [slug])
 
-  const send = (text: string) => {
+  const send = (text: string, source: 'freeform' | 'quick_prompt' = 'freeform') => {
     const trimmed = text.trim()
     if (!trimmed || state.isReplying) return
     const socket = socketRef.current
     if (!socket || !socket.connected) {
+      trackPostHogEvent('recruiter_message_send_failed', {
+        availability: state.data?.availability ?? null,
+        reason: 'socket_disconnected',
+        source,
+      })
       setState((current) => ({
         ...current,
         error: 'Disconnected. Refresh and try again.',
       }))
       return
     }
+
+    trackPostHogEvent('recruiter_message_sent', {
+      approved_story_count: state.data?.approvedStories.length ?? 0,
+      availability: state.data?.availability ?? null,
+      message_length: trimmed.length,
+      source,
+    })
     socket.emit('recruiter:message', { content: trimmed })
     setComposer('')
     setState((current) => ({ ...current, error: null, isReplying: true }))
@@ -285,7 +304,7 @@ export const PublicRecruiterChatPage = () => {
                 className="bg-white border border-[#e2e8f0] text-[#4f46e5] py-[0.4rem] px-[0.85rem] rounded-full text-[0.72rem] font-medium cursor-pointer transition-all duration-200 hover:border-[#4f46e5] hover:bg-[rgba(79,70,229,0.08)] disabled:opacity-60 disabled:cursor-not-allowed"
                 disabled={state.isReplying || isUnavailable}
                 key={prompt}
-                onClick={() => send(prompt)}
+                onClick={() => send(prompt, 'quick_prompt')}
                 type="button"
               >
                 {prompt}

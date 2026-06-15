@@ -7,9 +7,15 @@ import {
   META_PIXEL_SUBSCRIPTION,
   trackMetaEvent,
 } from '../lib/metaPixel'
+import { trackPostHogEvent } from '../lib/posthog'
 
 export const BillingSuccessPage = () => {
   useEffect(() => {
+    trackPostHogEvent('billing_subscription_succeeded', {
+      currency: META_PIXEL_SUBSCRIPTION.currency,
+      plan_id: META_PIXEL_SUBSCRIPTION.id,
+      value: META_PIXEL_SUBSCRIPTION.value,
+    })
     trackMetaEvent({
       name: 'Subscribe',
       parameters: {
@@ -40,10 +46,26 @@ export const BillingSuccessPage = () => {
             Your public recruiter link is now active. Open the dashboard to copy it
             and start training your AI.
           </p>
-          <ButtonLink href="/dashboard" variant="primary">
+          <ButtonLink
+            href="/dashboard"
+            onClick={() =>
+              trackPostHogEvent('billing_success_cta_clicked', {
+                destination: '/dashboard',
+              })
+            }
+            variant="primary"
+          >
             Open dashboard →
           </ButtonLink>
-          <Link className="mt-[0.9rem] text-[0.74rem] text-muted hover:underline" to="/chat">
+          <Link
+            className="mt-[0.9rem] text-[0.74rem] text-muted hover:underline"
+            onClick={() =>
+              trackPostHogEvent('billing_success_cta_clicked', {
+                destination: '/chat',
+              })
+            }
+            to="/chat"
+          >
             or jump straight into chat
           </Link>
         </div>

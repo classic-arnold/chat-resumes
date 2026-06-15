@@ -11,6 +11,7 @@ import linkCopyImg from '../assets/link-copy.png'
 import { Navbar } from '../components/Navbar'
 import { Footer } from '../components/Footer'
 import { PricingCard } from '../components/PricingCard'
+import { trackPostHogEvent } from '../lib/posthog'
 
 
 
@@ -79,8 +80,16 @@ const faqItems = [
   }
 ]
 
-export const LandingPage = () => (
-  <div className="min-h-screen bg-lp-bg text-lp-text font-inter overflow-x-hidden">
+export const LandingPage = () => {
+  const trackLandingCta = (ctaName: string, destination: string) => {
+    trackPostHogEvent('landing_cta_clicked', {
+      cta_name: ctaName,
+      destination,
+    })
+  }
+
+  return (
+    <div className="min-h-screen bg-lp-bg text-lp-text font-inter overflow-x-hidden">
     {/* NAV */}
     <Navbar />
 
@@ -103,10 +112,20 @@ export const LandingPage = () => (
             questions 24/7. Stop sending dead PDFs. Start sending a living portfolio.
           </p>
           <div className="flex flex-col md:flex-row items-center gap-[0.9rem] mb-[3rem] w-full md:w-auto">
-            <Link className="w-full md:w-auto inline-flex items-center justify-center py-[0.8rem] px-[1.5rem] bg-lp-accent text-white rounded-full text-[0.82rem] font-semibold no-underline border-none cursor-pointer transition-all duration-200 hover:bg-lp-accent-hover hover:-translate-y-[1px] tracking-[0.01em]" to="/pricing">
+            <Link
+              className="w-full md:w-auto inline-flex items-center justify-center py-[0.8rem] px-[1.5rem] bg-lp-accent text-white rounded-full text-[0.82rem] font-semibold no-underline border-none cursor-pointer transition-all duration-200 hover:bg-lp-accent-hover hover:-translate-y-[1px] tracking-[0.01em]"
+              onClick={() => trackLandingCta('hero_primary', '/pricing')}
+              to="/pricing"
+            >
               Claim My Link — $9.99/mo <ArrowRight className="ml-2" />
             </Link>
-            <a className="w-full md:w-auto inline-flex items-center justify-center py-[0.8rem] px-[1.5rem] bg-transparent text-[#475569] border border-[#cbd5e1] rounded-full text-[0.82rem] font-medium no-underline cursor-pointer transition-all duration-200 hover:text-[#0f172a] hover:border-[#94a3b8]" href="#how-it-works">See how it works</a>
+            <a
+              className="w-full md:w-auto inline-flex items-center justify-center py-[0.8rem] px-[1.5rem] bg-transparent text-[#475569] border border-[#cbd5e1] rounded-full text-[0.82rem] font-medium no-underline cursor-pointer transition-all duration-200 hover:text-[#0f172a] hover:border-[#94a3b8]"
+              href="#how-it-works"
+              onClick={() => trackLandingCta('hero_secondary', '#how-it-works')}
+            >
+              See how it works
+            </a>
           </div>
 
           {/* Chat preview card */}
@@ -354,6 +373,7 @@ export const LandingPage = () => (
           {/* SINGLE COLUMN PRICING CARD (Matches Reference Mockup Exactly) */}
           <PricingCard
             buttonText="Claim My Link Now ➔"
+            onClick={() => trackLandingCta('pricing_card', '/pricing')}
             to="/pricing"
           />
         </div>
@@ -426,6 +446,7 @@ export const LandingPage = () => (
           </h2>
           <Link
             className="inline-flex items-center justify-center py-[0.95rem] px-[2.25rem] bg-[#5B54F7] hover:bg-[#4a43e6] text-white rounded-full text-[0.95rem] font-semibold transition-all duration-200 border-none cursor-pointer tracking-[0.01em] no-underline gap-[0.5rem] shadow-[0_15px_30px_rgba(91,84,247,0.3)] hover:-translate-y-[1px]"
+            onClick={() => trackLandingCta('final_cta', '/pricing')}
             to="/pricing"
           >
             Claim Your ChatResume <span className="text-[1.1rem]">➔</span>
@@ -436,5 +457,6 @@ export const LandingPage = () => (
 
     {/* FOOTER */}
     <Footer />
-  </div>
-)
+    </div>
+  )
+}

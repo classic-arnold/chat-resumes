@@ -32,3 +32,4 @@ Vite + React + TypeScript frontend for ChatResumes.
 Copy `.env.example` to `.env` and set `VITE_CLERK_PUBLISHABLE_KEY` before using the live auth routes.
 Set `VITE_API_BASE_URL` if the frontend should call a backend origin other than the local default.
 Set `VITE_SOCKET_PATH` only if the backend Socket.IO path differs from `/socket.io`.
+Set `VITE_POSTHOG_PROJECT_TOKEN` and optionally `VITE_POSTHOG_HOST` to enable frontend PostHog analytics.

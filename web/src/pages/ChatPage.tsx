@@ -12,6 +12,7 @@ import {
   type CandidateChatState,
   type ChatMessage,
 } from '../lib/chat'
+import { trackPostHogEvent } from '../lib/posthog'
 
 
 const QUICK_PROMPTS = [
@@ -25,6 +26,7 @@ const isUserMessage = (message: ChatMessage) => message.role === 'candidate'
 
 export const ChatPage = () => {
   const { getToken, isLoaded, isSignedIn } = useAuth()
+  const hasTrackedLoad = useRef(false)
   const socketRef = useRef<Socket | null>(null)
   const threadEndRef = useRef<HTMLDivElement | null>(null)
   const [composer, setComposer] = useState('')
@@ -120,17 +122,41 @@ export const ChatPage = () => {
     }
   }, [getToken, isLoaded, isSignedIn])
 
-  const send = (text: string) => {
+  useEffect(() => {
+    if (!state.data || hasTrackedLoad.current) {
+      return
+    }
+
+    hasTrackedLoad.current = true
+    trackPostHogEvent('candidate_chat_loaded', {
+      approved_story_count: state.data.stories.filter((story) => story.status === 'approved').length,
+      draft_story_count: state.data.stories.filter((story) => story.status === 'draft').length,
+      message_count: state.data.messages.length,
+    })
+  }, [state.data])
+
+  const send = (text: string, source: 'freeform' | 'quick_prompt' = 'freeform') => {
     const trimmed = text.trim()
     if (!trimmed || state.isReplying) return
     const socket = socketRef.current
     if (!socket || !socket.connected) {
+      trackPostHogEvent('candidate_message_send_failed', {
+        reason: 'socket_disconnected',
+        source,
+      })
       setState((current) => ({
         ...current,
         error: 'Disconnected. Refresh and try again.',
       }))
       return
     }
+
+    trackPostHogEvent('candidate_message_sent', {
+      approved_story_count: state.data?.stories.filter((story) => story.status === 'approved').length ?? 0,
+      draft_story_count: state.data?.stories.filter((story) => story.status === 'draft').length ?? 0,
+      message_length: trimmed.length,
+      source,
+    })
     socket.emit('candidate:message', { content: trimmed })
     setComposer('')
     setState((current) => ({ ...current, error: null, isReplying: true }))
@@ -152,8 +178,14 @@ export const ChatPage = () => {
     setState((current) => ({ ...current, approvingId: storyId, error: null }))
     try {
       const next = await approveCandidateStory(getToken, storyId)
+      trackPostHogEvent('candidate_story_approved', {
+        story_id: storyId,
+      })
       setState((current) => ({ ...current, approvingId: null, data: next }))
     } catch (error) {
+      trackPostHogEvent('candidate_story_approve_failed', {
+        message: error instanceof Error ? error.message : 'Approve failed.',
+      })
       setState((current) => ({
         ...current,
         approvingId: null,
@@ -301,7 +333,7 @@ export const ChatPage = () => {
                 className="bg-white/5 border border-white/10 text-[#6366f1] py-[0.4rem] px-[0.85rem] rounded-full text-[0.72rem] font-medium cursor-pointer transition-all duration-200 hover:border-[#6366f1]/50 hover:bg-[#6366f1]/10 disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={state.isReplying}
                 key={prompt}
-                onClick={() => send(prompt)}
+                onClick={() => send(prompt, 'quick_prompt')}
                 type="button"
               >
                 {prompt}

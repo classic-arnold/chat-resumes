@@ -3,9 +3,13 @@ import { Link } from 'react-router-dom'
 
 import { ButtonLink } from '../components/ui/Button'
 import { META_PIXEL_CUSTOM_EVENTS, trackMetaEvent } from '../lib/metaPixel'
+import { trackPostHogEvent } from '../lib/posthog'
 
 export const BillingCancelPage = () => {
   useEffect(() => {
+    trackPostHogEvent('billing_checkout_canceled', {
+      source: 'stripe_checkout',
+    })
     trackMetaEvent({
       kind: 'custom',
       name: META_PIXEL_CUSTOM_EVENTS.checkoutCanceled,
@@ -27,10 +31,26 @@ export const BillingCancelPage = () => {
             Your account is still here. Subscribe whenever you're ready to activate
             your public recruiter link.
           </p>
-          <ButtonLink href="/pricing" variant="primary">
+          <ButtonLink
+            href="/pricing"
+            onClick={() =>
+              trackPostHogEvent('billing_cancel_cta_clicked', {
+                destination: '/pricing',
+              })
+            }
+            variant="primary"
+          >
             Back to pricing
           </ButtonLink>
-          <Link className="mt-[0.9rem] text-[0.74rem] text-muted hover:underline" to="/dashboard">
+          <Link
+            className="mt-[0.9rem] text-[0.74rem] text-muted hover:underline"
+            onClick={() =>
+              trackPostHogEvent('billing_cancel_cta_clicked', {
+                destination: '/dashboard',
+              })
+            }
+            to="/dashboard"
+          >
             or open the dashboard
           </Link>
         </div>

@@ -4,7 +4,10 @@ import { BrowserRouter } from 'react-router-dom'
 
 import App from './App'
 import { AppAuthProvider } from './auth/AppAuthProvider'
+import { initPostHog } from './lib/posthog'
 import './styles/globals.css'
+
+initPostHog()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

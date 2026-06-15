@@ -81,7 +81,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
 
       {/* Action Button */}
       {to ? (
-        <Link className={buttonClasses} to={to}>
+        <Link className={buttonClasses} onClick={onClick} to={to}>
           {buttonText}
         </Link>
       ) : (

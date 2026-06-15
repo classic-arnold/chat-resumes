@@ -1,8 +1,15 @@
+import { useAuth } from '@clerk/react'
 import { useEffect } from 'react'
 import { Route, Routes, useLocation } from 'react-router-dom'
 
+import { isClerkConfigured } from './auth/clerk'
 import { ProtectedRoute } from './auth/ProtectedRoute'
 import { trackMetaPageView } from './lib/metaPixel'
+import {
+  identifyPostHogUser,
+  resetPostHogUser,
+  trackPostHogPageView,
+} from './lib/posthog'
 import { BillingCancelPage } from './pages/BillingCancelPage'
 import { BillingSuccessPage } from './pages/BillingSuccessPage'
 import { ChatPage } from './pages/ChatPage'
@@ -33,9 +40,40 @@ const MetaPixelTracker = () => {
   return null
 }
 
+const PostHogTracker = () => {
+  const { hash, pathname, search } = useLocation()
+
+  useEffect(() => {
+    trackPostHogPageView(`${pathname}${search}${hash}`)
+  }, [hash, pathname, search])
+
+  return null
+}
+
+const PostHogIdentityTracker = () => {
+  const { isLoaded, isSignedIn, userId } = useAuth()
+
+  useEffect(() => {
+    if (!isLoaded) {
+      return
+    }
+
+    if (isSignedIn && userId) {
+      identifyPostHogUser(userId)
+      return
+    }
+
+    resetPostHogUser()
+  }, [isLoaded, isSignedIn, userId])
+
+  return null
+}
+
 const App = () => (
   <>
     <MetaPixelTracker />
+    <PostHogTracker />
+    {isClerkConfigured ? <PostHogIdentityTracker /> : null}
     <ScrollToTop />
     <Routes>
       <Route path="/" element={<LandingPage />} />

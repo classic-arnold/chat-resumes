@@ -31,6 +31,7 @@ import {
   uploadDocument,
   type DocumentSummary,
 } from '../lib/documents'
+import { trackPostHogEvent } from '../lib/posthog'
 
 const formatRelativeTime = (isoString: string) => {
   const deltaMs = Date.now() - new Date(isoString).getTime()
@@ -51,6 +52,16 @@ const formatBytes = (bytes: number) => {
   if (bytes < 1024) return `${bytes} B`
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+const summarizeFiles = (files: FileList | null) => {
+  const entries = Array.from(files ?? [])
+
+  return {
+    file_count: entries.length,
+    file_types: entries.map((file) => file.type || 'unknown'),
+    total_size_bytes: entries.reduce((total, file) => total + file.size, 0),
+  }
 }
 
 const getFileIcon = (fileName: string) => {
@@ -127,26 +138,43 @@ const DocumentsCard = () => {
 
   const handleFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return
+    const metadata = summarizeFiles(files)
+
     setIsUploading(true)
     setError(null)
+    trackPostHogEvent('documents_upload_started', metadata)
     try {
       for (const file of Array.from(files)) {
         await uploadDocument(file, getToken)
       }
+      trackPostHogEvent('documents_upload_succeeded', metadata)
       refresh()
     } catch (caught) {
+      trackPostHogEvent('documents_upload_failed', {
+        ...metadata,
+        message: caught instanceof Error ? caught.message : 'Upload failed.',
+      })
       setError(caught instanceof Error ? caught.message : 'Upload failed.')
     } finally {
       setIsUploading(false)
     }
   }
 
-  const handleDelete = async (documentId: string) => {
+  const handleDelete = async (document: DocumentSummary) => {
     setError(null)
     try {
-      await deleteDocument(documentId, getToken)
+      await deleteDocument(document.id, getToken)
+      trackPostHogEvent('document_deleted', {
+        mime_type: document.mimeType,
+        size_bytes: document.sizeBytes,
+        status: document.status,
+      })
       refresh()
     } catch (caught) {
+      trackPostHogEvent('document_delete_failed', {
+        message: caught instanceof Error ? caught.message : 'Delete failed.',
+        status: document.status,
+      })
       setError(caught instanceof Error ? caught.message : 'Delete failed.')
     }
   }
@@ -250,7 +278,7 @@ const DocumentsCard = () => {
                 <div className="flex items-center gap-[0.75rem]">
                   {documentStatusPill(document.status)}
                   <button
-                    onClick={() => void handleDelete(document.id)}
+                    onClick={() => void handleDelete(document)}
                     className="p-[0.5rem] text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-full border-none transition-all cursor-pointer"
                     title="Delete document"
                   >
@@ -268,12 +296,16 @@ const DocumentsCard = () => {
 
 const ShareLinkCard = ({
   data,
+  onActivateLink,
   onCopy,
+  onOpenLink,
   copyState,
 }: {
   copyState: 'copied' | 'failed' | 'idle'
   data: DashboardSummary | null
+  onActivateLink: () => void
   onCopy: () => void
+  onOpenLink: () => void
 }) => {
   const publicUrl = data?.profile.publicUrl ?? ''
   const isAccessible = Boolean(data?.publicLinkActive)
@@ -342,6 +374,7 @@ const ShareLinkCard = ({
               {publicUrl ? (
                 <a
                   href={publicUrl}
+                  onClick={onOpenLink}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center justify-center gap-[0.5rem] px-[1.25rem] py-[0.65rem] bg-slate-100 hover:bg-slate-200 text-[#0f1f4b] text-[0.82rem] font-semibold rounded-[12px] transition-all no-underline cursor-pointer border-none"
@@ -353,6 +386,7 @@ const ShareLinkCard = ({
             </>
           ) : (
             <Link
+              onClick={onActivateLink}
               to="/pricing"
               className="inline-flex items-center justify-center gap-[0.5rem] px-[1.5rem] py-[0.65rem] bg-[#5B54F7] hover:bg-[#4a43e6] text-white text-[0.82rem] font-bold rounded-[12px] transition-all no-underline cursor-pointer border-none shadow-[0_4px_12px_rgba(91,84,247,0.15)] active:scale-[0.98]"
             >
@@ -367,6 +401,7 @@ const ShareLinkCard = ({
 
 export const DashboardPage = () => {
   const { getToken, isLoaded, isSignedIn } = useAuth()
+  const hasTrackedDashboardLoad = useRef(false)
   const [reloadKey, setReloadKey] = useState(0)
   const [isQuizOpen, setIsQuizOpen] = useState(false)
   const [dashboard, setDashboard] = useState<{
@@ -419,14 +454,21 @@ export const DashboardPage = () => {
     if (!url) return
     try {
       await navigator.clipboard.writeText(url)
+      trackPostHogEvent('dashboard_public_link_copied', {
+        public_ready: Boolean(dashboard.data?.profile.publicReady),
+      })
       setDashboard((current) => ({ ...current, copyState: 'copied' }))
     } catch {
+      trackPostHogEvent('dashboard_public_link_copy_failed', {
+        public_ready: Boolean(dashboard.data?.profile.publicReady),
+      })
       setDashboard((current) => ({ ...current, copyState: 'failed' }))
     }
   }
 
   const handleManageBilling = async () => {
     setDashboard((current) => ({ ...current, isOpeningPortal: true }))
+    trackPostHogEvent('dashboard_billing_portal_open_started')
     try {
       const { portalUrl } = await createPortalSession(
         getToken,
@@ -434,6 +476,9 @@ export const DashboardPage = () => {
       )
       window.location.assign(portalUrl)
     } catch (error) {
+      trackPostHogEvent('dashboard_billing_portal_open_failed', {
+        message: error instanceof Error ? error.message : 'Unable to open billing portal.',
+      })
       setDashboard((current) => ({
         ...current,
         error: error instanceof Error ? error.message : 'Unable to open billing portal.',
@@ -446,6 +491,21 @@ export const DashboardPage = () => {
   const activity = dashboard.data?.activity ?? []
   const billing = dashboard.data?.billing
   const isSubscribed = Boolean(billing?.hasActiveSubscription)
+
+  useEffect(() => {
+    if (!dashboard.data || hasTrackedDashboardLoad.current) {
+      return
+    }
+
+    hasTrackedDashboardLoad.current = true
+    trackPostHogEvent('dashboard_loaded', {
+      approved_story_count: dashboard.data.metrics.approvedStoriesCount,
+      has_active_subscription: Boolean(dashboard.data.billing.hasActiveSubscription),
+      public_link_active: Boolean(dashboard.data.publicLinkActive),
+      quiz_answered_count: dashboard.data.profile.quizAnsweredCount,
+      views_this_week: dashboard.data.metrics.viewsThisWeek,
+    })
+  }, [dashboard.data])
 
   return (
     <AppShell
@@ -461,6 +521,11 @@ export const DashboardPage = () => {
         ) : !isSubscribed ? (
           <Link
             className="inline-flex items-center justify-center gap-[0.45rem] border-none rounded-[8px] py-[0.45rem] px-[1rem] font-inter font-bold text-[0.78rem] tracking-[0.01em] cursor-pointer transition-all bg-[#5B54F7] text-white hover:bg-[#4a43e6] no-underline whitespace-nowrap shadow-[0_4px_12px_rgba(91,84,247,0.2)]"
+            onClick={() =>
+              trackPostHogEvent('dashboard_subscribe_clicked', {
+                source: 'dashboard_header',
+              })
+            }
             to="/pricing"
           >
             Subscribe
@@ -473,7 +538,17 @@ export const DashboardPage = () => {
         <ShareLinkCard
           copyState={dashboard.copyState}
           data={dashboard.data}
+          onActivateLink={() =>
+            trackPostHogEvent('dashboard_activate_link_clicked', {
+              source: 'share_link_card',
+            })
+          }
           onCopy={() => void handleCopy()}
+          onOpenLink={() =>
+            trackPostHogEvent('dashboard_public_link_opened', {
+              public_ready: Boolean(dashboard.data?.profile.publicReady),
+            })
+          }
         />
 
         {dashboard.error ? (
@@ -505,7 +580,12 @@ export const DashboardPage = () => {
                 </p>
               </div>
               <button
-                onClick={() => setIsQuizOpen(true)}
+                onClick={() => {
+                  trackPostHogEvent('dashboard_quiz_opened', {
+                    answered_count: dashboard.data?.profile.quizAnsweredCount ?? 0,
+                  })
+                  setIsQuizOpen(true)
+                }}
                 className="w-full bg-[#5B54F7] hover:bg-[#4a43e6] text-white py-[0.75rem] px-[1.25rem] rounded-[12px] text-[0.82rem] font-bold flex items-center justify-center gap-[0.5rem] transition-all cursor-pointer border-none shadow-[0_4px_12px_rgba(91,84,247,0.15)] active:scale-[0.98]"
               >
                 {(dashboard.data?.profile.quizAnsweredCount ?? 0) > 0 ? 'Continue quiz' : 'Open quiz'}
@@ -525,6 +605,11 @@ export const DashboardPage = () => {
               </div>
               <Link
                 to="/chat"
+                onClick={() =>
+                  trackPostHogEvent('dashboard_ai_studio_opened', {
+                    source: 'dashboard_card',
+                  })
+                }
                 className="w-full bg-slate-50 hover:bg-slate-100 text-[#5B54F7] py-[0.75rem] px-[1.25rem] rounded-[12px] text-[0.82rem] font-bold flex items-center justify-center gap-[0.5rem] transition-all no-underline cursor-pointer border border-indigo-50 active:scale-[0.98]"
               >
                 Open AI Studio →

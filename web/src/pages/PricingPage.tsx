@@ -10,6 +10,7 @@ import {
   META_PIXEL_SUBSCRIPTION,
   trackMetaEvent,
 } from '../lib/metaPixel'
+import { trackPostHogEvent } from '../lib/posthog'
 
 const FEATURES = [
   'Personal AI chatbot trained on your experience',
@@ -60,12 +61,22 @@ export const PricingPage = () => {
         value: META_PIXEL_SUBSCRIPTION.value,
       },
     })
+    trackPostHogEvent('pricing_plan_viewed', {
+      currency: META_PIXEL_SUBSCRIPTION.currency,
+      plan_id: META_PIXEL_SUBSCRIPTION.id,
+      value: META_PIXEL_SUBSCRIPTION.value,
+    })
   }, [])
 
   const startCheckout = async () => {
     if (!isLoaded) return
 
     if (!isSignedIn) {
+      trackPostHogEvent('pricing_signup_redirect_clicked', {
+        currency: META_PIXEL_SUBSCRIPTION.currency,
+        source: 'pricing',
+        value: META_PIXEL_SUBSCRIPTION.value,
+      })
       trackMetaEvent({
         kind: 'custom',
         name: META_PIXEL_CUSTOM_EVENTS.signupIntent,
@@ -82,6 +93,11 @@ export const PricingPage = () => {
     setError(null)
     setIsStarting(true)
 
+    trackPostHogEvent('pricing_checkout_started', {
+      currency: META_PIXEL_SUBSCRIPTION.currency,
+      plan_id: META_PIXEL_SUBSCRIPTION.id,
+      value: META_PIXEL_SUBSCRIPTION.value,
+    })
     trackMetaEvent({
       name: 'InitiateCheckout',
       parameters: {
@@ -108,6 +124,10 @@ export const PricingPage = () => {
       const message = caught instanceof Error ? caught.message : 'Unable to start checkout.'
 
       setError(message)
+      trackPostHogEvent('pricing_checkout_failed', {
+        message,
+        source: 'pricing',
+      })
       trackMetaEvent({
         kind: 'custom',
         name: META_PIXEL_CUSTOM_EVENTS.checkoutFailed,

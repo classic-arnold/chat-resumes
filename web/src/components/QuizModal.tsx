@@ -3,6 +3,7 @@ import { useAuth } from '@clerk/react'
 import { X, BookOpen, Loader2, AlertCircle } from 'lucide-react'
 
 import { fetchQuiz, saveQuiz, type QuizAnswers } from '../lib/quiz'
+import { trackPostHogEvent } from '../lib/posthog'
 import { quizQuestions, QUIZ_TOTAL, type QuizQuestionId } from '../lib/quizQuestions'
 
 type QuizModalProps = {
@@ -20,6 +21,23 @@ export const QuizModal = ({ isOpen, onClose, onSaved }: QuizModalProps) => {
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const getAnsweredCount = (nextAnswers: QuizAnswers) => {
+    return quizQuestions.reduce((count, question) => {
+      const value = nextAnswers[question.id]
+      return value && value.trim().length > 0 ? count + 1 : count
+    }, 0)
+  }
+
+  const handleRequestClose = (
+    source: 'backdrop' | 'cancel_button' | 'close_button' | 'escape',
+  ) => {
+    trackPostHogEvent('quiz_closed', {
+      answered_count: getAnsweredCount(answers),
+      source,
+    })
+    onClose()
+  }
+
   useEffect(() => {
     if (!isOpen) return
     let cancelled = false
@@ -30,6 +48,10 @@ export const QuizModal = ({ isOpen, onClose, onSaved }: QuizModalProps) => {
         const result = await fetchQuiz(getToken)
         if (cancelled) return
         setAnswers(result.answers ?? {})
+        trackPostHogEvent('quiz_loaded', {
+          answered_count: getAnsweredCount(result.answers ?? {}),
+          question_count: QUIZ_TOTAL,
+        })
       } catch (caught) {
         if (cancelled) return
         setError(caught instanceof Error ? caught.message : 'Unable to load quiz.')
@@ -46,11 +68,19 @@ export const QuizModal = ({ isOpen, onClose, onSaved }: QuizModalProps) => {
   useEffect(() => {
     if (!isOpen) return
     const handleKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
+      if (event.key !== 'Escape') {
+        return
+      }
+
+      trackPostHogEvent('quiz_closed', {
+        answered_count: getAnsweredCount(answers),
+        source: 'escape',
+      })
+      onClose()
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
-  }, [isOpen, onClose])
+  }, [answers, isOpen, onClose])
 
   if (!isOpen) return null
 
@@ -68,9 +98,16 @@ export const QuizModal = ({ isOpen, onClose, onSaved }: QuizModalProps) => {
         payload[question.id] = value && value.trim().length > 0 ? value : null
       }
       await saveQuiz(getToken, payload)
+      trackPostHogEvent('quiz_saved', {
+        answered_count: Object.values(payload).filter((value) => Boolean(value)).length,
+        question_count: QUIZ_TOTAL,
+      })
       onSaved?.()
       onClose()
     } catch (caught) {
+      trackPostHogEvent('quiz_save_failed', {
+        message: caught instanceof Error ? caught.message : 'Unable to save quiz.',
+      })
       setError(caught instanceof Error ? caught.message : 'Unable to save quiz.')
     } finally {
       setIsSaving(false)
@@ -88,7 +125,7 @@ export const QuizModal = ({ isOpen, onClose, onSaved }: QuizModalProps) => {
     <div
       className="fixed inset-0 bg-slate-900/60 flex items-center justify-center p-[1rem] z-[1000] backdrop-blur-[6px]"
       onClick={(event) => {
-        if (event.target === event.currentTarget) onClose()
+        if (event.target === event.currentTarget) handleRequestClose('backdrop')
       }}
       role="dialog"
       aria-modal="true"
@@ -117,7 +154,7 @@ export const QuizModal = ({ isOpen, onClose, onSaved }: QuizModalProps) => {
             <button
               aria-label="Close"
               className="p-[0.5rem] bg-transparent border-none text-slate-400 hover:text-slate-700 cursor-pointer rounded-full hover:bg-slate-50 transition-colors"
-              onClick={onClose}
+              onClick={() => handleRequestClose('close_button')}
               type="button"
             >
               <X size={18} />
@@ -216,7 +253,7 @@ export const QuizModal = ({ isOpen, onClose, onSaved }: QuizModalProps) => {
         {/* Modal Footer */}
         <div className="flex justify-end items-center gap-[0.75rem] p-[1.25rem_1.5rem] border-t border-slate-100 bg-slate-50/50">
           <button
-            onClick={onClose}
+            onClick={() => handleRequestClose('cancel_button')}
             className="px-[1.25rem] py-[0.6rem] bg-white hover:bg-slate-100 text-slate-700 text-[0.82rem] font-bold rounded-[12px] border border-slate-200 transition-all cursor-pointer"
           >
             Cancel
