@@ -476,6 +476,13 @@ function main() {
       source: 'runtime seed',
     },
     {
+      name: 'ANNUAL_STRIPE_PRICE_ID',
+      value: optionalSeedValue(envEntries, 'ANNUAL_STRIPE_PRICE_ID', usedKeys),
+      type: 'String',
+      required: false,
+      source: 'runtime seed',
+    },
+    {
       name: 'OPENAI_API_KEY',
       value: requireSeedValue(envEntries, 'OPENAI_API_KEY', usedKeys),
       type: 'SecureString',

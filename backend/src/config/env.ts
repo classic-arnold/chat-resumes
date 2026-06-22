@@ -83,7 +83,6 @@ const rawEnvSchema = z
       'STRIPE_SECRET_KEY',
       'STRIPE_WEBHOOK_SECRET',
       'STRIPE_PRICE_ID',
-      'ANNUAL_STRIPE_PRICE_ID',
       'OPENAI_API_KEY',
     ] as const;
 
