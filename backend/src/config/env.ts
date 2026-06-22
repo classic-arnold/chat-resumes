@@ -69,6 +69,7 @@ const rawEnvSchema = z
     STRIPE_SECRET_KEY: optionalNonEmptyString,
     STRIPE_WEBHOOK_SECRET: optionalNonEmptyString,
     STRIPE_PRICE_ID: optionalNonEmptyString,
+    ANNUAL_STRIPE_PRICE_ID: optionalNonEmptyString,
     OPENAI_API_KEY: optionalNonEmptyString,
   })
   .superRefine((values, context) => {
@@ -82,6 +83,7 @@ const rawEnvSchema = z
       'STRIPE_SECRET_KEY',
       'STRIPE_WEBHOOK_SECRET',
       'STRIPE_PRICE_ID',
+      'ANNUAL_STRIPE_PRICE_ID',
       'OPENAI_API_KEY',
     ] as const;
 
@@ -125,8 +127,12 @@ export const env = Object.freeze({
   stripeSecretKey: parsedEnv.data.STRIPE_SECRET_KEY,
   stripeWebhookSecret: parsedEnv.data.STRIPE_WEBHOOK_SECRET,
   stripePriceId: parsedEnv.data.STRIPE_PRICE_ID,
+  stripeAnnualPriceId: parsedEnv.data.ANNUAL_STRIPE_PRICE_ID,
   isStripeCheckoutConfigured: Boolean(
     parsedEnv.data.STRIPE_SECRET_KEY && parsedEnv.data.STRIPE_PRICE_ID,
+  ),
+  isStripeAnnualCheckoutConfigured: Boolean(
+    parsedEnv.data.STRIPE_SECRET_KEY && parsedEnv.data.ANNUAL_STRIPE_PRICE_ID,
   ),
   isStripeWebhookConfigured: Boolean(
     parsedEnv.data.STRIPE_SECRET_KEY && parsedEnv.data.STRIPE_WEBHOOK_SECRET,

@@ -4,6 +4,7 @@ import { Route, Routes, useLocation } from 'react-router-dom'
 
 import { isClerkConfigured } from './auth/clerk'
 import { ProtectedRoute } from './auth/ProtectedRoute'
+import { SocialProofPopup } from './components/SocialProofPopup'
 import { trackMetaPageView } from './lib/metaPixel'
 import {
   identifyPostHogUser,
@@ -50,6 +51,14 @@ const PostHogTracker = () => {
   return null
 }
 
+const MARKETING_ROUTES = new Set(['/', '/pricing'])
+
+const SocialProofGate = () => {
+  const { pathname } = useLocation()
+
+  return MARKETING_ROUTES.has(pathname) ? <SocialProofPopup /> : null
+}
+
 const PostHogIdentityTracker = () => {
   const { isLoaded, isSignedIn, userId } = useAuth()
 
@@ -75,6 +84,7 @@ const App = () => (
     <PostHogTracker />
     {isClerkConfigured ? <PostHogIdentityTracker /> : null}
     <ScrollToTop />
+    <SocialProofGate />
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/p/:slug" element={<PublicRecruiterChatPage />} />

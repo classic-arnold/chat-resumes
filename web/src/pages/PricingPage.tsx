@@ -4,13 +4,40 @@ import { useNavigate as useReactNavigate } from 'react-router-dom'
 
 import { Footer } from '../components/Footer'
 import { Navbar } from '../components/Navbar'
-import { createCheckout } from '../lib/billing'
+import { createCheckout, type BillingPlan } from '../lib/billing'
 import {
   META_PIXEL_CUSTOM_EVENTS,
   META_PIXEL_SUBSCRIPTION,
+  META_PIXEL_SUBSCRIPTION_ANNUAL,
   trackMetaEvent,
 } from '../lib/metaPixel'
 import { trackPostHogEvent } from '../lib/posthog'
+
+const PLANS: Record<
+  BillingPlan,
+  {
+    badge: string | null
+    meta: typeof META_PIXEL_SUBSCRIPTION | typeof META_PIXEL_SUBSCRIPTION_ANNUAL
+    price: string
+    subline: string | null
+    unit: string
+  }
+> = {
+  monthly: {
+    badge: null,
+    meta: META_PIXEL_SUBSCRIPTION,
+    price: '$9.99',
+    subline: null,
+    unit: '/mo',
+  },
+  annual: {
+    badge: 'Save $40 · 34% off',
+    meta: META_PIXEL_SUBSCRIPTION_ANNUAL,
+    price: '$79',
+    subline: '$6.58/mo · billed annually',
+    unit: '/yr',
+  },
+}
 
 const FEATURES = [
   'Personal AI chatbot trained on your experience',
@@ -44,6 +71,9 @@ export const PricingPage = () => {
   const { getToken, isLoaded, isSignedIn } = useAuth()
   const [error, setError] = useState<string | null>(null)
   const [isStarting, setIsStarting] = useState(false)
+  const [billingInterval, setBillingInterval] = useState<BillingPlan>('annual')
+
+  const selectedPlan = PLANS[billingInterval]
 
   useEffect(() => {
     trackMetaEvent({
@@ -94,30 +124,32 @@ export const PricingPage = () => {
     setIsStarting(true)
 
     trackPostHogEvent('pricing_checkout_started', {
-      currency: META_PIXEL_SUBSCRIPTION.currency,
-      plan_id: META_PIXEL_SUBSCRIPTION.id,
-      value: META_PIXEL_SUBSCRIPTION.value,
+      billing_interval: billingInterval,
+      currency: selectedPlan.meta.currency,
+      plan_id: selectedPlan.meta.id,
+      value: selectedPlan.meta.value,
     })
     trackMetaEvent({
       name: 'InitiateCheckout',
       parameters: {
-        content_ids: [META_PIXEL_SUBSCRIPTION.id],
+        content_ids: [selectedPlan.meta.id],
         contents: [
           {
-            id: META_PIXEL_SUBSCRIPTION.id,
-            quantity: META_PIXEL_SUBSCRIPTION.quantity,
+            id: selectedPlan.meta.id,
+            quantity: selectedPlan.meta.quantity,
           },
         ],
-        currency: META_PIXEL_SUBSCRIPTION.currency,
-        num_items: META_PIXEL_SUBSCRIPTION.quantity,
-        value: META_PIXEL_SUBSCRIPTION.value,
+        currency: selectedPlan.meta.currency,
+        num_items: selectedPlan.meta.quantity,
+        value: selectedPlan.meta.value,
       },
     })
 
     try {
       const { checkoutUrl } = await createCheckout(getToken, {
         cancelUrl: `${window.location.origin}/billing/cancel`,
-        successUrl: `${window.location.origin}/billing/success`,
+        plan: billingInterval,
+        successUrl: `${window.location.origin}/billing/success?plan=${billingInterval}`,
       })
       window.location.assign(checkoutUrl)
     } catch (caught) {
@@ -145,7 +177,7 @@ export const PricingPage = () => {
     : isStarting
       ? 'Starting…'
       : isSignedIn
-        ? 'Subscribe — $9.99/mo'
+        ? `Subscribe — ${selectedPlan.price}${selectedPlan.unit}`
         : 'Start Your Free Trial'
 
   return (
@@ -159,9 +191,44 @@ export const PricingPage = () => {
           <h1 className="font-sans text-[2.2rem] md:text-[3.5rem] font-extrabold leading-[1.15] tracking-[-0.03em] text-[#0f172a] mb-[1.25rem]">
             Invest in your career.<br />One simple price.
           </h1>
-          <p className="max-w-[64ch] text-[0.88rem] md:text-[1rem] leading-[1.75] text-[#475569] mx-auto mb-[3.5rem]">
-            No complex tiers. No hidden fees. Get the ultimate AI-powered resume and interview tool for a single, flat monthly rate.
+          <p className="max-w-[64ch] text-[0.88rem] md:text-[1rem] leading-[1.75] text-[#475569] mx-auto mb-[2rem]">
+            No complex tiers. No hidden fees. Get the ultimate AI-powered resume and interview tool — pick the plan that fits you.
           </p>
+
+          {/* BILLING INTERVAL TOGGLE */}
+          <div className="inline-flex items-center p-[0.25rem] bg-white border border-[#e2e8f0] rounded-full mb-[3rem] shadow-[0_4px_12px_rgba(15,23,42,0.04)]">
+            <button
+              className={`px-[1.4rem] py-[0.5rem] rounded-full text-[0.8rem] font-semibold border-none cursor-pointer transition-all duration-200 ${
+                billingInterval === 'monthly'
+                  ? 'bg-[#5B54F7] text-white'
+                  : 'bg-transparent text-[#475569] hover:text-[#0f172a]'
+              }`}
+              onClick={() => setBillingInterval('monthly')}
+              type="button"
+            >
+              Monthly
+            </button>
+            <button
+              className={`px-[1.4rem] py-[0.5rem] rounded-full text-[0.8rem] font-semibold border-none cursor-pointer transition-all duration-200 flex items-center gap-[0.45rem] ${
+                billingInterval === 'annual'
+                  ? 'bg-[#5B54F7] text-white'
+                  : 'bg-transparent text-[#475569] hover:text-[#0f172a]'
+              }`}
+              onClick={() => setBillingInterval('annual')}
+              type="button"
+            >
+              Annual
+              <span
+                className={`text-[0.6rem] font-bold px-[0.4rem] py-[0.1rem] rounded-full ${
+                  billingInterval === 'annual'
+                    ? 'bg-white/20 text-white'
+                    : 'bg-[rgba(91,84,247,0.1)] text-[#5B54F7]'
+                }`}
+              >
+                Save 34%
+              </span>
+            </button>
+          </div>
 
           {/* TWO-COLUMN PRICING CARD */}
           <div className="relative w-full grid grid-cols-1 md:grid-cols-2 bg-white border border-[#e2e8f0] border-t-4 border-t-[#5B54F7] rounded-[16px] overflow-hidden shadow-[0_20px_50px_rgba(15,23,42,0.04)] text-left">
@@ -174,10 +241,24 @@ export const PricingPage = () => {
                 <h3 className="text-[2rem] font-extrabold text-[#0f172a] m-0 mb-[0.5rem] tracking-tight">
                   The Edge
                 </h3>
-                <div className="flex items-baseline gap-[0.15rem] font-extrabold text-[#0f172a] mb-[1.25rem]">
-                  <span className="text-[3rem] leading-[1]">$9.99</span>
-                  <span className="text-[0.95rem] text-[#475569] font-medium">/mo</span>
+                <div className="flex items-baseline gap-[0.15rem] font-extrabold text-[#0f172a] mb-[0.4rem]">
+                  <span className="text-[3rem] leading-[1]">{selectedPlan.price}</span>
+                  <span className="text-[0.95rem] text-[#475569] font-medium">{selectedPlan.unit}</span>
                 </div>
+                {selectedPlan.subline ? (
+                  <div className="flex flex-wrap items-center gap-[0.5rem] mb-[1.25rem]">
+                    <span className="text-[0.78rem] text-[#475569] font-medium">
+                      {selectedPlan.subline}
+                    </span>
+                    {selectedPlan.badge ? (
+                      <span className="text-[0.62rem] font-bold px-[0.45rem] py-[0.15rem] rounded-full bg-[#d1fae5] text-[#065f46]">
+                        {selectedPlan.badge}
+                      </span>
+                    ) : null}
+                  </div>
+                ) : (
+                  <div className="mb-[1.25rem]" />
+                )}
                 <p className="text-[0.85rem] leading-[1.6] text-[#475569] mb-[2rem]">
                   Everything you need to stand out, optimized for modern recruiting.
                 </p>

@@ -32,12 +32,18 @@ export const fetchBillingStatus = (getToken: TokenProvider) => {
   return requestBilling<BillingStatus>('/api/billing/status', { getToken })
 }
 
+export type BillingPlan = 'monthly' | 'annual'
+
 export const createCheckout = (
   getToken: TokenProvider,
-  { cancelUrl, successUrl }: { cancelUrl: string; successUrl: string },
+  {
+    cancelUrl,
+    plan,
+    successUrl,
+  }: { cancelUrl: string; plan?: BillingPlan; successUrl: string },
 ) => {
   return requestBilling<{ checkoutUrl: string }>('/api/billing/checkout-session', {
-    body: { cancelUrl, successUrl },
+    body: { cancelUrl, plan, successUrl },
     getToken,
     method: 'POST',
   })

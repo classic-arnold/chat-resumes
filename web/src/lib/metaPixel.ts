@@ -9,6 +9,13 @@ export const META_PIXEL_SUBSCRIPTION = {
   value: 9.99,
 } as const
 
+export const META_PIXEL_SUBSCRIPTION_ANNUAL = {
+  currency: 'USD',
+  id: 'chatresumes-pro-annual',
+  quantity: 1,
+  value: 79,
+} as const
+
 export const META_PIXEL_STANDARD_EVENTS = [
   'AddPaymentInfo',
   'AddToCart',

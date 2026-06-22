@@ -26,6 +26,8 @@ export const createApp = () => {
   );
 
   // Stripe webhook signature verification requires raw body access.
+  // Accept both singular and plural paths to avoid breaking older Stripe endpoint configs.
+  app.use('/api/stripe/webhook', stripeWebhookRouter);
   app.use('/api/stripe/webhooks', stripeWebhookRouter);
   app.use(express.json());
 

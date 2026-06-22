@@ -1,38 +1,46 @@
 import { useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 
 import { ButtonLink } from '../components/ui/Button'
 import {
   META_PIXEL_CUSTOM_EVENTS,
   META_PIXEL_SUBSCRIPTION,
+  META_PIXEL_SUBSCRIPTION_ANNUAL,
   trackMetaEvent,
 } from '../lib/metaPixel'
 import { trackPostHogEvent } from '../lib/posthog'
 
 export const BillingSuccessPage = () => {
+  const [searchParams] = useSearchParams()
+
   useEffect(() => {
+    const plan =
+      searchParams.get('plan') === 'annual'
+        ? META_PIXEL_SUBSCRIPTION_ANNUAL
+        : META_PIXEL_SUBSCRIPTION
+
     trackPostHogEvent('billing_subscription_succeeded', {
-      currency: META_PIXEL_SUBSCRIPTION.currency,
-      plan_id: META_PIXEL_SUBSCRIPTION.id,
-      value: META_PIXEL_SUBSCRIPTION.value,
+      currency: plan.currency,
+      plan_id: plan.id,
+      value: plan.value,
     })
     trackMetaEvent({
       name: 'Subscribe',
       parameters: {
-        currency: META_PIXEL_SUBSCRIPTION.currency,
-        value: META_PIXEL_SUBSCRIPTION.value,
+        currency: plan.currency,
+        value: plan.value,
       },
     })
     trackMetaEvent({
       kind: 'custom',
       name: META_PIXEL_CUSTOM_EVENTS.subscriptionActivated,
       parameters: {
-        currency: META_PIXEL_SUBSCRIPTION.currency,
-        plan_id: META_PIXEL_SUBSCRIPTION.id,
-        value: META_PIXEL_SUBSCRIPTION.value,
+        currency: plan.currency,
+        plan_id: plan.id,
+        value: plan.value,
       },
     })
-  }, [])
+  }, [searchParams])
 
   return (
     <div className="min-h-screen flex flex-col bg-off-white text-navy-text font-mono">

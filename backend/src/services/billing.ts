@@ -49,14 +49,20 @@ const getStripeClient = () => {
   return stripeClient;
 };
 
-const assertStripeCheckoutConfigured = () => {
-  if (!env.isStripeCheckoutConfigured || !env.stripePriceId) {
+export type BillingPlan = 'monthly' | 'annual';
+
+const resolveCheckoutPriceId = (plan: BillingPlan) => {
+  const priceId = plan === 'annual' ? env.stripeAnnualPriceId : env.stripePriceId;
+
+  if (!env.stripeSecretKey || !priceId) {
     throw new ApiError({
       code: 'stripe_checkout_not_configured',
       message: 'Stripe checkout is not configured yet.',
       statusCode: 503,
     });
   }
+
+  return priceId;
 };
 
 const assertStripeWebhookConfigured = () => {
@@ -297,14 +303,16 @@ export const reconcileStripeSubscriptionForUser = async (user: SyncedLocalUser) 
 
 export const createCheckoutSession = async ({
   cancelUrl,
+  plan = 'monthly',
   successUrl,
   user,
 }: {
   cancelUrl?: string;
+  plan?: BillingPlan;
   successUrl?: string;
   user: SyncedLocalUser;
 }) => {
-  assertStripeCheckoutConfigured();
+  const priceId = resolveCheckoutPriceId(plan);
 
   const stripe = getStripeClient();
   const subscription = await ensureStripeCustomer(user);
@@ -313,17 +321,19 @@ export const createCheckoutSession = async ({
     client_reference_id: user.id,
     customer: subscription.stripeCustomerId,
     line_items: [{
-      price: env.stripePriceId,
+      price: priceId,
       quantity: 1,
     }],
     metadata: {
       clerkUserId: user.clerkUserId,
+      plan,
       userId: user.id,
     },
     mode: 'subscription',
     subscription_data: {
       metadata: {
         clerkUserId: user.clerkUserId,
+        plan,
         userId: user.id,
       },
     },

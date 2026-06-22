@@ -13,6 +13,7 @@ import { syncLocalUserFromClerk } from '../../../services/users.js';
 
 const checkoutRequestSchema = z.object({
   cancelUrl: z.string().url().optional(),
+  plan: z.enum(['monthly', 'annual']).optional(),
   successUrl: z.string().url().optional(),
 });
 
@@ -57,6 +58,7 @@ billingRouter.post(
     const body = parseRequestBody(checkoutRequestSchema, request.body);
     const checkoutUrl = await createCheckoutSession({
       cancelUrl: body.cancelUrl,
+      plan: body.plan,
       successUrl: body.successUrl,
       user,
     });
